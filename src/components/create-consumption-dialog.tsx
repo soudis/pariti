@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import {
 	createConsumption,
+	editConsumption,
 	getActiveMembersForDate,
 	type getGroup,
 } from "@/lib/actions";
@@ -35,6 +36,8 @@ interface CreateConsumptionDialogProps {
 	resources: Awaited<ReturnType<typeof getGroup>>["resources"];
 	members: Awaited<ReturnType<typeof getGroup>>["members"];
 	children: React.ReactNode;
+	consumption?: any; // For editing existing consumption
+	onConsumptionUpdated?: () => void;
 }
 
 export function CreateConsumptionDialog({
@@ -42,6 +45,8 @@ export function CreateConsumptionDialog({
 	resources,
 	members,
 	children,
+	consumption,
+	onConsumptionUpdated,
 }: CreateConsumptionDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
@@ -59,6 +64,29 @@ export function CreateConsumptionDialog({
 	const descriptionId = useId();
 	const amountId = useId();
 	const isUnitAmountId = useId();
+
+	// Initialize form with consumption data when editing
+	useEffect(() => {
+		if (consumption) {
+			const resource = resources.find((r) => r.id === consumption.resourceId);
+			setSelectedResource(resource || null);
+			setAmount(consumption.amount.toString());
+			setIsUnitAmount(consumption.isUnitAmount);
+			setConsumptionDate(new Date(consumption.date));
+			if (consumption.consumptionMembers) {
+				setSelectedMembers(
+					consumption.consumptionMembers.map((cm: any) => cm.memberId),
+				);
+			}
+		} else {
+			// Reset form for new consumption
+			setSelectedResource(null);
+			setAmount("");
+			setIsUnitAmount(false);
+			setConsumptionDate(new Date());
+			setSelectedMembers([]);
+		}
+	}, [consumption, resources]);
 
 	const updateActiveMembersForDate = useCallback(
 		async (date: Date) => {
@@ -121,27 +149,43 @@ export function CreateConsumptionDialog({
 		}
 
 		try {
-			await createConsumption(
-				convertToPlainObject({
-					resourceId: selectedResource.id,
-					amount: new Decimal(parsedAmount),
+			if (consumption) {
+				// Edit existing consumption
+				const consumptionMembers = selectedMembers.map((memberId) => ({
+					memberId,
+					amount: calculateAmountPerMember(),
+				}));
+
+				await editConsumption(consumption.id, {
+					amount: parsedAmount,
 					isUnitAmount,
-					memberIds: selectedMembers,
-					description: description || null,
 					date: consumptionDate,
-				}),
-			);
+					description: description || undefined,
+					consumptionMembers,
+				});
+			} else {
+				// Create new consumption
+				await createConsumption(
+					convertToPlainObject({
+						resourceId: selectedResource.id,
+						amount: new Decimal(parsedAmount),
+						isUnitAmount,
+						memberIds: selectedMembers,
+						description: description || null,
+						date: consumptionDate,
+					}),
+				);
+			}
 
 			setOpen(false);
-			setSelectedResource(null);
-			setSelectedMembers([]);
-			setAmount("");
-			setIsUnitAmount(false);
-			setConsumptionDate(new Date());
-			// Reset form
-			e.currentTarget.reset();
+			if (onConsumptionUpdated) {
+				onConsumptionUpdated();
+			}
 		} catch (error) {
-			console.error("Failed to create consumption:", error);
+			console.error(
+				`Failed to ${consumption ? "update" : "create"} consumption:`,
+				error,
+			);
 		} finally {
 			setLoading(false);
 		}
@@ -166,8 +210,12 @@ export function CreateConsumptionDialog({
 			<DialogTrigger asChild>{children}</DialogTrigger>
 			<DialogContent className="sm:max-w-[500px]">
 				<DialogHeader>
-					<DialogTitle>{t("title")}</DialogTitle>
-					<DialogDescription>{t("description")}</DialogDescription>
+					<DialogTitle>
+						{consumption ? "Edit Consumption" : t("title")}
+					</DialogTitle>
+					<DialogDescription>
+						{consumption ? "Update the consumption details." : t("description")}
+					</DialogDescription>
 				</DialogHeader>
 				<form onSubmit={handleSubmit} className="space-y-4">
 					<div className="space-y-2">
@@ -201,6 +249,7 @@ export function CreateConsumptionDialog({
 							id={descriptionId}
 							name="description"
 							placeholder={t("descriptionPlaceholder")}
+							defaultValue={consumption?.description || ""}
 						/>
 					</div>
 
@@ -311,7 +360,13 @@ export function CreateConsumptionDialog({
 							type="submit"
 							disabled={loading || selectedMembers.length === 0}
 						>
-							{loading ? t("adding") : t("add")}
+							{loading
+								? consumption
+									? "Updating..."
+									: t("adding")
+								: consumption
+									? "Update Consumption"
+									: t("add")}
 						</Button>
 					</div>
 				</form>

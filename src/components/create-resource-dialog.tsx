@@ -2,7 +2,7 @@
 
 import { Decimal } from "decimal.js";
 import { useTranslations } from "next-intl";
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -15,23 +15,36 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createResource } from "@/lib/actions";
+import { createResource, editResource } from "@/lib/actions";
 import { convertToPlainObject } from "@/lib/utils";
 
 interface CreateResourceDialogProps {
 	groupId: string;
 	children: React.ReactNode;
+	resource?: any; // For editing existing resource
+	onResourceUpdated?: () => void;
 }
 
 export function CreateResourceDialog({
 	groupId,
 	children,
+	resource,
+	onResourceUpdated,
 }: CreateResourceDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [hasUnit, setHasUnit] = useState(false);
 	const t = useTranslations("forms.createResource");
 	const nameId = useId();
+
+	// Initialize form with resource data when editing
+	useEffect(() => {
+		if (resource) {
+			setHasUnit(!!(resource.unit && resource.unitPrice));
+		} else {
+			setHasUnit(false);
+		}
+	}, [resource]);
 	const descriptionId = useId();
 	const hasUnitId = useId();
 	const unitId = useId();
@@ -48,22 +61,36 @@ export function CreateResourceDialog({
 		const unitPrice = formData.get("unitPrice") as string;
 
 		try {
-			await createResource(
-				convertToPlainObject({
+			if (resource) {
+				// Edit existing resource
+				await editResource(resource.id, {
 					name,
-					description: description || null,
-					unit: hasUnit ? unit || null : null,
-					unitPrice: hasUnit && unitPrice ? new Decimal(unitPrice) : null,
-					groupId,
-				}),
-			);
+					description: description || undefined,
+					unit: hasUnit ? unit || undefined : undefined,
+					unitPrice: hasUnit && unitPrice ? parseFloat(unitPrice) : undefined,
+				});
+			} else {
+				// Create new resource
+				await createResource(
+					convertToPlainObject({
+						name,
+						description: description || null,
+						unit: hasUnit ? unit || null : null,
+						unitPrice: hasUnit && unitPrice ? new Decimal(unitPrice) : null,
+						groupId,
+					}),
+				);
+			}
 
 			setOpen(false);
-			setHasUnit(false);
-			// Reset form
-			e.currentTarget.reset();
+			if (onResourceUpdated) {
+				onResourceUpdated();
+			}
 		} catch (error) {
-			console.error("Failed to create resource:", error);
+			console.error(
+				`Failed to ${resource ? "update" : "create"} resource:`,
+				error,
+			);
 		} finally {
 			setLoading(false);
 		}
@@ -74,8 +101,10 @@ export function CreateResourceDialog({
 			<DialogTrigger asChild>{children}</DialogTrigger>
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>
-					<DialogTitle>{t("title")}</DialogTitle>
-					<DialogDescription>{t("description")}</DialogDescription>
+					<DialogTitle>{resource ? "Edit Resource" : t("title")}</DialogTitle>
+					<DialogDescription>
+						{resource ? "Update the resource details." : t("description")}
+					</DialogDescription>
 				</DialogHeader>
 				<form onSubmit={handleSubmit} className="space-y-4">
 					<div className="space-y-2">
@@ -84,6 +113,7 @@ export function CreateResourceDialog({
 							id={nameId}
 							name="name"
 							placeholder={t("namePlaceholder")}
+							defaultValue={resource?.name || ""}
 							required
 						/>
 					</div>
@@ -93,6 +123,7 @@ export function CreateResourceDialog({
 							id={descriptionId}
 							name="description"
 							placeholder={t("descriptionPlaceholder")}
+							defaultValue={resource?.description || ""}
 						/>
 					</div>
 
@@ -117,6 +148,7 @@ export function CreateResourceDialog({
 											id={unitId}
 											name="unit"
 											placeholder={t("unitPlaceholder")}
+											defaultValue={resource?.unit || ""}
 										/>
 									</div>
 									<div className="space-y-2">
@@ -128,6 +160,7 @@ export function CreateResourceDialog({
 											step="0.01"
 											min="0"
 											placeholder="0.00"
+											defaultValue={resource?.unitPrice || ""}
 										/>
 									</div>
 								</div>
@@ -148,7 +181,13 @@ export function CreateResourceDialog({
 							{t("cancel")}
 						</Button>
 						<Button type="submit" disabled={loading}>
-							{loading ? t("creating") : t("create")}
+							{loading
+								? resource
+									? "Updating..."
+									: t("creating")
+								: resource
+									? "Update Resource"
+									: t("create")}
 						</Button>
 					</div>
 				</form>

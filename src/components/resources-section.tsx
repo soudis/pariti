@@ -2,6 +2,7 @@
 
 import {
 	Calendar,
+	Edit,
 	Eye,
 	EyeOff,
 	Package,
@@ -176,15 +177,30 @@ export function ResourcesSection({
 											</p>
 										)}
 									</div>
-									<Button
-										variant="ghost"
-										size="sm"
-										onClick={() => handleDeleteResource(resource.id)}
-										disabled={deletingResourceId === resource.id}
-										className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
-									>
-										<Trash2 className="w-4 h-4" />
-									</Button>
+									<div className="flex items-center gap-2">
+										<CreateResourceDialog
+											groupId={groupId}
+											resource={resource}
+											onResourceUpdated={() => window.location.reload()}
+										>
+											<Button
+												variant="ghost"
+												size="sm"
+												className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+											>
+												<Edit className="w-4 h-4" />
+											</Button>
+										</CreateResourceDialog>
+										<Button
+											variant="ghost"
+											size="sm"
+											onClick={() => handleDeleteResource(resource.id)}
+											disabled={deletingResourceId === resource.id}
+											className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+										>
+											<Trash2 className="w-4 h-4" />
+										</Button>
+									</div>
 								</div>
 
 								{filterConsumptions(resource.consumptions).length === 0 ? (
@@ -208,7 +224,7 @@ export function ResourcesSection({
 																<Badge variant="secondary" className="text-sm">
 																	{consumption.isUnitAmount
 																		? `${consumption.amount} ${resource.unit}`
-																		: `€${consumption.amount.toFixed(2)}`}
+																		: `€${Number(consumption.amount).toFixed(2)}`}
 																</Badge>
 																{consumption.isUnitAmount &&
 																	resource.unitPrice && (
@@ -231,19 +247,38 @@ export function ResourcesSection({
 																</p>
 															)}
 														</div>
-														<Button
-															variant="ghost"
-															size="sm"
-															onClick={() =>
-																handleDeleteConsumption(consumption.id)
-															}
-															disabled={
-																deletingConsumptionId === consumption.id
-															}
-															className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
-														>
-															<Trash2 className="w-4 h-4" />
-														</Button>
+														<div className="flex items-center gap-2">
+															<CreateConsumptionDialog
+																groupId={groupId}
+																resources={resources}
+																members={members}
+																consumption={consumption}
+																onConsumptionUpdated={() =>
+																	window.location.reload()
+																}
+															>
+																<Button
+																	variant="ghost"
+																	size="sm"
+																	className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+																>
+																	<Edit className="w-4 h-4" />
+																</Button>
+															</CreateConsumptionDialog>
+															<Button
+																variant="ghost"
+																size="sm"
+																onClick={() =>
+																	handleDeleteConsumption(consumption.id)
+																}
+																disabled={
+																	deletingConsumptionId === consumption.id
+																}
+																className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+															>
+																<Trash2 className="w-4 h-4" />
+															</Button>
+														</div>
 													</div>
 
 													<div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-300 mb-2">

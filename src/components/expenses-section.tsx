@@ -3,6 +3,7 @@
 import {
 	Calendar,
 	DollarSign,
+	Edit,
 	Eye,
 	EyeOff,
 	Plus,
@@ -170,6 +171,19 @@ export function ExpensesSection({ group, expenses }: ExpensesSectionProps) {
 										<Badge variant="secondary" className="text-sm">
 											${Number(expense.amount).toFixed(2)}
 										</Badge>
+										<AddExpenseDialog
+											group={group}
+											expense={expense}
+											onExpenseUpdated={() => window.location.reload()}
+										>
+											<Button
+												variant="ghost"
+												size="sm"
+												className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+											>
+												<Edit className="w-4 h-4" />
+											</Button>
+										</AddExpenseDialog>
 										<Button
 											variant="ghost"
 											size="sm"

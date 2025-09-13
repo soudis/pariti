@@ -23,7 +23,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { createExpense, getActiveMembersForDate } from "@/lib/actions";
+import {
+	createExpense,
+	editExpense,
+	getActiveMembersForDate,
+} from "@/lib/actions";
 import { convertToPlainObject } from "@/lib/utils";
 
 interface AddExpenseDialogProps {
@@ -31,9 +35,16 @@ interface AddExpenseDialogProps {
 		members: Member[];
 	};
 	children: React.ReactNode;
+	expense?: any; // For editing existing expense
+	onExpenseUpdated?: () => void;
 }
 
-export function AddExpenseDialog({ group, children }: AddExpenseDialogProps) {
+export function AddExpenseDialog({
+	group,
+	children,
+	expense,
+	onExpenseUpdated,
+}: AddExpenseDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
@@ -48,6 +59,36 @@ export function AddExpenseDialog({ group, children }: AddExpenseDialogProps) {
 	const [activeMembersAtDate, setActiveMembersAtDate] = useState<Member[]>(
 		group.members,
 	);
+
+	// Initialize form with expense data when editing
+	useEffect(() => {
+		if (expense) {
+			setAmount(expense.amount.toString());
+			setSplitAll(expense.splitAll);
+			setIsRecurring(expense.isRecurring);
+			setRecurringType(expense.recurringType || "monthly");
+			setRecurringStartDate(
+				expense.recurringStartDate
+					? new Date(expense.recurringStartDate)
+					: undefined,
+			);
+			setExpenseDate(new Date(expense.date));
+			if (!expense.splitAll && expense.expenseMembers) {
+				setSelectedMembers(
+					expense.expenseMembers.map((em: any) => em.memberId),
+				);
+			}
+		} else {
+			// Reset form for new expense
+			setAmount("");
+			setSplitAll(false);
+			setIsRecurring(false);
+			setRecurringType("monthly");
+			setRecurringStartDate(undefined);
+			setExpenseDate(new Date());
+			setSelectedMembers([]);
+		}
+	}, [expense]);
 
 	// Initialize active members when dialog opens
 	// biome-ignore lint/correctness/useExhaustiveDependencies: no update needed
@@ -113,34 +154,55 @@ export function AddExpenseDialog({ group, children }: AddExpenseDialogProps) {
 		}
 
 		try {
-			await createExpense(
-				convertToPlainObject({
+			if (expense) {
+				// Edit existing expense
+				const expenseMembers = selectedMembers.map((memberId) => ({
+					memberId,
+					amount: amount / selectedMembers.length,
+				}));
+
+				await editExpense(expense.id, {
 					title,
-					description: description || null,
-					amount: new Decimal(amount),
-					groupId: group.id,
-					paidById,
-					memberIds: selectedMembers,
-					splitAll,
-					isRecurring,
-					recurringType: isRecurring ? recurringType : null,
-					recurringStartDate: isRecurring ? (recurringStartDate ?? null) : null,
+					description: description || undefined,
+					amount,
+					paidBy: paidById,
 					date: expenseDate,
-				}),
-			);
+					splitAll,
+					expenseMembers,
+					isRecurring,
+					recurringType: isRecurring ? recurringType : undefined,
+					recurringStartDate: isRecurring ? recurringStartDate : undefined,
+				});
+			} else {
+				// Create new expense
+				await createExpense(
+					convertToPlainObject({
+						title,
+						description: description || null,
+						amount: new Decimal(amount),
+						groupId: group.id,
+						paidById,
+						memberIds: selectedMembers,
+						splitAll,
+						isRecurring,
+						recurringType: isRecurring ? recurringType : null,
+						recurringStartDate: isRecurring
+							? (recurringStartDate ?? null)
+							: null,
+						date: expenseDate,
+					}),
+				);
+			}
 
 			setOpen(false);
-			setSelectedMembers([]);
-			setSplitAll(false);
-			setAmount("");
-			setIsRecurring(false);
-			setRecurringType("monthly");
-			setRecurringStartDate(undefined);
-			setExpenseDate(new Date());
-			// Reset form
-			// e.currentTarget.reset()
+			if (onExpenseUpdated) {
+				onExpenseUpdated();
+			}
 		} catch (error) {
-			console.error("Failed to create expense:", error);
+			console.error(
+				`Failed to ${expense ? "update" : "create"} expense:`,
+				error,
+			);
 		} finally {
 			setLoading(false);
 		}
@@ -151,10 +213,11 @@ export function AddExpenseDialog({ group, children }: AddExpenseDialogProps) {
 			<DialogTrigger asChild>{children}</DialogTrigger>
 			<DialogContent className="sm:max-w-[500px]">
 				<DialogHeader>
-					<DialogTitle>Add Expense</DialogTitle>
+					<DialogTitle>{expense ? "Edit Expense" : "Add Expense"}</DialogTitle>
 					<DialogDescription>
-						Add a new expense to your group. Select which members this expense
-						applies to.
+						{expense
+							? "Update the expense details and member selection."
+							: "Add a new expense to your group. Select which members this expense applies to."}
 					</DialogDescription>
 				</DialogHeader>
 				<form onSubmit={handleSubmit} className="space-y-4">
@@ -164,6 +227,7 @@ export function AddExpenseDialog({ group, children }: AddExpenseDialogProps) {
 							id={useId()}
 							name="title"
 							placeholder="e.g., Dinner at restaurant"
+							defaultValue={expense?.title || ""}
 							required
 						/>
 					</div>
@@ -174,6 +238,7 @@ export function AddExpenseDialog({ group, children }: AddExpenseDialogProps) {
 							id={useId()}
 							name="description"
 							placeholder="e.g., Great food and drinks"
+							defaultValue={expense?.description || ""}
 						/>
 					</div>
 
@@ -195,7 +260,11 @@ export function AddExpenseDialog({ group, children }: AddExpenseDialogProps) {
 
 						<div className="space-y-2">
 							<Label htmlFor="paidBy">Paid by</Label>
-							<Select name="paidBy" required>
+							<Select
+								name="paidBy"
+								required
+								defaultValue={expense?.paidBy || ""}
+							>
 								<SelectTrigger>
 									<SelectValue placeholder="Select member" />
 								</SelectTrigger>
@@ -353,7 +422,13 @@ export function AddExpenseDialog({ group, children }: AddExpenseDialogProps) {
 							type="submit"
 							disabled={loading || selectedMembers.length === 0}
 						>
-							{loading ? "Adding..." : "Add Expense"}
+							{loading
+								? expense
+									? "Updating..."
+									: "Adding..."
+								: expense
+									? "Update Expense"
+									: "Add Expense"}
 						</Button>
 					</div>
 				</form>

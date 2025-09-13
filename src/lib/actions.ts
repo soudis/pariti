@@ -985,3 +985,114 @@ export async function getSettlementCutoffDate(
 	// Return the creation date of the most recent completed settlement
 	return mostRecentCompleted.createdAt;
 }
+
+// Edit expense action
+export async function editExpense(
+	expenseId: string,
+	data: {
+		title: string;
+		amount: number;
+		description?: string;
+		paidBy: string;
+		date: Date;
+		splitAll: boolean;
+		expenseMembers: Array<{ memberId: string; amount: number }>;
+		isRecurring: boolean;
+		recurringType?: "weekly" | "monthly" | "yearly";
+		recurringStartDate?: Date;
+	},
+) {
+	const expense = await db.expense.update({
+		where: { id: expenseId },
+		data: {
+			title: data.title,
+			amount: data.amount,
+			description: data.description,
+			paidBy: data.paidBy,
+			date: data.date,
+			splitAll: data.splitAll,
+			isRecurring: data.isRecurring,
+			recurringType: data.recurringType,
+			recurringStartDate: data.recurringStartDate,
+		},
+	});
+
+	// Update expense members
+	await db.expenseMember.deleteMany({
+		where: { expenseId },
+	});
+
+	if (!data.splitAll && data.expenseMembers.length > 0) {
+		await db.expenseMember.createMany({
+			data: data.expenseMembers.map((member) => ({
+				expenseId,
+				memberId: member.memberId,
+				amount: member.amount,
+			})),
+		});
+	}
+
+	return convertToPlainObject(expense);
+}
+
+// Edit resource action
+export async function editResource(
+	resourceId: string,
+	data: {
+		name: string;
+		description?: string;
+		unit?: string;
+		unitPrice?: number;
+	},
+) {
+	const resource = await db.resource.update({
+		where: { id: resourceId },
+		data: {
+			name: data.name,
+			description: data.description,
+			unit: data.unit,
+			unitPrice: data.unitPrice,
+		},
+	});
+
+	return convertToPlainObject(resource);
+}
+
+// Edit consumption action
+export async function editConsumption(
+	consumptionId: string,
+	data: {
+		amount: number;
+		isUnitAmount: boolean;
+		date: Date;
+		description?: string;
+		consumptionMembers: Array<{ memberId: string; amount: number }>;
+	},
+) {
+	const consumption = await db.consumption.update({
+		where: { id: consumptionId },
+		data: {
+			amount: data.amount,
+			isUnitAmount: data.isUnitAmount,
+			date: data.date,
+			description: data.description,
+		},
+	});
+
+	// Update consumption members
+	await db.consumptionMember.deleteMany({
+		where: { consumptionId },
+	});
+
+	if (data.consumptionMembers.length > 0) {
+		await db.consumptionMember.createMany({
+			data: data.consumptionMembers.map((member) => ({
+				consumptionId,
+				memberId: member.memberId,
+				amount: member.amount,
+			})),
+		});
+	}
+
+	return convertToPlainObject(consumption);
+}
