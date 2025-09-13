@@ -14,6 +14,7 @@ import {
 	removeMember,
 	updateMember,
 } from "@/lib/actions";
+import type { MemberFormData } from "@/lib/schemas";
 
 interface MembersSectionProps {
 	group: {
@@ -81,7 +82,7 @@ export function MembersSection({ group }: MembersSectionProps) {
 
 	const handleUpdateMember = async (
 		memberId: Member["id"],
-		data: Pick<Member, "name" | "email" | "iban" | "activeFrom" | "activeTo">,
+		data: MemberFormData,
 	) => {
 		try {
 			await updateMember(memberId, data);
@@ -116,70 +117,75 @@ export function MembersSection({ group }: MembersSectionProps) {
 					</div>
 				) : (
 					<div className="space-y-3">
+						{/* Header row for balance column */}
+						<div className="flex items-center justify-between px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+							<div className="flex items-center gap-3 flex-1">
+								<div className="w-8 h-8"></div>
+								<div className="flex-1">
+									<span>{t("member")}</span>
+								</div>
+							</div>
+							<div className="w-24 text-right">
+								<span>{t("balance")}</span>
+							</div>
+							<div className="w-24"></div>
+						</div>
+
 						{group.members.map((member) => (
 							<div
 								key={member.id}
 								className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
 							>
-								<div className="flex items-center gap-3">
+								<div className="flex items-center gap-3 flex-1">
 									<div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
 										<User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
 									</div>
 									<div className="flex-1">
-										<div className="flex items-center justify-between">
-											<div>
-												<p className="font-medium">{member.name}</p>
-												{member.email && (
-													<p className="text-sm text-gray-500 dark:text-gray-400">
-														{member.email}
-													</p>
-												)}
-												{member.iban && (
-													<p className="text-sm text-gray-500 dark:text-gray-400 font-mono">
-														{member.iban}
-													</p>
-												)}
-												<div className="flex items-center gap-2 mt-1">
-													<span className="text-xs text-gray-500 dark:text-gray-400">
-														{t("active")}:{" "}
-														{new Date(member.activeFrom).toLocaleDateString()}
-													</span>
-													{member.activeTo && (
-														<span className="text-xs text-gray-500 dark:text-gray-400">
-															- {new Date(member.activeTo).toLocaleDateString()}
-														</span>
-													)}
-													{!member.activeTo && (
-														<span className="text-xs text-green-600 dark:text-green-400">
-															{t("ongoing")}
-														</span>
-													)}
-												</div>
-											</div>
-											<div className="text-right">
-												<div className="flex items-center gap-1 mb-1">
-													<DollarSign className="w-4 h-4 text-gray-400" />
-													<span className="text-sm text-gray-500 dark:text-gray-400">
-														{t("balance")}
-													</span>
-												</div>
-												{loadingBalances ? (
-													<div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-												) : (
-													<p
-														className={`font-medium ${getBalanceColor(getMemberBalance(member.id))}`}
-													>
-														{formatBalance(getMemberBalance(member.id))}
-													</p>
-												)}
-											</div>
+										<p className="font-medium">{member.name}</p>
+										{member.email && (
+											<p className="text-sm text-gray-500 dark:text-gray-400">
+												{member.email}
+											</p>
+										)}
+										{member.iban && (
+											<p className="text-sm text-gray-500 dark:text-gray-400 font-mono">
+												{member.iban}
+											</p>
+										)}
+										<div className="flex items-center gap-2 mt-1">
+											<span className="text-xs text-gray-500 dark:text-gray-400">
+												{t("active")}:{" "}
+												{new Date(member.activeFrom).toLocaleDateString()}
+											</span>
+											{member.activeTo && (
+												<span className="text-xs text-gray-500 dark:text-gray-400">
+													- {new Date(member.activeTo).toLocaleDateString()}
+												</span>
+											)}
+											{!member.activeTo && (
+												<span className="text-xs text-green-600 dark:text-green-400">
+													{t("ongoing")}
+												</span>
+											)}
 										</div>
 									</div>
 								</div>
-								<div className="flex items-center gap-2">
-									<Badge variant="secondary" className="text-xs">
-										{t("member")}
-									</Badge>
+
+								{/* Balance column - right aligned */}
+								<div className="w-24 text-right">
+									{loadingBalances ? (
+										<div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse ml-auto" />
+									) : (
+										<p
+											className={`font-medium ${getBalanceColor(getMemberBalance(member.id))}`}
+										>
+											{formatBalance(getMemberBalance(member.id))}
+										</p>
+									)}
+								</div>
+
+								{/* Actions column */}
+								<div className="flex items-center gap-2 w-24 justify-end">
 									<EditMemberDialog
 										member={member}
 										onUpdate={handleUpdateMember}

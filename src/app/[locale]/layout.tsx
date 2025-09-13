@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { QueryProvider } from "@/components/query-provider";
 
 const locales = ["en", "de"];
@@ -29,7 +30,9 @@ export default async function LocaleLayout({
 
 	return (
 		<NextIntlClientProvider messages={messages}>
-			<QueryProvider>{children}</QueryProvider>
+			<NuqsAdapter>
+				<QueryProvider>{children}</QueryProvider>
+			</NuqsAdapter>
 		</NextIntlClientProvider>
 	);
 }

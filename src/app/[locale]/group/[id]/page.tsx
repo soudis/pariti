@@ -1,9 +1,6 @@
 import { notFound } from "next/navigation";
-import { ExpensesSection } from "@/components/expenses-section";
-import { GroupHeader } from "@/components/group-header";
-import { MembersSection } from "@/components/members-section";
-import { ResourcesSection } from "@/components/resources-section";
-import { SettlementsSection } from "@/components/settlements-section";
+import { GroupOverview } from "@/components/group-overview";
+import { GroupTabs } from "@/components/group-tabs";
 import { generateRecurringExpenseInstances, getGroup } from "@/lib/actions";
 
 interface GroupPageProps {
@@ -37,24 +34,13 @@ export default async function GroupPage({ params }: GroupPageProps) {
 		<div className="min-h-screen bg-gray-50 dark:bg-gray-900">
 			<div className="container mx-auto px-4 py-8">
 				<div className="max-w-6xl mx-auto space-y-8">
-					<GroupHeader group={group} />
+					<GroupOverview group={group} resources={group.resources} />
 
-					<div className="grid gap-8 lg:grid-cols-2">
-						<MembersSection group={group} />
-						<ExpensesSection group={group} expenses={allExpenses} />
-					</div>
-
-					<ResourcesSection
-						groupId={group.id}
+					<GroupTabs
+						group={group}
+						expenses={allExpenses}
 						resources={group.resources}
-						members={group.members}
-					/>
-
-					<SettlementsSection
-						groupId={group.id}
 						settlements={group.settlements}
-						members={group.members}
-						resources={group.resources}
 					/>
 				</div>
 			</div>
