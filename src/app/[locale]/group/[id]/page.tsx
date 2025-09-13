@@ -1,4 +1,3 @@
-import type { Expense, Group, Member } from "@prisma/client";
 import { notFound } from "next/navigation";
 import { ExpensesSection } from "@/components/expenses-section";
 import { GroupHeader } from "@/components/group-header";

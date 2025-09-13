@@ -1,0 +1,221 @@
+{
+	"app": {
+		"title": "Shary - Geld teilen leicht gemacht",
+		"description": "Eine moderne App zum Teilen von Ausgaben mit Freunden und Familie"
+	},
+	"home": {
+		"title": "Shary",
+		"subtitle": "Geld teilen leicht gemacht. Teile Ausgaben mit Freunden und Familie.",
+		"createGroup": {
+			"title": "Neue Gruppe erstellen",
+			"description": "Erstelle eine neue Ausgaben-Gruppe mit Freunden oder Familie",
+			"button": "Gruppe erstellen"
+		},
+		"joinGroup": {
+			"title": "Bestehende Gruppe beitreten",
+			"description": "Gib einen Gruppen-Link ein, um einer bestehenden Ausgaben-Gruppe beizutreten",
+			"button": "Gruppe beitreten"
+		},
+		"howItWorks": {
+			"title": "So funktioniert's",
+			"step1": {
+				"title": "Erstellen oder beitreten",
+				"description": "Erstelle eine neue Gruppe oder trete einer bestehenden über einen geteilten Link bei"
+			},
+			"step2": {
+				"title": "Mitglieder hinzufügen",
+				"description": "Füge Freunde und Familienmitglieder zu deiner Ausgaben-Gruppe hinzu"
+			},
+			"step3": {
+				"title": "Ausgaben verfolgen",
+				"description": "Füge Ausgaben hinzu und sieh automatisch berechnet, wer wem wie viel schuldet"
+			}
+		}
+	},
+	"group": {
+		"shareGroup": "Gruppe teilen",
+		"copied": "Kopiert!",
+		"members": "Mitglieder",
+		"totalExpenses": "Gesamtausgaben",
+		"expenses": "Ausgaben",
+		"notFound": {
+			"title": "Gruppe nicht gefunden",
+			"description": "Die gesuchte Gruppe existiert nicht oder wurde entfernt.",
+			"goHome": "Zur Startseite",
+			"createNew": "Neue Gruppe erstellen"
+		}
+	},
+	"members": {
+		"title": "Mitglieder",
+		"addMember": "Mitglied hinzufügen",
+		"noMembers": "Noch keine Mitglieder",
+		"noMembersDescription": "Füge Mitglieder hinzu, um mit dem Teilen von Ausgaben zu beginnen",
+		"member": "Mitglied",
+		"active": "Aktiv",
+		"ongoing": "(laufend)",
+		"edit": "Bearbeiten",
+		"delete": "Löschen"
+	},
+	"expenses": {
+		"title": "Ausgaben",
+		"addExpense": "Ausgabe hinzufügen",
+		"noExpenses": "Noch keine Ausgaben",
+		"noExpensesDescription": "Füge Ausgaben hinzu, um geteilte Kosten zu verfolgen",
+		"paidBy": "Bezahlt von",
+		"splitBetween": "Aufgeteilt zwischen",
+		"allActiveMembers": "Alle aktiven Mitglieder",
+		"each": "je",
+		"includesActiveMembers": "Beinhaltet alle {count} aktiven Mitglieder vom {date}",
+		"automaticallyIncludes": "Diese Ausgabe wird automatisch alle neuen Mitglieder der Gruppe einbeziehen",
+		"recurring": {
+			"weekly": "wöchentlich",
+			"monthly": "monatlich",
+			"yearly": "jährlich"
+		}
+	},
+	"resources": {
+		"title": "Ressourcen",
+		"addResource": "Ressource hinzufügen",
+		"logConsumption": "Verbrauch erfassen",
+		"noResources": "Noch keine Ressourcen",
+		"noResourcesDescription": "Füge Ressourcen hinzu, um geteilten Verbrauch zu verfolgen",
+		"noConsumptions": "Noch kein Verbrauch",
+		"consumptions": "Verbräuche",
+		"splitBetween": "Aufgeteilt zwischen",
+		"members": "Mitglieder",
+		"total": "gesamt"
+	},
+	"forms": {
+		"createGroup": {
+			"title": "Neue Gruppe erstellen",
+			"description": "Erstelle eine neue Ausgaben-Gruppe. Du kannst Mitglieder hinzufügen und Ausgaben verfolgen.",
+			"name": "Gruppenname",
+			"namePlaceholder": "z.B. Wochenendausflug",
+			"descriptionLabel": "Beschreibung (optional)",
+			"descriptionPlaceholder": "z.B. Unsere Wochenendausgaben",
+			"cancel": "Abbrechen",
+			"create": "Gruppe erstellen",
+			"creating": "Erstelle..."
+		},
+		"addMember": {
+			"title": "Mitglied hinzufügen",
+			"description": "Füge ein neues Mitglied zu deiner Ausgaben-Gruppe hinzu.",
+			"name": "Name",
+			"namePlaceholder": "z.B. Max Mustermann",
+			"email": "E-Mail (optional)",
+			"emailPlaceholder": "z.B. max@beispiel.de",
+			"iban": "IBAN (optional)",
+			"ibanPlaceholder": "z.B. DE89 3704 0044 0532 0130 00",
+			"activeFrom": "Aktiv ab",
+			"activeFromPlaceholder": "Startdatum auswählen",
+			"setEndDate": "Enddatum festlegen (optional)",
+			"activeToPlaceholder": "Enddatum auswählen",
+			"cancel": "Abbrechen",
+			"add": "Mitglied hinzufügen",
+			"adding": "Füge hinzu..."
+		},
+		"editMember": {
+			"title": "Mitglied bearbeiten",
+			"description": "Bearbeite die Details dieses Mitglieds.",
+			"name": "Name",
+			"namePlaceholder": "z.B. Max Mustermann",
+			"email": "E-Mail (optional)",
+			"emailPlaceholder": "z.B. max@beispiel.de",
+			"iban": "IBAN (optional)",
+			"ibanPlaceholder": "z.B. DE89 3704 0044 0532 0130 00",
+			"activeFrom": "Aktiv ab",
+			"activeFromPlaceholder": "Startdatum auswählen",
+			"setEndDate": "Enddatum festlegen (optional)",
+			"activeToPlaceholder": "Enddatum auswählen",
+			"cancel": "Abbrechen",
+			"update": "Mitglied aktualisieren",
+			"updating": "Aktualisiere..."
+		},
+		"addExpense": {
+			"title": "Ausgabe hinzufügen",
+			"description": "Füge eine neue Ausgabe zu deiner Gruppe hinzu. Wähle aus, für welche Mitglieder diese Ausgabe gilt.",
+			"titleLabel": "Titel",
+			"titlePlaceholder": "z.B. Abendessen im Restaurant",
+			"descriptionLabel": "Beschreibung (optional)",
+			"descriptionPlaceholder": "z.B. Leckeres Essen und Getränke",
+			"amountLabel": "Betrag",
+			"paidByLabel": "Bezahlt von",
+			"paidByPlaceholder": "Mitglied auswählen",
+			"dateLabel": "Datum",
+			"datePlaceholder": "Ausgabedatum auswählen",
+			"recurring": {
+				"makeRecurring": "Diese Ausgabe wiederkehrend machen",
+				"frequencyLabel": "Häufigkeit",
+				"weekly": "Wöchentlich",
+				"monthly": "Monatlich",
+				"yearly": "Jährlich",
+				"startDate": "Startdatum",
+				"startDatePlaceholder": "Startdatum auswählen",
+				"description": "Diese Ausgabe wird automatisch für jeden {type} Zeitraum ab dem Startdatum generiert."
+			},
+			"splitBetween": "Aufteilen zwischen",
+			"allMembers": "Alle Mitglieder (einschließlich zukünftiger Mitglieder)",
+			"noActiveMembers": "Keine aktiven Mitglieder an diesem Datum",
+			"amountPerPerson": "Betrag pro Person: {amount}€",
+			"includesActiveMembers": "Diese Ausgabe wird alle {count} aktiven Mitglieder vom {date} einbeziehen",
+			"cancel": "Abbrechen",
+			"add": "Ausgabe hinzufügen",
+			"adding": "Füge hinzu...",
+			"selectMembers": "Bitte wähle mindestens ein Mitglied für diese Ausgabe aus",
+			"selectStartDate": "Bitte wähle ein Startdatum für wiederkehrende Ausgaben aus"
+		},
+		"createResource": {
+			"title": "Ressource hinzufügen",
+			"description": "Füge eine neue Ressource hinzu, um geteilten Verbrauch zu verfolgen.",
+			"name": "Ressourcenname",
+			"namePlaceholder": "z.B. Sauna, Toilettenpapier, Auto",
+			"descriptionLabel": "Beschreibung (optional)",
+			"descriptionPlaceholder": "z.B. Gemeinsamer Saunazugang",
+			"hasUnit": "Diese Ressource hat Einheiten (z.B. Stunden, Rollen, km)",
+			"unitLabel": "Einheit",
+			"unitPlaceholder": "z.B. Stunden, Rollen, km",
+			"unitPriceLabel": "Preis pro Einheit",
+			"unitInfo": "Beim Erfassen des Verbrauchs kannst du entweder die Menge in Einheiten oder die Gesamtkosten in Geld angeben.",
+			"cancel": "Abbrechen",
+			"create": "Ressource hinzufügen",
+			"creating": "Füge hinzu..."
+		},
+		"createConsumption": {
+			"title": "Verbrauch erfassen",
+			"description": "Erfasse den Verbrauch einer Ressource durch Gruppenmitglieder.",
+			"resourceLabel": "Ressource",
+			"resourcePlaceholder": "Ressource auswählen",
+			"descriptionLabel": "Beschreibung (optional)",
+			"descriptionPlaceholder": "z.B. Abendliche Saunasession",
+			"dateLabel": "Datum",
+			"datePlaceholder": "Verbrauchsdatum auswählen",
+			"amountLabel": "Menge",
+			"isUnitAmount": "Menge ist in {unit} (nicht in Geld)",
+			"totalCost": "Gesamtkosten",
+			"amountPerPerson": "Betrag pro Person",
+			"consumedByLabel": "Verbraucht von",
+			"noActiveMembers": "Keine aktiven Mitglieder an diesem Datum",
+			"cancel": "Abbrechen",
+			"add": "Verbrauch erfassen",
+			"adding": "Erfasse...",
+			"validation": {
+				"selectResource": "Bitte wähle eine Ressource aus",
+				"selectMembers": "Bitte wähle mindestens ein Mitglied aus",
+				"noUnitPrice": "Diese Ressource hat keinen Einheitspreis festgelegt"
+			}
+		}
+	},
+	"common": {
+		"loading": "Lade...",
+		"error": "Ein Fehler ist aufgetreten",
+		"success": "Erfolgreich",
+		"cancel": "Abbrechen",
+		"save": "Speichern",
+		"edit": "Bearbeiten",
+		"delete": "Löschen",
+		"close": "Schließen",
+		"confirm": "Bestätigen",
+		"yes": "Ja",
+		"no": "Nein"
+	}
+}

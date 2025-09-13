@@ -4,7 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { QueryProvider } from "@/components/query-provider";
 
-const locales = ["en"];
+const locales = ["en", "de"];
 
 export const metadata: Metadata = {
 	title: "Shary - Money Sharing Made Simple",
