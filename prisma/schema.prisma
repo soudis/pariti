@@ -12,3 +12,74 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  members  Member[]
+  expenses Expense[]
+
+  @@map("groups")
+}
+
+model Member {
+  id         String    @id @default(cuid())
+  name       String
+  email      String?
+  iban       String?
+  groupId    String
+  activeFrom DateTime  @default(now())
+  activeTo   DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  // Relations
+  group          Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  paidExpenses   Expense[]       @relation("PaidBy")
+  expenseMembers ExpenseMember[]
+
+  @@map("members")
+}
+
+model Expense {
+  id                 String    @id @default(cuid())
+  title              String
+  description        String?
+  amount             Decimal   @db.Decimal(10, 2)
+  date               DateTime  @default(now())
+  groupId            String
+  paidById           String
+  splitAll           Boolean   @default(false) // If true, split between all members (including future ones)
+  isRecurring        Boolean   @default(false)
+  recurringType      String? // 'weekly', 'monthly', 'yearly'
+  recurringStartDate DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  // Relations
+  group          Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  paidBy         Member          @relation("PaidBy", fields: [paidById], references: [id], onDelete: Cascade)
+  expenseMembers ExpenseMember[]
+
+  @@map("expenses")
+}
+
+model ExpenseMember {
+  id        String   @id @default(cuid())
+  expenseId String
+  memberId  String
+  amount    Decimal  @db.Decimal(10, 2) // How much this member owes for this expense
+  createdAt DateTime @default(now())
+
+  // Relations
+  expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  member  Member  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([expenseId, memberId])
+  @@map("expense_members")
+}

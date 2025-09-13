@@ -1,0 +1,145 @@
+'use client'
+
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { AddMemberDialog } from '@/components/add-member-dialog'
+import { EditMemberDialog } from '@/components/edit-member-dialog'
+import { Plus, User, Trash2, Edit } from 'lucide-react'
+import { Group, Member } from '@prisma/client'
+import { removeMember, updateMember } from '@/lib/actions'
+
+interface MembersSectionProps {
+  group: Group & {
+    members: Member[]
+  }
+}
+
+export function MembersSection({ group }: MembersSectionProps) {
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  const handleDeleteMember = async (memberId: string) => {
+    setDeletingId(memberId)
+    try {
+      await removeMember(memberId)
+    } catch (error) {
+      console.error('Failed to remove member:', error)
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  const handleUpdateMember = async (memberId: string, data: {
+    name: string
+    email?: string
+    iban?: string
+    activeFrom: Date
+    activeTo?: Date
+  }) => {
+    try {
+      await updateMember(memberId, data)
+    } catch (error) {
+      console.error('Failed to update member:', error)
+      throw error // Re-throw to let the dialog handle the error
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <User className="w-5 h-5" />
+            Members
+          </CardTitle>
+          <AddMemberDialog groupId={group.id}>
+            <Button size="sm">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Member
+            </Button>
+          </AddMemberDialog>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {group.members.length === 0 ? (
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <User className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p>No members yet</p>
+            <p className="text-sm">Add members to start sharing expenses</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {group.members.map((member) => (
+              <div
+                key={member.id}
+                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                    <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="font-medium">{member.name}</p>
+                    {member.email && (
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {member.email}
+                      </p>
+                    )}
+                    {member.iban && (
+                      <p className="text-sm text-gray-500 dark:text-gray-400 font-mono">
+                        {member.iban}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        Active: {new Date(member.activeFrom).toLocaleDateString()}
+                      </span>
+                      {member.activeTo && (
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          - {new Date(member.activeTo).toLocaleDateString()}
+                        </span>
+                      )}
+                      {!member.activeTo && (
+                        <span className="text-xs text-green-600 dark:text-green-400">
+                          (ongoing)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    Member
+                  </Badge>
+                  <EditMemberDialog
+                    member={member}
+                    onUpdate={handleUpdateMember}
+                  >
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                  </EditMemberDialog>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteMember(member.id)}
+                    disabled={deletingId === member.id}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
