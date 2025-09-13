@@ -1,7 +1,9 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
-import { useId, useState } from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -11,16 +13,10 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { Form } from "@/components/ui/form";
+import { SelectField, TextField } from "@/components/ui/form-field";
 import { createSettlement } from "@/lib/actions";
+import { type SettlementFormData, settlementSchema } from "@/lib/schemas";
 
 interface Member {
 	id: string;
@@ -47,38 +43,33 @@ export function CreateSettlementDialog({
 }: CreateSettlementDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const [settlementType, setSettlementType] = useState<
-		"optimized" | "around_member" | "around_resource"
-	>("optimized");
-	const [centerId, setCenterId] = useState<string>("");
 	const t = useTranslations("forms.createSettlement");
-	const titleId = useId();
-	const descriptionId = useId();
-	const typeId = useId();
-	const centerIdField = useId();
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
+	const form = useForm({
+		resolver: zodResolver(settlementSchema),
+		defaultValues: {
+			title: "",
+			description: "",
+			settlementType: "optimized",
+			centerId: "",
+		},
+	});
+
+	const onSubmit = async (data: any) => {
 		setLoading(true);
-
-		const formData = new FormData(e.currentTarget);
-		const title = formData.get("title") as string;
-		const description = formData.get("description") as string;
 
 		try {
 			await createSettlement({
 				groupId,
-				title,
-				description: description || undefined,
-				settlementType,
-				centerId: settlementType !== "optimized" ? centerId : undefined,
+				title: data.title,
+				description: data.description || undefined,
+				settlementType: data.settlementType,
+				centerId:
+					data.settlementType !== "optimized" ? data.centerId : undefined,
 			});
 
 			setOpen(false);
-			setSettlementType("optimized");
-			setCenterId("");
-			// Reset form
-			e.currentTarget.reset();
+			form.reset();
 		} catch (error) {
 			console.error("Failed to create settlement:", error);
 		} finally {
@@ -94,113 +85,91 @@ export function CreateSettlementDialog({
 					<DialogTitle>{t("title")}</DialogTitle>
 					<DialogDescription>{t("description")}</DialogDescription>
 				</DialogHeader>
-				<form onSubmit={handleSubmit} className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor={titleId}>{t("titleLabel")}</Label>
-						<Input
-							id={titleId}
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<TextField
+							control={form.control}
 							name="title"
+							label={t("titleLabel")}
 							placeholder={t("titlePlaceholder")}
 							required
 						/>
-					</div>
 
-					<div className="space-y-2">
-						<Label htmlFor={descriptionId}>{t("descriptionLabel")}</Label>
-						<Input
-							id={descriptionId}
+						<TextField
+							control={form.control}
 							name="description"
+							label={t("descriptionLabel")}
 							placeholder={t("descriptionPlaceholder")}
 						/>
-					</div>
 
-					<div className="space-y-2">
-						<Label htmlFor={typeId}>{t("settlementTypeLabel")}</Label>
-						<Select
-							value={settlementType}
-							onValueChange={(
-								value: "optimized" | "around_member" | "around_resource",
-							) => setSettlementType(value)}
-						>
-							<SelectTrigger>
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="optimized">{t("optimized")}</SelectItem>
-								<SelectItem value="around_member">
-									{t("aroundMember")}
-								</SelectItem>
-								<SelectItem value="around_resource">
-									{t("aroundResource")}
-								</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
+						<SelectField
+							control={form.control}
+							name="settlementType"
+							label={t("settlementTypeLabel")}
+							options={[
+								{ value: "optimized", label: t("optimized") },
+								{ value: "around_member", label: t("aroundMember") },
+								{ value: "around_resource", label: t("aroundResource") },
+							]}
+						/>
 
-					{settlementType !== "optimized" && (
-						<div className="space-y-2">
-							<Label htmlFor={centerIdField}>
-								{settlementType === "around_member"
-									? t("centerMemberLabel")
-									: t("centerResourceLabel")}
-							</Label>
-							<Select value={centerId} onValueChange={setCenterId} required>
-								<SelectTrigger>
-									<SelectValue placeholder={t("selectCenter")} />
-								</SelectTrigger>
-								<SelectContent>
-									{settlementType === "around_member"
-										? members.map((member) => (
-												<SelectItem key={member.id} value={member.id}>
-													{member.name}
-												</SelectItem>
-											))
-										: resources.map((resource) => (
-												<SelectItem key={resource.id} value={resource.id}>
-													{resource.name}
-												</SelectItem>
-											))}
-								</SelectContent>
-							</Select>
+						{form.watch("settlementType") !== "optimized" && (
+							<SelectField
+								control={form.control}
+								name="centerId"
+								label={
+									form.watch("settlementType") === "around_member"
+										? t("centerMemberLabel")
+										: t("centerResourceLabel")
+								}
+								placeholder={t("selectCenter")}
+								required
+								options={
+									form.watch("settlementType") === "around_member"
+										? members.map((member) => ({
+												value: member.id,
+												label: member.name,
+											}))
+										: resources.map((resource) => ({
+												value: resource.id,
+												label: resource.name,
+											}))
+								}
+							/>
+						)}
+
+						<div className="space-y-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+							<h4 className="font-medium text-sm">
+								{t("settlementTypeInfo.title")}
+							</h4>
+							<div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+								{form.watch("settlementType") === "optimized" && (
+									<p>{t("settlementTypeInfo.optimized")}</p>
+								)}
+								{form.watch("settlementType") === "around_member" && (
+									<p>{t("settlementTypeInfo.aroundMember")}</p>
+								)}
+								{form.watch("settlementType") === "around_resource" && (
+									<p>{t("settlementTypeInfo.aroundResource")}</p>
+								)}
+							</div>
 						</div>
-					)}
 
-					<div className="space-y-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-						<h4 className="font-medium text-sm">
-							{t("settlementTypeInfo.title")}
-						</h4>
-						<div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-							{settlementType === "optimized" && (
-								<p>{t("settlementTypeInfo.optimized")}</p>
-							)}
-							{settlementType === "around_member" && (
-								<p>{t("settlementTypeInfo.aroundMember")}</p>
-							)}
-							{settlementType === "around_resource" && (
-								<p>{t("settlementTypeInfo.aroundResource")}</p>
-							)}
+						<div className="flex justify-end space-x-2">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setOpen(false)}
+								disabled={loading}
+							>
+								{t("cancel")}
+							</Button>
+							<Button type="submit" disabled={loading}>
+								{loading ? t("generating") : t("generate")}
+							</Button>
 						</div>
-					</div>
-
-					<div className="flex justify-end space-x-2">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => setOpen(false)}
-							disabled={loading}
-						>
-							{t("cancel")}
-						</Button>
-						<Button
-							type="submit"
-							disabled={
-								loading || (settlementType !== "optimized" && !centerId)
-							}
-						>
-							{loading ? t("generating") : t("generate")}
-						</Button>
-					</div>
-				</form>
+					</form>
+				</Form>
 			</DialogContent>
 		</Dialog>
 	);

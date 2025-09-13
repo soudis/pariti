@@ -1,11 +1,11 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { Member } from "@prisma/client";
 import { useTranslations } from "next-intl";
-import { useId, useState } from "react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DatePicker } from "@/components/ui/date-picker";
 import {
 	Dialog,
 	DialogContent,
@@ -14,15 +14,17 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Form } from "@/components/ui/form";
+import {
+	CheckboxField,
+	DateField,
+	TextField,
+} from "@/components/ui/form-field";
+import { type MemberFormData, memberSchema } from "@/lib/schemas";
 
 interface EditMemberDialogProps {
-	member: Member;
-	onUpdate: (
-		memberId: Member["id"],
-		data: Pick<Member, "name" | "email" | "iban" | "activeFrom" | "activeTo">,
-	) => Promise<void>;
+	member: MemberFormData & { id: string };
+	onUpdate: (memberId: Member["id"], data: MemberFormData) => Promise<void>;
 	children: React.ReactNode;
 }
 
@@ -33,29 +35,44 @@ export function EditMemberDialog({
 }: EditMemberDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const [name, setName] = useState(member.name);
-	const [email, setEmail] = useState(member.email || "");
-	const [iban, setIban] = useState(member.iban || "");
-	const [activeFrom, setActiveFrom] = useState<Date>(
-		new Date(member.activeFrom),
-	);
-	const [activeTo, setActiveTo] = useState<Date | undefined>(
-		member.activeTo ? new Date(member.activeTo) : undefined,
-	);
-	const [hasEndDate, setHasEndDate] = useState(!!member.activeTo);
 	const t = useTranslations("forms.editMember");
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
+	const form = useForm({
+		resolver: zodResolver(memberSchema),
+		defaultValues: {
+			name: member.name,
+			email: member.email || "",
+			iban: member.iban || "",
+			activeFrom: member.activeFrom,
+			activeTo: member.activeTo ? new Date(member.activeTo) : undefined,
+			hasEndDate: !!member.activeTo,
+		},
+	});
+
+	// Reset form when dialog opens
+	useEffect(() => {
+		if (open) {
+			form.reset({
+				name: member.name,
+				email: member.email || "",
+				iban: member.iban || "",
+				activeFrom: member.activeFrom,
+				activeTo: member.activeTo ? new Date(member.activeTo) : undefined,
+				hasEndDate: !!member.activeTo,
+			});
+		}
+	}, [open, member, form]);
+
+	const onSubmit = async (data: any) => {
 		setLoading(true);
 
 		try {
 			await onUpdate(member.id, {
-				name,
-				email: email || null,
-				iban: iban || null,
-				activeFrom,
-				activeTo: hasEndDate ? (activeTo ?? null) : null,
+				name: data.name,
+				email: data.email || null,
+				iban: data.iban || null,
+				activeFrom: data.activeFrom || new Date(),
+				activeTo: data.hasEndDate ? (data.activeTo ?? null) : null,
 			});
 
 			setOpen(false);
@@ -66,110 +83,80 @@ export function EditMemberDialog({
 		}
 	};
 
-	const handleOpenChange = (newOpen: boolean) => {
-		if (!newOpen) {
-			// Reset form when closing
-			setName(member.name);
-			setEmail(member.email || "");
-			setIban(member.iban || "");
-			setActiveFrom(new Date(member.activeFrom));
-			setActiveTo(member.activeTo ? new Date(member.activeTo) : undefined);
-			setHasEndDate(!!member.activeTo);
-		}
-		setOpen(newOpen);
-	};
-
 	return (
-		<Dialog open={open} onOpenChange={handleOpenChange}>
+		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>
 					<DialogTitle>{t("title")}</DialogTitle>
 					<DialogDescription>{t("description")}</DialogDescription>
 				</DialogHeader>
-				<form onSubmit={handleSubmit} className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor="name">{t("name")}</Label>
-						<Input
-							id={useId()}
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<TextField
+							control={form.control}
 							name="name"
-							value={name}
-							onChange={(e) => setName(e.target.value)}
+							label={t("name")}
 							placeholder={t("namePlaceholder")}
 							required
 						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="email">{t("email")}</Label>
-						<Input
-							id={useId()}
+
+						<TextField
+							control={form.control}
 							name="email"
+							label={t("email")}
 							type="email"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
 							placeholder={t("emailPlaceholder")}
 						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="iban">{t("iban")}</Label>
-						<Input
-							id={useId()}
+
+						<TextField
+							control={form.control}
 							name="iban"
-							value={iban}
-							onChange={(e) => setIban(e.target.value)}
+							label={t("iban")}
 							placeholder={t("ibanPlaceholder")}
 						/>
-					</div>
 
-					<div className="space-y-4">
-						<div className="space-y-2">
-							<Label htmlFor="activeFrom">{t("activeFrom")}</Label>
-							<DatePicker
-								value={activeFrom}
-								onChange={(date) => setActiveFrom(date || new Date())}
-								placeholder={t("activeFromPlaceholder")}
-							/>
-						</div>
+						<DateField
+							control={form.control}
+							name="activeFrom"
+							label={t("activeFrom")}
+							placeholder={t("activeFromPlaceholder")}
+						/>
 
 						<div className="space-y-2">
 							<div className="flex items-center space-x-2">
-								<Checkbox
-									id={useId()}
+								<CheckboxField
+									control={form.control}
 									name="hasEndDate"
-									checked={hasEndDate}
-									onCheckedChange={(checked) =>
-										setHasEndDate(checked as boolean)
-									}
+									text={t("setEndDate")}
 								/>
-								<Label htmlFor="hasEndDate" className="text-sm">
-									{t("setEndDate")}
-								</Label>
 							</div>
 
-							{hasEndDate && (
-								<DatePicker
-									value={activeTo}
-									onChange={(date) => setActiveTo(date)}
+							{(form.watch("hasEndDate") as Date) && (
+								<DateField
+									control={form.control}
+									name="activeTo"
+									label={t("activeTo")}
 									placeholder={t("activeToPlaceholder")}
 								/>
 							)}
 						</div>
-					</div>
 
-					<div className="flex justify-end space-x-2">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => setOpen(false)}
-							disabled={loading}
-						>
-							{t("cancel")}
-						</Button>
-						<Button type="submit" disabled={loading}>
-							{loading ? t("updating") : t("update")}
-						</Button>
-					</div>
-				</form>
+						<div className="flex justify-end space-x-2">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setOpen(false)}
+								disabled={loading}
+							>
+								{t("cancel")}
+							</Button>
+							<Button type="submit" disabled={loading}>
+								{loading ? t("updating") : t("update")}
+							</Button>
+						</div>
+					</form>
+				</Form>
 			</DialogContent>
 		</Dialog>
 	);

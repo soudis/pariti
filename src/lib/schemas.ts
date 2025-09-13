@@ -77,13 +77,28 @@ export const consumptionSchema = z.object({
 
 export const memberSchema = z.object({
 	name: z.string().min(1, "Name is required"),
-	iban: z.string().optional(),
-	activeFrom: z.coerce.date().optional(),
-	activeTo: z.coerce.date().optional(),
-	hasEndDate: z.coerce.boolean().optional(),
+	email: z.email().nullish().or(z.literal("")),
+	iban: z.string().nullish(),
+	activeFrom: z.coerce.date(),
+	activeTo: z.coerce.date().nullish(),
+	hasEndDate: z.coerce.boolean().nullish(),
+});
+
+export const groupSchema = z.object({
+	name: z.string().min(1, "Name is required"),
+	description: z.string().nullish(),
+});
+
+export const settlementSchema = z.object({
+	title: z.string().min(1, "Title is required"),
+	description: z.string().nullish(),
+	settlementType: z.enum(["optimized", "around_member", "around_resource"]),
+	centerId: z.string().optional(),
 });
 
 export type ExpenseFormData = z.infer<typeof expenseSchema>;
 export type ResourceFormData = z.infer<typeof resourceSchema>;
 export type ConsumptionFormData = z.infer<typeof consumptionSchema>;
 export type MemberFormData = z.infer<typeof memberSchema>;
+export type GroupFormData = z.infer<typeof groupSchema>;
+export type SettlementFormData = z.infer<typeof settlementSchema>;

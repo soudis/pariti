@@ -1,8 +1,10 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useId, useState } from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -12,9 +14,10 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Form } from "@/components/ui/form";
+import { TextField } from "@/components/ui/form-field";
 import { createGroup } from "@/lib/actions";
+import { type GroupFormData, groupSchema } from "@/lib/schemas";
 
 interface CreateGroupDialogProps {
 	children: React.ReactNode;
@@ -27,21 +30,25 @@ export function CreateGroupDialog({ children }: CreateGroupDialogProps) {
 	const locale = useLocale();
 	const t = useTranslations("forms.createGroup");
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		setLoading(true);
+	const form = useForm({
+		resolver: zodResolver(groupSchema),
+		defaultValues: {
+			name: "",
+			description: "",
+		},
+	});
 
-		const formData = new FormData(e.currentTarget);
-		const name = formData.get("name") as string;
-		const description = formData.get("description") as string;
+	const onSubmit = async (data: any) => {
+		setLoading(true);
 
 		try {
 			const group = await createGroup({
-				name,
-				description: description || undefined,
+				name: data.name,
+				description: data.description || undefined,
 			});
 
 			setOpen(false);
+			form.reset();
 			router.push(`/${locale}/group/${group.id}`);
 		} catch (error) {
 			console.error("Failed to create group:", error);
@@ -58,38 +65,38 @@ export function CreateGroupDialog({ children }: CreateGroupDialogProps) {
 					<DialogTitle>{t("title")}</DialogTitle>
 					<DialogDescription>{t("description")}</DialogDescription>
 				</DialogHeader>
-				<form onSubmit={handleSubmit} className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor="name">{t("name")}</Label>
-						<Input
-							id={useId()}
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<TextField
+							control={form.control}
 							name="name"
+							label={t("name")}
 							placeholder={t("namePlaceholder")}
 							required
 						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="description">{t("descriptionLabel")}</Label>
-						<Input
-							id={useId()}
+
+						<TextField
+							control={form.control}
 							name="description"
+							label={t("descriptionLabel")}
 							placeholder={t("descriptionPlaceholder")}
 						/>
-					</div>
-					<div className="flex justify-end space-x-2">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => setOpen(false)}
-							disabled={loading}
-						>
-							{t("cancel")}
-						</Button>
-						<Button type="submit" disabled={loading}>
-							{loading ? t("creating") : t("create")}
-						</Button>
-					</div>
-				</form>
+
+						<div className="flex justify-end space-x-2">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setOpen(false)}
+								disabled={loading}
+							>
+								{t("cancel")}
+							</Button>
+							<Button type="submit" disabled={loading}>
+								{loading ? t("creating") : t("create")}
+							</Button>
+						</div>
+					</form>
+				</Form>
 			</DialogContent>
 		</Dialog>
 	);

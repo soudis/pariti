@@ -43,7 +43,7 @@ export function AddMemberDialog({ groupId, children }: AddMemberDialogProps) {
 		},
 	});
 
-	const onSubmit = async (data: any) => {
+	const onSubmit = async (data: MemberFormData) => {
 		setLoading(true);
 
 		try {

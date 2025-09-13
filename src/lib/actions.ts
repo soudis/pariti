@@ -4,6 +4,7 @@ import type {
 	Consumption,
 	Expense,
 	Member,
+	Prisma,
 	Resource,
 	Settlement,
 	SettlementMember,
@@ -137,7 +138,7 @@ export async function addMember(data: {
 
 export async function updateMember(
 	id: Member["id"],
-	data: Pick<Member, "name" | "email" | "iban" | "activeFrom" | "activeTo">,
+	data: Prisma.MemberUpdateInput,
 ) {
 	const member = await db.member.findUnique({
 		where: { id },
