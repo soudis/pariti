@@ -21,8 +21,9 @@ model Group {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  members  Member[]
-  expenses Expense[]
+  members      Member[]
+  expenses     Expense[]
+  resources    Resource[]
 
   @@map("groups")
 }
@@ -39,9 +40,10 @@ model Member {
   updatedAt  DateTime  @updatedAt
 
   // Relations
-  group          Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  paidExpenses   Expense[]       @relation("PaidBy")
-  expenseMembers ExpenseMember[]
+  group              Group                @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  paidExpenses       Expense[]            @relation("PaidBy")
+  expenseMembers     ExpenseMember[]
+  consumptionMembers ConsumptionMember[]
 
   @@map("members")
 }
@@ -82,4 +84,53 @@ model ExpenseMember {
 
   @@unique([expenseId, memberId])
   @@map("expense_members")
+}
+
+model Resource {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  unit        String?  // e.g., "hours", "rolls", "km"
+  unitPrice   Decimal? @db.Decimal(10, 2) // price per unit
+  groupId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  group       Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  consumptions Consumption[]
+
+  @@map("resources")
+}
+
+model Consumption {
+  id           String   @id @default(cuid())
+  resourceId   String
+  amount       Decimal  @db.Decimal(10, 2) // either money amount or unit amount
+  isUnitAmount Boolean  @default(false) // true if amount is in units, false if in money
+  date         DateTime @default(now())
+  description  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  resource     Resource           @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  consumptionMembers ConsumptionMember[]
+
+  @@map("consumptions")
+}
+
+model ConsumptionMember {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  consumptionId String
+  memberId      String
+  amount        Decimal  @db.Decimal(10, 2) // amount this member owes
+
+  // Relations
+  consumption   Consumption @relation(fields: [consumptionId], references: [id], onDelete: Cascade)
+  member        Member      @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([consumptionId, memberId])
+  @@map("consumption_members")
 }

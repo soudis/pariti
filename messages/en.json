@@ -1,167 +1,219 @@
 {
-  "app": {
-    "title": "Shary - Money Sharing Made Simple",
-    "description": "A modern money sharing app for groups and friends"
-  },
-  "home": {
-    "title": "Shary",
-    "subtitle": "Money sharing made simple. Split expenses with friends and family.",
-    "createGroup": {
-      "title": "Create New Group",
-      "description": "Start a new expense sharing group with friends or family",
-      "button": "Create Group"
-    },
-    "joinGroup": {
-      "title": "Join Existing Group",
-      "description": "Enter a group link to join an existing expense sharing group",
-      "button": "Join Group"
-    },
-    "howItWorks": {
-      "title": "How it works",
-      "step1": {
-        "title": "Create or Join",
-        "description": "Create a new group or join an existing one using a shared link"
-      },
-      "step2": {
-        "title": "Add Members",
-        "description": "Add friends and family members to your expense sharing group"
-      },
-      "step3": {
-        "title": "Track Expenses",
-        "description": "Add expenses and see who owes what automatically calculated"
-      }
-    }
-  },
-  "group": {
-    "shareGroup": "Share Group",
-    "copied": "Copied!",
-    "members": "Members",
-    "totalExpenses": "Total Expenses",
-    "expenses": "Expenses",
-    "notFound": {
-      "title": "Group Not Found",
-      "description": "The group you're looking for doesn't exist or has been removed.",
-      "goHome": "Go Home",
-      "createNew": "Create New Group"
-    }
-  },
-  "members": {
-    "title": "Members",
-    "addMember": "Add Member",
-    "noMembers": "No members yet",
-    "noMembersDescription": "Add members to start sharing expenses",
-    "member": "Member",
-    "active": "Active",
-    "ongoing": "(ongoing)",
-    "edit": "Edit",
-    "delete": "Delete"
-  },
-  "expenses": {
-    "title": "Expenses",
-    "addExpense": "Add Expense",
-    "noExpenses": "No expenses yet",
-    "noExpensesDescription": "Add expenses to start tracking shared costs",
-    "paidBy": "Paid by",
-    "splitBetween": "Split between",
-    "allActiveMembers": "All Active Members",
-    "each": "each",
-    "includesActiveMembers": "Includes all {count} active members on {date}",
-    "automaticallyIncludes": "This expense will automatically include any new members added to the group",
-    "recurring": {
-      "weekly": "weekly",
-      "monthly": "monthly",
-      "yearly": "yearly"
-    }
-  },
-  "forms": {
-    "createGroup": {
-      "title": "Create New Group",
-      "description": "Create a new expense sharing group. You can add members and start tracking expenses.",
-      "name": "Group Name",
-      "namePlaceholder": "e.g., Weekend Trip",
-      "descriptionLabel": "Description (optional)",
-      "descriptionPlaceholder": "e.g., Our weekend getaway expenses",
-      "cancel": "Cancel",
-      "create": "Create Group",
-      "creating": "Creating..."
-    },
-    "addMember": {
-      "title": "Add Member",
-      "description": "Add a new member to your expense sharing group.",
-      "name": "Name",
-      "namePlaceholder": "e.g., John Doe",
-      "email": "Email (optional)",
-      "emailPlaceholder": "e.g., john@example.com",
-      "iban": "IBAN (optional)",
-      "ibanPlaceholder": "e.g., DE89 3704 0044 0532 0130 00",
-      "activeFrom": "Active from",
-      "activeFromPlaceholder": "Select start date",
-      "setEndDate": "Set end date (optional)",
-      "activeToPlaceholder": "Select end date",
-      "cancel": "Cancel",
-      "add": "Add Member",
-      "adding": "Adding..."
-    },
-    "editMember": {
-      "title": "Edit Member",
-      "description": "Update member information and active period.",
-      "name": "Name",
-      "namePlaceholder": "e.g., John Doe",
-      "email": "Email (optional)",
-      "emailPlaceholder": "e.g., john@example.com",
-      "iban": "IBAN (optional)",
-      "ibanPlaceholder": "e.g., DE89 3704 0044 0532 0130 00",
-      "activeFrom": "Active from",
-      "activeFromPlaceholder": "Select start date",
-      "setEndDate": "Set end date (optional)",
-      "activeToPlaceholder": "Select end date",
-      "cancel": "Cancel",
-      "update": "Update Member",
-      "updating": "Updating..."
-    },
-    "addExpense": {
-      "title": "Add Expense",
-      "description": "Add a new expense to your group. Select which members this expense applies to.",
-      "titleField": "Title",
-      "titlePlaceholder": "e.g., Dinner at restaurant",
-      "description": "Description (optional)",
-      "descriptionPlaceholder": "e.g., Great food and drinks",
-      "amount": "Amount",
-      "amountPlaceholder": "0.00",
-      "paidBy": "Paid by",
-      "paidByPlaceholder": "Select member",
-      "date": "Date",
-      "datePlaceholder": "Select expense date",
-      "recurring": {
-        "title": "Make this a recurring expense",
-        "frequency": "Frequency",
-        "startDate": "Start Date",
-        "startDatePlaceholder": "Select start date",
-        "description": "This expense will be automatically generated for each {type} period from the start date."
-      },
-      "splitBetween": "Split between",
-      "allMembers": "All Members (including future members)",
-      "noActiveMembers": "No active members on this date",
-      "amountPerPerson": "Amount per person: ${amount}",
-      "includesActiveMembers": "This expense will include all {count} active members on {date}",
-      "cancel": "Cancel",
-      "add": "Add Expense",
-      "adding": "Adding...",
-      "selectMembers": "Please select at least one member for this expense",
-      "selectStartDate": "Please select a start date for recurring expenses"
-    }
-  },
-  "common": {
-    "loading": "Loading...",
-    "error": "An error occurred",
-    "success": "Success",
-    "cancel": "Cancel",
-    "save": "Save",
-    "edit": "Edit",
-    "delete": "Delete",
-    "close": "Close",
-    "confirm": "Confirm",
-    "yes": "Yes",
-    "no": "No"
-  }
+	"app": {
+		"title": "Shary - Money Sharing Made Simple",
+		"description": "A modern money sharing app for groups and friends"
+	},
+	"home": {
+		"title": "Shary",
+		"subtitle": "Money sharing made simple. Split expenses with friends and family.",
+		"createGroup": {
+			"title": "Create New Group",
+			"description": "Start a new expense sharing group with friends or family",
+			"button": "Create Group"
+		},
+		"joinGroup": {
+			"title": "Join Existing Group",
+			"description": "Enter a group link to join an existing expense sharing group",
+			"button": "Join Group"
+		},
+		"howItWorks": {
+			"title": "How it works",
+			"step1": {
+				"title": "Create or Join",
+				"description": "Create a new group or join an existing one using a shared link"
+			},
+			"step2": {
+				"title": "Add Members",
+				"description": "Add friends and family members to your expense sharing group"
+			},
+			"step3": {
+				"title": "Track Expenses",
+				"description": "Add expenses and see who owes what automatically calculated"
+			}
+		}
+	},
+	"group": {
+		"shareGroup": "Share Group",
+		"copied": "Copied!",
+		"members": "Members",
+		"totalExpenses": "Total Expenses",
+		"expenses": "Expenses",
+		"notFound": {
+			"title": "Group Not Found",
+			"description": "The group you're looking for doesn't exist or has been removed.",
+			"goHome": "Go Home",
+			"createNew": "Create New Group"
+		}
+	},
+	"members": {
+		"title": "Members",
+		"addMember": "Add Member",
+		"noMembers": "No members yet",
+		"noMembersDescription": "Add members to start sharing expenses",
+		"member": "Member",
+		"active": "Active",
+		"ongoing": "(ongoing)",
+		"edit": "Edit",
+		"delete": "Delete"
+	},
+	"expenses": {
+		"title": "Expenses",
+		"addExpense": "Add Expense",
+		"noExpenses": "No expenses yet",
+		"noExpensesDescription": "Add expenses to start tracking shared costs",
+		"paidBy": "Paid by",
+		"splitBetween": "Split between",
+		"allActiveMembers": "All Active Members",
+		"each": "each",
+		"includesActiveMembers": "Includes all {count} active members on {date}",
+		"automaticallyIncludes": "This expense will automatically include any new members added to the group",
+		"recurring": {
+			"weekly": "weekly",
+			"monthly": "monthly",
+			"yearly": "yearly"
+		}
+	},
+	"resources": {
+		"title": "Resources",
+		"addResource": "Add Resource",
+		"logConsumption": "Log Consumption",
+		"noResources": "No resources yet",
+		"noResourcesDescription": "Add resources to track shared consumption",
+		"noConsumptions": "No consumptions yet",
+		"consumptions": "Consumptions",
+		"splitBetween": "Split between",
+		"members": "members",
+		"total": "total"
+	},
+	"forms": {
+		"createGroup": {
+			"title": "Create New Group",
+			"description": "Create a new expense sharing group. You can add members and start tracking expenses.",
+			"name": "Group Name",
+			"namePlaceholder": "e.g., Weekend Trip",
+			"descriptionLabel": "Description (optional)",
+			"descriptionPlaceholder": "e.g., Our weekend getaway expenses",
+			"cancel": "Cancel",
+			"create": "Create Group",
+			"creating": "Creating..."
+		},
+		"addMember": {
+			"title": "Add Member",
+			"description": "Add a new member to your expense sharing group.",
+			"name": "Name",
+			"namePlaceholder": "e.g., John Doe",
+			"email": "Email (optional)",
+			"emailPlaceholder": "e.g., john@example.com",
+			"iban": "IBAN (optional)",
+			"ibanPlaceholder": "e.g., DE89 3704 0044 0532 0130 00",
+			"activeFrom": "Active from",
+			"activeFromPlaceholder": "Select start date",
+			"setEndDate": "Set end date (optional)",
+			"activeToPlaceholder": "Select end date",
+			"cancel": "Cancel",
+			"add": "Add Member",
+			"adding": "Adding..."
+		},
+		"editMember": {
+			"title": "Edit Member",
+			"description": "Update member information and active period.",
+			"name": "Name",
+			"namePlaceholder": "e.g., John Doe",
+			"email": "Email (optional)",
+			"emailPlaceholder": "e.g., john@example.com",
+			"iban": "IBAN (optional)",
+			"ibanPlaceholder": "e.g., DE89 3704 0044 0532 0130 00",
+			"activeFrom": "Active from",
+			"activeFromPlaceholder": "Select start date",
+			"setEndDate": "Set end date (optional)",
+			"activeToPlaceholder": "Select end date",
+			"cancel": "Cancel",
+			"update": "Update Member",
+			"updating": "Updating..."
+		},
+		"addExpense": {
+			"title": "Add Expense",
+			"description": "Add a new expense to your group. Select which members this expense applies to.",
+			"titleField": "Title",
+			"titlePlaceholder": "e.g., Dinner at restaurant",
+			"description": "Description (optional)",
+			"descriptionPlaceholder": "e.g., Great food and drinks",
+			"amount": "Amount",
+			"amountPlaceholder": "0.00",
+			"paidBy": "Paid by",
+			"paidByPlaceholder": "Select member",
+			"date": "Date",
+			"datePlaceholder": "Select expense date",
+			"recurring": {
+				"title": "Make this a recurring expense",
+				"frequency": "Frequency",
+				"startDate": "Start Date",
+				"startDatePlaceholder": "Select start date",
+				"description": "This expense will be automatically generated for each {type} period from the start date."
+			},
+			"splitBetween": "Split between",
+			"allMembers": "All Members (including future members)",
+			"noActiveMembers": "No active members on this date",
+			"amountPerPerson": "Amount per person: ${amount}",
+			"includesActiveMembers": "This expense will include all {count} active members on {date}",
+			"cancel": "Cancel",
+			"add": "Add Expense",
+			"adding": "Adding...",
+			"selectMembers": "Please select at least one member for this expense",
+			"selectStartDate": "Please select a start date for recurring expenses"
+		},
+		"createResource": {
+			"title": "Add Resource",
+			"description": "Add a new resource to track shared consumption.",
+			"name": "Resource Name",
+			"namePlaceholder": "e.g., Sauna, Toilet Paper, Car",
+			"descriptionLabel": "Description (optional)",
+			"descriptionPlaceholder": "e.g., Shared sauna access",
+			"hasUnit": "This resource has units (e.g., hours, rolls, km)",
+			"unitLabel": "Unit",
+			"unitPlaceholder": "e.g., hours, rolls, km",
+			"unitPriceLabel": "Price per Unit",
+			"unitInfo": "When logging consumption, you can specify either the amount in units or the total cost in money.",
+			"cancel": "Cancel",
+			"create": "Add Resource",
+			"creating": "Adding..."
+		},
+		"createConsumption": {
+			"title": "Log Consumption",
+			"description": "Log consumption of a resource by group members.",
+			"resourceLabel": "Resource",
+			"resourcePlaceholder": "Select resource",
+			"descriptionLabel": "Description (optional)",
+			"descriptionPlaceholder": "e.g., Evening sauna session",
+			"dateLabel": "Date",
+			"datePlaceholder": "Select consumption date",
+			"amountLabel": "Amount",
+			"isUnitAmount": "Amount is in {unit} (not money)",
+			"totalCost": "Total Cost",
+			"amountPerPerson": "Amount per person",
+			"consumedByLabel": "Consumed by",
+			"noActiveMembers": "No active members on this date",
+			"cancel": "Cancel",
+			"add": "Log Consumption",
+			"adding": "Adding...",
+			"validation": {
+				"selectResource": "Please select a resource",
+				"selectMembers": "Please select at least one member",
+				"noUnitPrice": "This resource has no unit price set"
+			}
+		}
+	},
+	"common": {
+		"loading": "Loading...",
+		"error": "An error occurred",
+		"success": "Success",
+		"cancel": "Cancel",
+		"save": "Save",
+		"edit": "Edit",
+		"delete": "Delete",
+		"close": "Close",
+		"confirm": "Confirm",
+		"yes": "Yes",
+		"no": "No"
+	}
 }

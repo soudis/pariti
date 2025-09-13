@@ -1,7 +1,7 @@
 "use server";
 
+import type { Member } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
 import { db } from "@/lib/db";
 
 // Group actions
@@ -35,6 +35,21 @@ export async function getGroup(id: string) {
 				},
 				orderBy: { date: "desc" },
 			},
+			resources: {
+				include: {
+					consumptions: {
+						include: {
+							consumptionMembers: {
+								include: {
+									member: true,
+								},
+							},
+						},
+						orderBy: { date: "desc" },
+					},
+				},
+				orderBy: { createdAt: "desc" },
+			},
 		},
 	});
 
@@ -49,6 +64,18 @@ export async function getGroup(id: string) {
 			expenseMembers: expense.expenseMembers.map((em) => ({
 				...em,
 				amount: Number(em.amount),
+			})),
+		})),
+		resources: group.resources.map((resource) => ({
+			...resource,
+			unitPrice: resource.unitPrice ? Number(resource.unitPrice) : null,
+			consumptions: resource.consumptions.map((consumption) => ({
+				...consumption,
+				amount: Number(consumption.amount),
+				consumptionMembers: consumption.consumptionMembers.map((cm) => ({
+					...cm,
+					amount: Number(cm.amount),
+				})),
 			})),
 		})),
 	};
@@ -243,10 +270,10 @@ export async function generateRecurringExpenseInstances(
 		recurringType?: string | null;
 		recurringStartDate?: Date | null;
 		date: Date;
-		paidBy: any;
+		paidBy: Member;
 		expenseMembers: Array<{
 			amount: number;
-			member: any;
+			member: Member;
 		}>;
 	},
 	currentDate: Date = new Date(),
@@ -332,4 +359,168 @@ export async function getActiveMembersForDate(groupId: string, date: Date) {
 			OR: [{ activeTo: null }, { activeTo: { gte: date } }],
 		},
 	});
+}
+
+// Resource actions
+export async function createResource(data: {
+	name: string;
+	description?: string;
+	unit?: string;
+	unitPrice?: number;
+	groupId: string;
+}) {
+	const resource = await db.resource.create({
+		data: {
+			name: data.name,
+			description: data.description,
+			unit: data.unit,
+			unitPrice: data.unitPrice,
+			groupId: data.groupId,
+		},
+	});
+
+	revalidatePath(`/group/${data.groupId}`);
+
+	// Convert Decimal values to numbers
+	return {
+		...resource,
+		unitPrice: resource.unitPrice ? Number(resource.unitPrice) : null,
+	};
+}
+
+export async function updateResource(
+	id: string,
+	data: {
+		name: string;
+		description?: string;
+		unit?: string;
+		unitPrice?: number;
+	},
+) {
+	const resource = await db.resource.findUnique({
+		where: { id },
+		include: { group: true },
+	});
+
+	if (!resource) return null;
+
+	const updatedResource = await db.resource.update({
+		where: { id },
+		data: {
+			name: data.name,
+			description: data.description,
+			unit: data.unit,
+			unitPrice: data.unitPrice,
+		},
+	});
+
+	revalidatePath(`/group/${resource.groupId}`);
+
+	// Convert Decimal values to numbers
+	return {
+		...updatedResource,
+		unitPrice: updatedResource.unitPrice
+			? Number(updatedResource.unitPrice)
+			: null,
+	};
+}
+
+export async function removeResource(id: string) {
+	const resource = await db.resource.findUnique({
+		where: { id },
+		include: { group: true },
+	});
+
+	if (!resource) return null;
+
+	await db.resource.delete({
+		where: { id },
+	});
+
+	revalidatePath(`/group/${resource.groupId}`);
+	return { success: true };
+}
+
+// Consumption actions
+export async function createConsumption(data: {
+	resourceId: string;
+	amount: number;
+	isUnitAmount: boolean;
+	memberIds: string[];
+	description?: string;
+	date?: Date;
+}) {
+	// Get the resource to calculate amounts
+	const resource = await db.resource.findUnique({
+		where: { id: data.resourceId },
+		include: { group: true },
+	});
+
+	if (!resource) throw new Error("Resource not found");
+
+	// Calculate the total cost
+	let totalCost: number;
+	if (data.isUnitAmount) {
+		// Amount is in units, calculate cost using unit price
+		if (!resource.unitPrice) throw new Error("Resource has no unit price");
+		totalCost = data.amount * Number(resource.unitPrice);
+	} else {
+		// Amount is already in money
+		totalCost = data.amount;
+	}
+
+	// Calculate amount per member
+	const amountPerMember = totalCost / data.memberIds.length;
+
+	const consumption = await db.consumption.create({
+		data: {
+			resourceId: data.resourceId,
+			amount: data.amount,
+			isUnitAmount: data.isUnitAmount,
+			date: data.date || new Date(),
+			description: data.description,
+			consumptionMembers: {
+				create: data.memberIds.map((memberId) => ({
+					memberId,
+					amount: amountPerMember,
+				})),
+			},
+		},
+		include: {
+			resource: true,
+			consumptionMembers: {
+				include: {
+					member: true,
+				},
+			},
+		},
+	});
+
+	revalidatePath(`/group/${resource.groupId}`);
+
+	// Convert Decimal values to numbers
+	return {
+		...consumption,
+		amount: Number(consumption.amount),
+		consumptionMembers: consumption.consumptionMembers.map((cm) => ({
+			...cm,
+			amount: Number(cm.amount),
+		})),
+	};
+}
+
+export async function removeConsumption(id: string) {
+	const consumption = await db.consumption.findUnique({
+		where: { id },
+		include: { resource: { include: { group: true } } },
+	});
+
+	if (!consumption) return null;
+
+	await db.consumption.delete({
+		where: { id },
+	});
+
+	revalidatePath(`/group/${consumption.resource.groupId}`);
+	return { success: true };
 }
