@@ -14,6 +14,7 @@ interface GroupTabsProps {
 	expenses: any[];
 	resources: any[];
 	settlements: any[];
+	cutoffDate: Date | null;
 }
 
 export function GroupTabs({
@@ -21,6 +22,7 @@ export function GroupTabs({
 	expenses,
 	resources,
 	settlements,
+	cutoffDate,
 }: GroupTabsProps) {
 	const t = useTranslations("group");
 	const [activeTab, setActiveTab] = useQueryState("tab", {
@@ -54,7 +56,11 @@ export function GroupTabs({
 			</TabsContent>
 
 			<TabsContent value="expenses" className="mt-6">
-				<ExpensesSection group={group} expenses={expenses} />
+				<ExpensesSection
+					group={group}
+					expenses={expenses}
+					cutoffDate={cutoffDate}
+				/>
 			</TabsContent>
 
 			<TabsContent value="resources" className="mt-6">
@@ -62,6 +68,7 @@ export function GroupTabs({
 					groupId={group.id}
 					resources={resources}
 					members={group.members}
+					cutoffDate={cutoffDate}
 				/>
 			</TabsContent>
 

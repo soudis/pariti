@@ -12,7 +12,8 @@ import {
 	User,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useId, useState } from "react";
+import { useQueryState } from "nuqs";
+import { useId, useState } from "react";
 import { AddExpenseDialog } from "@/components/add-expense-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,41 +23,29 @@ import { Switch } from "@/components/ui/switch";
 import {
 	type generateRecurringExpenseInstances,
 	type getGroup,
-	getSettlementCutoffDate,
 	removeExpense,
 } from "@/lib/actions";
 
 interface ExpensesSectionProps {
 	group: Awaited<ReturnType<typeof getGroup>>;
 	expenses?: Awaited<ReturnType<typeof generateRecurringExpenseInstances>>;
+	cutoffDate: Date | null;
 }
 
-export function ExpensesSection({ group, expenses }: ExpensesSectionProps) {
+export function ExpensesSection({
+	group,
+	expenses,
+	cutoffDate,
+}: ExpensesSectionProps) {
 	const [deletingId, setDeletingId] = useState<string | null>(null);
-	const [showHiddenExpenses, setShowHiddenExpenses] = useState(false);
-	const [cutoffDate, setCutoffDate] = useState<Date | null>(null);
-	const [loadingCutoff, setLoadingCutoff] = useState(false);
+	const [showHiddenExpenses, setShowHiddenExpenses] = useQueryState(
+		"showHiddenExpenses",
+		{
+			shallow: false,
+		},
+	);
 	const t = useTranslations("expenses");
 	const showHiddenId = useId();
-
-	// Load cutoff date for filtering
-	useEffect(() => {
-		if (!group) return;
-
-		const loadCutoffDate = async () => {
-			setLoadingCutoff(true);
-			try {
-				const cutoff = await getSettlementCutoffDate(group.id);
-				setCutoffDate(cutoff);
-			} catch (error) {
-				console.error("Failed to load cutoff date:", error);
-			} finally {
-				setLoadingCutoff(false);
-			}
-		};
-
-		loadCutoffDate();
-	}, [group]);
 
 	if (!group) {
 		return null;
@@ -72,7 +61,7 @@ export function ExpensesSection({ group, expenses }: ExpensesSectionProps) {
 
 	// Filter expenses based on cutoff date and toggle
 	const displayExpenses =
-		cutoffDate && !showHiddenExpenses
+		cutoffDate && showHiddenExpenses !== "true"
 			? allExpenses.filter((expense) => new Date(expense.date) >= cutoffDate)
 			: allExpenses;
 
@@ -103,7 +92,7 @@ export function ExpensesSection({ group, expenses }: ExpensesSectionProps) {
 						<DollarSign className="w-5 h-5" />
 						{t("title")}
 					</CardTitle>
-					<div className="flex items-center gap-3">
+					<div className="flex items-center gap-8">
 						{cutoffDate && (
 							<div className="flex items-center gap-2">
 								<Label htmlFor={showHiddenId} className="text-sm">
@@ -115,9 +104,11 @@ export function ExpensesSection({ group, expenses }: ExpensesSectionProps) {
 								</Label>
 								<Switch
 									id={showHiddenId}
-									checked={showHiddenExpenses}
-									onCheckedChange={setShowHiddenExpenses}
-									disabled={loadingCutoff}
+									checked={showHiddenExpenses === "true"}
+									onCheckedChange={(checked) =>
+										setShowHiddenExpenses(checked ? "true" : "false")
+									}
+									disabled={false}
 								/>
 								<span className="text-sm text-gray-600 dark:text-gray-300">
 									{t("showHidden")}

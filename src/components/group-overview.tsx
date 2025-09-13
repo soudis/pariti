@@ -1,7 +1,14 @@
 "use client";
 
 import type { Expense, Group, Member } from "@prisma/client";
-import { DollarSign, Plus, Share2, Users } from "lucide-react";
+import {
+	DollarSign,
+	Package,
+	Plus,
+	Receipt,
+	Share2,
+	Users,
+} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { AddExpenseDialog } from "@/components/add-expense-dialog";
@@ -9,22 +16,43 @@ import { AddMemberDialog } from "@/components/add-member-dialog";
 import { CreateConsumptionDialog } from "@/components/create-consumption-dialog";
 import { CreateResourceDialog } from "@/components/create-resource-dialog";
 import { CreateSettlementDialog } from "@/components/create-settlement-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface GroupOverviewProps {
 	group: Group & { expenses: Expense[]; members: Member[] };
 	resources: any[];
+	consumptions: any[];
+	cutoffDate: Date | null;
 }
 
-export function GroupOverview({ group, resources }: GroupOverviewProps) {
+export function GroupOverview({
+	group,
+	resources,
+	consumptions,
+	cutoffDate,
+}: GroupOverviewProps) {
 	const [copied, setCopied] = useState(false);
 	const t = useTranslations("group");
 	const locale = useLocale();
 
-	const totalExpenses = group.expenses.reduce(
+	// Filter expenses and consumptions based on cutoff date
+	const filteredExpenses = cutoffDate
+		? group.expenses.filter((expense) => new Date(expense.date) >= cutoffDate)
+		: group.expenses;
+
+	const filteredConsumptions = cutoffDate
+		? consumptions.filter(
+				(consumption) => new Date(consumption.date) >= cutoffDate,
+			)
+		: consumptions;
+
+	const totalExpenses = filteredExpenses.reduce(
 		(sum, expense) => sum + Number(expense.amount),
+		0,
+	);
+	const totalConsumptions = filteredConsumptions.reduce(
+		(sum, consumption) => sum + Number(consumption.amount),
 		0,
 	);
 	const shareUrl =
@@ -61,7 +89,7 @@ export function GroupOverview({ group, resources }: GroupOverviewProps) {
 				</div>
 			</CardHeader>
 			<CardContent>
-				<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 mb-6">
+				<div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-6">
 					<div className="text-center">
 						<div className="flex items-center justify-center w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full mx-auto mb-2">
 							<Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -73,21 +101,34 @@ export function GroupOverview({ group, resources }: GroupOverviewProps) {
 					</div>
 					<div className="text-center">
 						<div className="flex items-center justify-center w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full mx-auto mb-2">
-							<DollarSign className="w-4 h-4 text-green-600 dark:text-green-400" />
-						</div>
-						<p className="text-sm text-gray-600 dark:text-gray-300">
-							{t("totalExpenses")}
-						</p>
-						<p className="text-lg font-semibold">${totalExpenses.toFixed(2)}</p>
-					</div>
-					<div className="text-center col-span-2 sm:col-span-1">
-						<div className="flex items-center justify-center w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full mx-auto mb-2">
-							<Badge className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+							<Receipt className="w-4 h-4 text-green-600 dark:text-green-400" />
 						</div>
 						<p className="text-sm text-gray-600 dark:text-gray-300">
 							{t("expenses")}
 						</p>
-						<p className="text-lg font-semibold">{group.expenses.length}</p>
+						<p className="text-lg font-semibold">
+							{filteredExpenses.length} (${totalExpenses.toFixed(2)})
+						</p>
+					</div>
+					<div className="text-center">
+						<div className="flex items-center justify-center w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full mx-auto mb-2">
+							<Package className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+						</div>
+						<p className="text-sm text-gray-600 dark:text-gray-300">
+							{t("resources")}
+						</p>
+						<p className="text-lg font-semibold">{resources.length}</p>
+					</div>
+					<div className="text-center">
+						<div className="flex items-center justify-center w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-full mx-auto mb-2">
+							<DollarSign className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+						</div>
+						<p className="text-sm text-gray-600 dark:text-gray-300">
+							{t("consumptions")}
+						</p>
+						<p className="text-lg font-semibold">
+							{filteredConsumptions.length} (${totalConsumptions.toFixed(2)})
+						</p>
 					</div>
 				</div>
 

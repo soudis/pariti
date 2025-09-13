@@ -11,7 +11,8 @@ import {
 	Users,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useId, useState } from "react";
+import { useQueryState } from "nuqs";
+import { useId, useState } from "react";
 import { CreateConsumptionDialog } from "@/components/create-consumption-dialog";
 import { CreateResourceDialog } from "@/components/create-resource-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +22,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
 	type getGroup,
-	getSettlementCutoffDate,
 	removeConsumption,
 	removeResource,
 } from "@/lib/actions";
@@ -30,12 +30,14 @@ interface ResourcesSectionProps {
 	groupId: string;
 	resources: Awaited<ReturnType<typeof getGroup>>["resources"];
 	members: Awaited<ReturnType<typeof getGroup>>["members"];
+	cutoffDate: Date | null;
 }
 
 export function ResourcesSection({
 	groupId,
 	resources,
 	members,
+	cutoffDate,
 }: ResourcesSectionProps) {
 	const [deletingResourceId, setDeletingResourceId] = useState<string | null>(
 		null,
@@ -43,28 +45,14 @@ export function ResourcesSection({
 	const [deletingConsumptionId, setDeletingConsumptionId] = useState<
 		string | null
 	>(null);
-	const [showHiddenConsumptions, setShowHiddenConsumptions] = useState(false);
-	const [cutoffDate, setCutoffDate] = useState<Date | null>(null);
-	const [loadingCutoff, setLoadingCutoff] = useState(false);
+	const [showHiddenConsumptions, setShowHiddenConsumptions] = useQueryState(
+		"showHiddenConsumptions",
+		{
+			shallow: false,
+		},
+	);
 	const t = useTranslations("resources");
 	const showHiddenId = useId();
-
-	// Load cutoff date for filtering
-	useEffect(() => {
-		const loadCutoffDate = async () => {
-			setLoadingCutoff(true);
-			try {
-				const cutoff = await getSettlementCutoffDate(groupId);
-				setCutoffDate(cutoff);
-			} catch (error) {
-				console.error("Failed to load cutoff date:", error);
-			} finally {
-				setLoadingCutoff(false);
-			}
-		};
-
-		loadCutoffDate();
-	}, [groupId]);
 
 	// Helper function to filter consumptions based on cutoff date
 	const filterConsumptions = (
@@ -72,7 +60,7 @@ export function ResourcesSection({
 			ReturnType<typeof getGroup>
 		>["resources"][number]["consumptions"],
 	) => {
-		if (!cutoffDate || showHiddenConsumptions) {
+		if (!cutoffDate || showHiddenConsumptions === "true") {
 			return consumptions;
 		}
 		return consumptions.filter(
@@ -112,7 +100,7 @@ export function ResourcesSection({
 						<Package className="w-5 h-5" />
 						{t("title")}
 					</CardTitle>
-					<div className="flex items-center gap-3">
+					<div className="flex items-center gap-8">
 						{cutoffDate && (
 							<div className="flex items-center gap-2">
 								<Label htmlFor={showHiddenId} className="text-sm">
@@ -124,9 +112,11 @@ export function ResourcesSection({
 								</Label>
 								<Switch
 									id={showHiddenId}
-									checked={showHiddenConsumptions}
-									onCheckedChange={setShowHiddenConsumptions}
-									disabled={loadingCutoff}
+									checked={showHiddenConsumptions === "true"}
+									onCheckedChange={(checked) =>
+										setShowHiddenConsumptions(checked ? "true" : "false")
+									}
+									disabled={false}
 								/>
 								<span className="text-sm text-gray-600 dark:text-gray-300">
 									{t("showHidden")}
@@ -139,13 +129,13 @@ export function ResourcesSection({
 								resources={resources}
 								members={members}
 							>
-								<Button size="sm" variant="outline">
+								<Button size="sm">
 									<Plus className="w-4 h-4 mr-2" />
 									{t("logConsumption")}
 								</Button>
 							</CreateConsumptionDialog>
 							<CreateResourceDialog groupId={groupId}>
-								<Button size="sm">
+								<Button size="sm" variant="outline">
 									<Plus className="w-4 h-4 mr-2" />
 									{t("addResource")}
 								</Button>

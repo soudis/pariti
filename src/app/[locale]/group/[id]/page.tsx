@@ -1,7 +1,11 @@
 import { notFound } from "next/navigation";
 import { GroupOverview } from "@/components/group-overview";
 import { GroupTabs } from "@/components/group-tabs";
-import { generateRecurringExpenseInstances, getGroup } from "@/lib/actions";
+import {
+	generateRecurringExpenseInstances,
+	getGroup,
+	getSettlementCutoffDate,
+} from "@/lib/actions";
 
 interface GroupPageProps {
 	params: {
@@ -30,17 +34,31 @@ export default async function GroupPage({ params }: GroupPageProps) {
 		(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
 	);
 
+	// Collect all consumptions from resources
+	const allConsumptions = group.resources.flatMap(
+		(resource) => resource.consumptions,
+	);
+
+	// Get the settlement cutoff date for filtering
+	const cutoffDate = await getSettlementCutoffDate(group.id);
+
 	return (
 		<div className="min-h-screen bg-gray-50 dark:bg-gray-900">
 			<div className="container mx-auto px-4 py-8">
 				<div className="max-w-6xl mx-auto space-y-8">
-					<GroupOverview group={group} resources={group.resources} />
+					<GroupOverview
+						group={group}
+						resources={group.resources}
+						consumptions={allConsumptions}
+						cutoffDate={cutoffDate}
+					/>
 
 					<GroupTabs
 						group={group}
 						expenses={allExpenses}
 						resources={group.resources}
 						settlements={group.settlements}
+						cutoffDate={cutoffDate}
 					/>
 				</div>
 			</div>
