@@ -20,14 +20,8 @@ import { Label } from "@/components/ui/label";
 interface EditMemberDialogProps {
 	member: Member;
 	onUpdate: (
-		memberId: string,
-		data: {
-			name: string;
-			email?: string;
-			iban?: string;
-			activeFrom: Date;
-			activeTo?: Date;
-		},
+		memberId: Member["id"],
+		data: Pick<Member, "name" | "email" | "iban" | "activeFrom" | "activeTo">,
 	) => Promise<void>;
 	children: React.ReactNode;
 }
@@ -58,10 +52,10 @@ export function EditMemberDialog({
 		try {
 			await onUpdate(member.id, {
 				name,
-				email: email || undefined,
-				iban: iban || undefined,
+				email: email || null,
+				iban: iban || null,
 				activeFrom,
-				activeTo: hasEndDate ? activeTo : undefined,
+				activeTo: hasEndDate ? (activeTo ?? null) : null,
 			});
 
 			setOpen(false);

@@ -38,14 +38,8 @@ export function MembersSection({ group }: MembersSectionProps) {
 	};
 
 	const handleUpdateMember = async (
-		memberId: string,
-		data: {
-			name: string;
-			email?: string;
-			iban?: string;
-			activeFrom: Date;
-			activeTo?: Date;
-		},
+		memberId: Member["id"],
+		data: Pick<Member, "name" | "email" | "iban" | "activeFrom" | "activeTo">,
 	) => {
 		try {
 			await updateMember(memberId, data);

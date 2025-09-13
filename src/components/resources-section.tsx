@@ -8,41 +8,16 @@ import { CreateResourceDialog } from "@/components/create-resource-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { removeConsumption, removeResource } from "@/lib/actions";
-
-interface Resource {
-	id: string;
-	name: string;
-	description?: string | null;
-	unit?: string | null;
-	unitPrice?: number | null;
-	createdAt: Date;
-	updatedAt: Date;
-	consumptions: Array<{
-		id: string;
-		amount: number;
-		isUnitAmount: boolean;
-		date: Date;
-		description?: string | null;
-		consumptionMembers: Array<{
-			amount: number;
-			member: {
-				id: string;
-				name: string;
-			};
-		}>;
-	}>;
-}
-
-interface Member {
-	id: string;
-	name: string;
-}
+import {
+	type getGroup,
+	removeConsumption,
+	removeResource,
+} from "@/lib/actions";
 
 interface ResourcesSectionProps {
 	groupId: string;
-	resources: Resource[];
-	members: Member[];
+	resources: Awaited<ReturnType<typeof getGroup>>["resources"];
+	members: Awaited<ReturnType<typeof getGroup>>["members"];
 }
 
 export function ResourcesSection({
@@ -127,7 +102,7 @@ export function ResourcesSection({
 											<h3 className="font-medium text-lg">{resource.name}</h3>
 											{resource.unit && resource.unitPrice && (
 												<Badge variant="outline" className="text-xs">
-													€{resource.unitPrice}/{resource.unit}
+													€{Number(resource.unitPrice)}/{resource.unit}
 												</Badge>
 											)}
 										</div>
@@ -175,7 +150,8 @@ export function ResourcesSection({
 																	<Badge variant="outline" className="text-xs">
 																		€
 																		{(
-																			consumption.amount * resource.unitPrice
+																			Number(consumption.amount) *
+																			Number(resource.unitPrice)
 																		).toFixed(2)}{" "}
 																		{t("total")}
 																	</Badge>

@@ -1,6 +1,5 @@
 "use client";
 
-import { Expense, ExpenseMember, Group, type Member } from "@prisma/client";
 import { Calendar, DollarSign, Plus, Repeat, Trash2, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -8,58 +7,32 @@ import { AddExpenseDialog } from "@/components/add-expense-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { removeExpense } from "@/lib/actions";
-
-// Type for expenses with converted Decimal to number amounts
-type ConvertedExpense = {
-	id: string;
-	title: string;
-	description?: string | null;
-	amount: number;
-	groupId: string;
-	paidById: string;
-	splitAll: boolean;
-	isRecurring: boolean;
-	recurringType?: string | null;
-	recurringStartDate?: Date | null;
-	date: Date;
-	createdAt: Date;
-	updatedAt: Date;
-	paidBy: Member;
-	expenseMembers: Array<{
-		id: string;
-		createdAt: Date;
-		expenseId: string;
-		memberId: string;
-		amount: number;
-		member: Member;
-	}>;
-	effectiveMembers?: Array<{
-		id: string;
-		name: string;
-		amount: number;
-	}>;
-};
+import {
+	type generateRecurringExpenseInstances,
+	type getGroup,
+	removeExpense,
+} from "@/lib/actions";
 
 interface ExpensesSectionProps {
-	group: {
-		id: string;
-		name: string;
-		description: string | null;
-		createdAt: Date;
-		updatedAt: Date;
-		members: Member[];
-		expenses: ConvertedExpense[];
-	};
-	expenses?: ConvertedExpense[];
+	group: Awaited<ReturnType<typeof getGroup>>;
+	expenses?: Awaited<ReturnType<typeof generateRecurringExpenseInstances>>;
 }
 
 export function ExpensesSection({ group, expenses }: ExpensesSectionProps) {
 	const [deletingId, setDeletingId] = useState<string | null>(null);
 	const t = useTranslations("expenses");
 
+	if (!group) {
+		return null;
+	}
+
 	// Use provided expenses or fall back to group expenses
-	const displayExpenses = expenses || group.expenses;
+	const displayExpenses =
+		expenses ||
+		group.expenses.map((expense) => ({
+			...expense,
+			effectiveMembers: [],
+		}));
 
 	const handleDeleteExpense = async (expenseId: string) => {
 		setDeletingId(expenseId);

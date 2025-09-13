@@ -1,8 +1,9 @@
 "use server";
 
-import type { Member } from "@prisma/client";
+import type { Consumption, Expense, Member, Resource } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
+import { convertToPlainObject } from "@/lib/utils";
 
 // Group actions
 export async function createGroup(data: {
@@ -53,32 +54,10 @@ export async function getGroup(id: string) {
 		},
 	});
 
-	if (!group) return null;
+	if (!group) throw new Error("Group not found");
 
 	// Convert all Decimal values to numbers
-	return {
-		...group,
-		expenses: group.expenses.map((expense) => ({
-			...expense,
-			amount: Number(expense.amount),
-			expenseMembers: expense.expenseMembers.map((em) => ({
-				...em,
-				amount: Number(em.amount),
-			})),
-		})),
-		resources: group.resources.map((resource) => ({
-			...resource,
-			unitPrice: resource.unitPrice ? Number(resource.unitPrice) : null,
-			consumptions: resource.consumptions.map((consumption) => ({
-				...consumption,
-				amount: Number(consumption.amount),
-				consumptionMembers: consumption.consumptionMembers.map((cm) => ({
-					...cm,
-					amount: Number(cm.amount),
-				})),
-			})),
-		})),
-	};
+	return convertToPlainObject(group);
 }
 
 // Member actions
@@ -137,14 +116,8 @@ export async function addMember(data: {
 }
 
 export async function updateMember(
-	id: string,
-	data: {
-		name: string;
-		email?: string;
-		iban?: string;
-		activeFrom: Date;
-		activeTo?: Date;
-	},
+	id: Member["id"],
+	data: Pick<Member, "name" | "email" | "iban" | "activeFrom" | "activeTo">,
 ) {
 	const member = await db.member.findUnique({
 		where: { id },
@@ -185,19 +158,23 @@ export async function removeMember(id: string) {
 }
 
 // Expense actions
-export async function createExpense(data: {
-	title: string;
-	description?: string;
-	amount: number;
-	groupId: string;
-	paidById: string;
-	memberIds: string[];
-	splitAll?: boolean;
-	isRecurring?: boolean;
-	recurringType?: "weekly" | "monthly" | "yearly";
-	recurringStartDate?: Date;
-	date?: Date;
-}) {
+export async function createExpense(
+	data: Pick<
+		Expense,
+		| "title"
+		| "description"
+		| "amount"
+		| "date"
+		| "groupId"
+		| "paidById"
+		| "splitAll"
+		| "isRecurring"
+		| "recurringType"
+		| "recurringStartDate"
+	> & {
+		memberIds: Member["id"][];
+	},
+) {
 	const expense = await db.expense.create({
 		data: {
 			title: data.title,
@@ -213,7 +190,7 @@ export async function createExpense(data: {
 			expenseMembers: {
 				create: data.memberIds.map((memberId) => ({
 					memberId,
-					amount: data.amount / data.memberIds.length,
+					amount: Number(data.amount) / data.memberIds.length,
 				})),
 			},
 		},
@@ -230,14 +207,7 @@ export async function createExpense(data: {
 	revalidatePath(`/group/${data.groupId}`);
 
 	// Convert Decimal values to numbers
-	return {
-		...expense,
-		amount: Number(expense.amount),
-		expenseMembers: expense.expenseMembers.map((em) => ({
-			...em,
-			amount: Number(em.amount),
-		})),
-	};
+	return convertToPlainObject(expense);
 }
 
 export async function removeExpense(id: string) {
@@ -258,24 +228,7 @@ export async function removeExpense(id: string) {
 
 // Helper function to generate recurring expense instances
 export async function generateRecurringExpenseInstances(
-	expense: {
-		id: string;
-		title: string;
-		description?: string | null;
-		amount: number; // Now always a number from getGroup
-		groupId: string;
-		paidById: string;
-		splitAll: boolean;
-		isRecurring: boolean;
-		recurringType?: string | null;
-		recurringStartDate?: Date | null;
-		date: Date;
-		paidBy: Member;
-		expenseMembers: Array<{
-			amount: number;
-			member: Member;
-		}>;
-	},
+	expense: Awaited<ReturnType<typeof getGroup>>["expenses"][number],
 	currentDate: Date = new Date(),
 ) {
 	if (
@@ -298,7 +251,7 @@ export async function generateRecurringExpenseInstances(
 				effectiveMembers: effectiveMembers.map((member) => ({
 					id: member.id,
 					name: member.name,
-					amount: expense.amount / effectiveMembers.length,
+					amount: Number(expense.amount) / effectiveMembers.length,
 				})),
 			},
 		];
@@ -326,7 +279,7 @@ export async function generateRecurringExpenseInstances(
 				effectiveMembers: effectiveMembers.map((member) => ({
 					id: member.id,
 					name: member.name,
-					amount: expense.amount / effectiveMembers.length,
+					amount: Number(expense.amount) / effectiveMembers.length,
 				})),
 			});
 		}
@@ -362,13 +315,12 @@ export async function getActiveMembersForDate(groupId: string, date: Date) {
 }
 
 // Resource actions
-export async function createResource(data: {
-	name: string;
-	description?: string;
-	unit?: string;
-	unitPrice?: number;
-	groupId: string;
-}) {
+export async function createResource(
+	data: Pick<
+		Resource,
+		"name" | "description" | "unit" | "unitPrice" | "groupId"
+	>,
+) {
 	const resource = await db.resource.create({
 		data: {
 			name: data.name,
@@ -382,20 +334,12 @@ export async function createResource(data: {
 	revalidatePath(`/group/${data.groupId}`);
 
 	// Convert Decimal values to numbers
-	return {
-		...resource,
-		unitPrice: resource.unitPrice ? Number(resource.unitPrice) : null,
-	};
+	return convertToPlainObject(resource);
 }
 
 export async function updateResource(
 	id: string,
-	data: {
-		name: string;
-		description?: string;
-		unit?: string;
-		unitPrice?: number;
-	},
+	data: Pick<Resource, "name" | "description" | "unit" | "unitPrice">,
 ) {
 	const resource = await db.resource.findUnique({
 		where: { id },
@@ -417,12 +361,7 @@ export async function updateResource(
 	revalidatePath(`/group/${resource.groupId}`);
 
 	// Convert Decimal values to numbers
-	return {
-		...updatedResource,
-		unitPrice: updatedResource.unitPrice
-			? Number(updatedResource.unitPrice)
-			: null,
-	};
+	return convertToPlainObject(updatedResource);
 }
 
 export async function removeResource(id: string) {
@@ -442,14 +381,14 @@ export async function removeResource(id: string) {
 }
 
 // Consumption actions
-export async function createConsumption(data: {
-	resourceId: string;
-	amount: number;
-	isUnitAmount: boolean;
-	memberIds: string[];
-	description?: string;
-	date?: Date;
-}) {
+export async function createConsumption(
+	data: Pick<
+		Consumption,
+		"resourceId" | "amount" | "isUnitAmount" | "date" | "description"
+	> & {
+		memberIds: Member["id"][];
+	},
+) {
 	// Get the resource to calculate amounts
 	const resource = await db.resource.findUnique({
 		where: { id: data.resourceId },
@@ -463,10 +402,10 @@ export async function createConsumption(data: {
 	if (data.isUnitAmount) {
 		// Amount is in units, calculate cost using unit price
 		if (!resource.unitPrice) throw new Error("Resource has no unit price");
-		totalCost = data.amount * Number(resource.unitPrice);
+		totalCost = Number(data.amount) * Number(resource.unitPrice);
 	} else {
 		// Amount is already in money
-		totalCost = data.amount;
+		totalCost = Number(data.amount);
 	}
 
 	// Calculate amount per member
@@ -499,14 +438,7 @@ export async function createConsumption(data: {
 	revalidatePath(`/group/${resource.groupId}`);
 
 	// Convert Decimal values to numbers
-	return {
-		...consumption,
-		amount: Number(consumption.amount),
-		consumptionMembers: consumption.consumptionMembers.map((cm) => ({
-			...cm,
-			amount: Number(cm.amount),
-		})),
-	};
+	return convertToPlainObject(consumption);
 }
 
 export async function removeConsumption(id: string) {

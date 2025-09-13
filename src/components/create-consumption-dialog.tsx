@@ -1,5 +1,6 @@
 "use client";
 
+import { Decimal } from "decimal.js";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useId, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -22,24 +23,17 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { createConsumption, getActiveMembersForDate } from "@/lib/actions";
-
-interface Resource {
-	id: string;
-	name: string;
-	unit?: string | null;
-	unitPrice?: number | null;
-}
-
-interface Member {
-	id: string;
-	name: string;
-}
+import {
+	createConsumption,
+	getActiveMembersForDate,
+	type getGroup,
+} from "@/lib/actions";
+import { convertToPlainObject } from "@/lib/utils";
 
 interface CreateConsumptionDialogProps {
 	groupId: string;
-	resources: Resource[];
-	members: Member[];
+	resources: Awaited<ReturnType<typeof getGroup>>["resources"];
+	members: Awaited<ReturnType<typeof getGroup>>["members"];
 	children: React.ReactNode;
 }
 
@@ -51,15 +45,15 @@ export function CreateConsumptionDialog({
 }: CreateConsumptionDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const [selectedResource, setSelectedResource] = useState<Resource | null>(
-		null,
-	);
+	const [selectedResource, setSelectedResource] = useState<
+		Awaited<ReturnType<typeof getGroup>>["resources"][number] | null
+	>(null);
 	const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
 	const [amount, setAmount] = useState("");
 	const [isUnitAmount, setIsUnitAmount] = useState(false);
 	const [consumptionDate, setConsumptionDate] = useState<Date>(new Date());
 	const [activeMembersAtDate, setActiveMembersAtDate] =
-		useState<Member[]>(members);
+		useState<Awaited<ReturnType<typeof getGroup>>["members"]>(members);
 	const t = useTranslations("forms.createConsumption");
 	const resourceId = useId();
 	const descriptionId = useId();
@@ -127,14 +121,16 @@ export function CreateConsumptionDialog({
 		}
 
 		try {
-			await createConsumption({
-				resourceId: selectedResource.id,
-				amount: parsedAmount,
-				isUnitAmount,
-				memberIds: selectedMembers,
-				description: description || undefined,
-				date: consumptionDate,
-			});
+			await createConsumption(
+				convertToPlainObject({
+					resourceId: selectedResource.id,
+					amount: new Decimal(parsedAmount),
+					isUnitAmount,
+					memberIds: selectedMembers,
+					description: description || null,
+					date: consumptionDate,
+				}),
+			);
 
 			setOpen(false);
 			setSelectedResource(null);
@@ -155,7 +151,7 @@ export function CreateConsumptionDialog({
 		if (!selectedResource || !amount) return 0;
 		const parsedAmount = parseFloat(amount);
 		if (isUnitAmount && selectedResource.unitPrice) {
-			return parsedAmount * selectedResource.unitPrice;
+			return parsedAmount * Number(selectedResource.unitPrice);
 		}
 		return parsedAmount;
 	};
@@ -190,7 +186,7 @@ export function CreateConsumptionDialog({
 										{resource.name}
 										{resource.unit && resource.unitPrice && (
 											<span className="text-sm text-gray-500 ml-2">
-												({resource.unitPrice}€/{resource.unit})
+												({Number(resource.unitPrice)}€/{resource.unit})
 											</span>
 										)}
 									</SelectItem>

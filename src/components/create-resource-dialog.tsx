@@ -1,5 +1,6 @@
 "use client";
 
+import { Decimal } from "decimal.js";
 import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createResource } from "@/lib/actions";
+import { convertToPlainObject } from "@/lib/utils";
 
 interface CreateResourceDialogProps {
 	groupId: string;
@@ -46,13 +48,15 @@ export function CreateResourceDialog({
 		const unitPrice = formData.get("unitPrice") as string;
 
 		try {
-			await createResource({
-				name,
-				description: description || undefined,
-				unit: hasUnit ? unit || undefined : undefined,
-				unitPrice: hasUnit && unitPrice ? parseFloat(unitPrice) : undefined,
-				groupId,
-			});
+			await createResource(
+				convertToPlainObject({
+					name,
+					description: description || null,
+					unit: hasUnit ? unit || null : null,
+					unitPrice: hasUnit && unitPrice ? new Decimal(unitPrice) : null,
+					groupId,
+				}),
+			);
 
 			setOpen(false);
 			setHasUnit(false);

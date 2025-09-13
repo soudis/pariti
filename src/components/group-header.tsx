@@ -1,5 +1,6 @@
 "use client";
 
+import type { Expense, Group, Member } from "@prisma/client";
 import { DollarSign, Share2, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
@@ -8,15 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface GroupHeaderProps {
-	group: {
-		id: string;
-		name: string;
-		description: string | null;
-		createdAt: Date;
-		updatedAt: Date;
-		members: Array<{ id: string; name: string }>;
-		expenses: Array<{ id: string; amount: number }>;
-	};
+	group: Group & { expenses: Expense[]; members: Member[] };
 }
 
 export function GroupHeader({ group }: GroupHeaderProps) {

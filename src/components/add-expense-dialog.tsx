@@ -1,6 +1,7 @@
 "use client";
 
 import type { Group, Member } from "@prisma/client";
+import { Decimal } from "decimal.js";
 import { useEffect, useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -23,6 +24,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { createExpense, getActiveMembersForDate } from "@/lib/actions";
+import { convertToPlainObject } from "@/lib/utils";
 
 interface AddExpenseDialogProps {
 	group: Group & {
@@ -111,19 +113,21 @@ export function AddExpenseDialog({ group, children }: AddExpenseDialogProps) {
 		}
 
 		try {
-			await createExpense({
-				title,
-				description: description || undefined,
-				amount,
-				groupId: group.id,
-				paidById,
-				memberIds: selectedMembers,
-				splitAll,
-				isRecurring,
-				recurringType: isRecurring ? recurringType : undefined,
-				recurringStartDate: isRecurring ? recurringStartDate : undefined,
-				date: expenseDate,
-			});
+			await createExpense(
+				convertToPlainObject({
+					title,
+					description: description || null,
+					amount: new Decimal(amount),
+					groupId: group.id,
+					paidById,
+					memberIds: selectedMembers,
+					splitAll,
+					isRecurring,
+					recurringType: isRecurring ? recurringType : null,
+					recurringStartDate: isRecurring ? (recurringStartDate ?? null) : null,
+					date: expenseDate,
+				}),
+			);
 
 			setOpen(false);
 			setSelectedMembers([]);
