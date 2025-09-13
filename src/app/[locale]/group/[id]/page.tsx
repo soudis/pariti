@@ -3,6 +3,7 @@ import { ExpensesSection } from "@/components/expenses-section";
 import { GroupHeader } from "@/components/group-header";
 import { MembersSection } from "@/components/members-section";
 import { ResourcesSection } from "@/components/resources-section";
+import { SettlementsSection } from "@/components/settlements-section";
 import { generateRecurringExpenseInstances, getGroup } from "@/lib/actions";
 
 interface GroupPageProps {
@@ -47,6 +48,13 @@ export default async function GroupPage({ params }: GroupPageProps) {
 						groupId={group.id}
 						resources={group.resources}
 						members={group.members}
+					/>
+
+					<SettlementsSection
+						groupId={group.id}
+						settlements={group.settlements as any}
+						members={group.members}
+						resources={group.resources}
 					/>
 				</div>
 			</div>

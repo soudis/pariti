@@ -24,6 +24,7 @@ model Group {
   members      Member[]
   expenses     Expense[]
   resources    Resource[]
+  settlements  Settlement[]
 
   @@map("groups")
 }
@@ -44,6 +45,8 @@ model Member {
   paidExpenses       Expense[]            @relation("PaidBy")
   expenseMembers     ExpenseMember[]
   consumptionMembers ConsumptionMember[]
+  settlementFrom     SettlementMember[]   @relation("SettlementFrom")
+  settlementTo       SettlementMember[]   @relation("SettlementTo")
 
   @@map("members")
 }
@@ -99,6 +102,8 @@ model Resource {
   // Relations
   group       Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
   consumptions Consumption[]
+  settlementFrom SettlementMember[] @relation("SettlementFrom")
+  settlementTo   SettlementMember[] @relation("SettlementTo")
 
   @@map("resources")
 }
@@ -133,4 +138,42 @@ model ConsumptionMember {
 
   @@unique([consumptionId, memberId])
   @@map("consumption_members")
+}
+
+model Settlement {
+  id          String   @id @default(cuid())
+  groupId     String
+  title       String
+  description String?
+  status      String   @default("open") // "open" or "completed"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  group           Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  settlementMembers SettlementMember[]
+
+  @@map("settlements")
+}
+
+model SettlementMember {
+  id           String   @id @default(cuid())
+  settlementId String
+  fromMemberId String?  // null if from a resource
+  toMemberId   String?  // null if to a resource
+  fromResourceId String? // null if from a member
+  toResourceId   String? // null if to a member
+  amount       Decimal  @db.Decimal(10, 2)
+  status       String   @default("open") // "open" or "completed"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  settlement   Settlement @relation(fields: [settlementId], references: [id], onDelete: Cascade)
+  fromMember   Member?    @relation("SettlementFrom", fields: [fromMemberId], references: [id], onDelete: Cascade)
+  toMember     Member?    @relation("SettlementTo", fields: [toMemberId], references: [id], onDelete: Cascade)
+  fromResource Resource?  @relation("SettlementFrom", fields: [fromResourceId], references: [id], onDelete: Cascade)
+  toResource   Resource?  @relation("SettlementTo", fields: [toResourceId], references: [id], onDelete: Cascade)
+
+  @@map("settlement_members")
 }

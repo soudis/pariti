@@ -54,7 +54,8 @@
 		"active": "Active",
 		"ongoing": "(ongoing)",
 		"edit": "Edit",
-		"delete": "Delete"
+		"delete": "Delete",
+		"balance": "Balance"
 	},
 	"expenses": {
 		"title": "Expenses",
@@ -67,6 +68,7 @@
 		"each": "each",
 		"includesActiveMembers": "Includes all {count} active members on {date}",
 		"automaticallyIncludes": "This expense will automatically include any new members added to the group",
+		"showHidden": "Show settled",
 		"recurring": {
 			"weekly": "weekly",
 			"monthly": "monthly",
@@ -83,7 +85,21 @@
 		"consumptions": "Consumptions",
 		"splitBetween": "Split between",
 		"members": "members",
-		"total": "total"
+		"total": "total",
+		"showHidden": "Show settled"
+	},
+	"settlements": {
+		"title": "Settlements",
+		"generateSettlement": "Generate Settlement",
+		"noSettlements": "No settlements yet",
+		"noSettlementsDescription": "Generate settlements to balance payments between members and resources",
+		"openSettlements": "Open Settlements",
+		"completedSettlements": "Completed Settlements",
+		"open": "Open",
+		"completed": "Completed",
+		"markCompleted": "Mark Completed",
+		"payments": "Payments",
+		"qrCode": "QR Code"
 	},
 	"forms": {
 		"createGroup": {
@@ -201,7 +217,47 @@
 				"selectMembers": "Please select at least one member",
 				"noUnitPrice": "This resource has no unit price set"
 			}
+		},
+		"createSettlement": {
+			"title": "Generate Settlement",
+			"description": "Generate settlement records to balance payments between members and resources.",
+			"titleLabel": "Settlement Title",
+			"titlePlaceholder": "e.g., Monthly Settlement",
+			"descriptionLabel": "Description (optional)",
+			"descriptionPlaceholder": "e.g., Settlement for March expenses",
+			"settlementTypeLabel": "Settlement Type",
+			"optimized": "Optimized (minimize transactions)",
+			"aroundMember": "Around Member (all payments through one member)",
+			"aroundResource": "Around Resource (all payments through one resource)",
+			"centerMemberLabel": "Center Member",
+			"centerResourceLabel": "Center Resource",
+			"selectCenter": "Select center entity",
+			"settlementTypeInfo": {
+				"title": "Settlement Type Information",
+				"optimized": "Minimizes the number of transactions needed to settle all balances.",
+				"aroundMember": "All payments will go through the selected member, making them the central hub.",
+				"aroundResource": "All payments will go through the selected resource, making it the central hub."
+			},
+			"cancel": "Cancel",
+			"generate": "Generate Settlement",
+			"generating": "Generating..."
 		}
+	},
+	"qrCode": {
+		"title": "Bank Transfer QR Code",
+		"description": "Scan this QR code with your banking app to make the payment",
+		"recipient": "Recipient",
+		"iban": "IBAN",
+		"amount": "Amount",
+		"reference": "Reference",
+		"qrCodeText": "Payment to {recipient} - €{amount}",
+		"instructions": {
+			"title": "How to use:",
+			"step1": "Open your banking app",
+			"step2": "Scan the QR code above",
+			"step3": "Confirm the payment details and send"
+		},
+		"close": "Close"
 	},
 	"common": {
 		"loading": "Loading...",

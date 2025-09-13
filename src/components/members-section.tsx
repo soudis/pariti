@@ -1,15 +1,19 @@
 "use client";
 
 import type { Member } from "@prisma/client";
-import { Edit, Plus, Trash2, User } from "lucide-react";
+import { DollarSign, Edit, Plus, Trash2, User } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AddMemberDialog } from "@/components/add-member-dialog";
 import { EditMemberDialog } from "@/components/edit-member-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { removeMember, updateMember } from "@/lib/actions";
+import {
+	calculateMemberBalances,
+	removeMember,
+	updateMember,
+} from "@/lib/actions";
 
 interface MembersSectionProps {
 	group: {
@@ -24,7 +28,45 @@ interface MembersSectionProps {
 
 export function MembersSection({ group }: MembersSectionProps) {
 	const [deletingId, setDeletingId] = useState<string | null>(null);
+	const [memberBalances, setMemberBalances] = useState<
+		Array<{ memberId: string; memberName: string; balance: number }>
+	>([]);
+	const [loadingBalances, setLoadingBalances] = useState(false);
 	const t = useTranslations("members");
+
+	// Load member balances
+	useEffect(() => {
+		const loadBalances = async () => {
+			setLoadingBalances(true);
+			try {
+				const balances = await calculateMemberBalances(group.id);
+				setMemberBalances(balances);
+			} catch (error) {
+				console.error("Failed to load member balances:", error);
+			} finally {
+				setLoadingBalances(false);
+			}
+		};
+
+		loadBalances();
+	}, [group.id]); // Recalculate when group changes
+
+	const getMemberBalance = (memberId: string) => {
+		const balance = memberBalances.find((b) => b.memberId === memberId);
+		return balance ? balance.balance : 0;
+	};
+
+	const formatBalance = (balance: number) => {
+		if (balance === 0) return "€0.00";
+		const sign = balance > 0 ? "+" : "";
+		return `${sign}€${balance.toFixed(2)}`;
+	};
+
+	const getBalanceColor = (balance: number) => {
+		if (balance > 0) return "text-green-600 dark:text-green-400";
+		if (balance < 0) return "text-red-600 dark:text-red-400";
+		return "text-gray-600 dark:text-gray-400";
+	};
 
 	const handleDeleteMember = async (memberId: string) => {
 		setDeletingId(memberId);
@@ -83,33 +125,54 @@ export function MembersSection({ group }: MembersSectionProps) {
 									<div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
 										<User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
 									</div>
-									<div>
-										<p className="font-medium">{member.name}</p>
-										{member.email && (
-											<p className="text-sm text-gray-500 dark:text-gray-400">
-												{member.email}
-											</p>
-										)}
-										{member.iban && (
-											<p className="text-sm text-gray-500 dark:text-gray-400 font-mono">
-												{member.iban}
-											</p>
-										)}
-										<div className="flex items-center gap-2 mt-1">
-											<span className="text-xs text-gray-500 dark:text-gray-400">
-												{t("active")}:{" "}
-												{new Date(member.activeFrom).toLocaleDateString()}
-											</span>
-											{member.activeTo && (
-												<span className="text-xs text-gray-500 dark:text-gray-400">
-													- {new Date(member.activeTo).toLocaleDateString()}
-												</span>
-											)}
-											{!member.activeTo && (
-												<span className="text-xs text-green-600 dark:text-green-400">
-													{t("ongoing")}
-												</span>
-											)}
+									<div className="flex-1">
+										<div className="flex items-center justify-between">
+											<div>
+												<p className="font-medium">{member.name}</p>
+												{member.email && (
+													<p className="text-sm text-gray-500 dark:text-gray-400">
+														{member.email}
+													</p>
+												)}
+												{member.iban && (
+													<p className="text-sm text-gray-500 dark:text-gray-400 font-mono">
+														{member.iban}
+													</p>
+												)}
+												<div className="flex items-center gap-2 mt-1">
+													<span className="text-xs text-gray-500 dark:text-gray-400">
+														{t("active")}:{" "}
+														{new Date(member.activeFrom).toLocaleDateString()}
+													</span>
+													{member.activeTo && (
+														<span className="text-xs text-gray-500 dark:text-gray-400">
+															- {new Date(member.activeTo).toLocaleDateString()}
+														</span>
+													)}
+													{!member.activeTo && (
+														<span className="text-xs text-green-600 dark:text-green-400">
+															{t("ongoing")}
+														</span>
+													)}
+												</div>
+											</div>
+											<div className="text-right">
+												<div className="flex items-center gap-1 mb-1">
+													<DollarSign className="w-4 h-4 text-gray-400" />
+													<span className="text-sm text-gray-500 dark:text-gray-400">
+														{t("balance")}
+													</span>
+												</div>
+												{loadingBalances ? (
+													<div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+												) : (
+													<p
+														className={`font-medium ${getBalanceColor(getMemberBalance(member.id))}`}
+													>
+														{formatBalance(getMemberBalance(member.id))}
+													</p>
+												)}
+											</div>
 										</div>
 									</div>
 								</div>

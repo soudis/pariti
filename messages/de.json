@@ -54,7 +54,8 @@
 		"active": "Aktiv",
 		"ongoing": "(laufend)",
 		"edit": "Bearbeiten",
-		"delete": "Löschen"
+		"delete": "Löschen",
+		"balance": "Saldo"
 	},
 	"expenses": {
 		"title": "Ausgaben",
@@ -67,6 +68,7 @@
 		"each": "je",
 		"includesActiveMembers": "Beinhaltet alle {count} aktiven Mitglieder vom {date}",
 		"automaticallyIncludes": "Diese Ausgabe wird automatisch alle neuen Mitglieder der Gruppe einbeziehen",
+		"showHidden": "Abgerechnete anzeigen",
 		"recurring": {
 			"weekly": "wöchentlich",
 			"monthly": "monatlich",
@@ -83,7 +85,21 @@
 		"consumptions": "Verbräuche",
 		"splitBetween": "Aufgeteilt zwischen",
 		"members": "Mitglieder",
-		"total": "gesamt"
+		"total": "gesamt",
+		"showHidden": "Abgerechnete anzeigen"
+	},
+	"settlements": {
+		"title": "Abrechnungen",
+		"generateSettlement": "Abrechnung erstellen",
+		"noSettlements": "Noch keine Abrechnungen",
+		"noSettlementsDescription": "Erstelle Abrechnungen, um Zahlungen zwischen Mitgliedern und Ressourcen auszugleichen",
+		"openSettlements": "Offene Abrechnungen",
+		"completedSettlements": "Abgeschlossene Abrechnungen",
+		"open": "Offen",
+		"completed": "Abgeschlossen",
+		"markCompleted": "Als abgeschlossen markieren",
+		"payments": "Zahlungen",
+		"qrCode": "QR-Code"
 	},
 	"forms": {
 		"createGroup": {
@@ -203,7 +219,47 @@
 				"selectMembers": "Bitte wähle mindestens ein Mitglied aus",
 				"noUnitPrice": "Diese Ressource hat keinen Einheitspreis festgelegt"
 			}
+		},
+		"createSettlement": {
+			"title": "Abrechnung erstellen",
+			"description": "Erstelle Abrechnungsdatensätze, um Zahlungen zwischen Mitgliedern und Ressourcen auszugleichen.",
+			"titleLabel": "Abrechnungstitel",
+			"titlePlaceholder": "z.B. Monatliche Abrechnung",
+			"descriptionLabel": "Beschreibung (optional)",
+			"descriptionPlaceholder": "z.B. Abrechnung für März-Ausgaben",
+			"settlementTypeLabel": "Abrechnungstyp",
+			"optimized": "Optimiert (Transaktionen minimieren)",
+			"aroundMember": "Um Mitglied (alle Zahlungen über ein Mitglied)",
+			"aroundResource": "Um Ressource (alle Zahlungen über eine Ressource)",
+			"centerMemberLabel": "Zentrales Mitglied",
+			"centerResourceLabel": "Zentrale Ressource",
+			"selectCenter": "Zentrale Entität auswählen",
+			"settlementTypeInfo": {
+				"title": "Informationen zum Abrechnungstyp",
+				"optimized": "Minimiert die Anzahl der Transaktionen, die zur Abrechnung aller Salden benötigt werden.",
+				"aroundMember": "Alle Zahlungen gehen über das ausgewählte Mitglied, wodurch es zum zentralen Hub wird.",
+				"aroundResource": "Alle Zahlungen gehen über die ausgewählte Ressource, wodurch sie zum zentralen Hub wird."
+			},
+			"cancel": "Abbrechen",
+			"generate": "Abrechnung erstellen",
+			"generating": "Erstelle..."
 		}
+	},
+	"qrCode": {
+		"title": "Überweisungs-QR-Code",
+		"description": "Scanne diesen QR-Code mit deiner Banking-App, um die Zahlung zu tätigen",
+		"recipient": "Empfänger",
+		"iban": "IBAN",
+		"amount": "Betrag",
+		"reference": "Verwendungszweck",
+		"qrCodeText": "Zahlung an {recipient} - €{amount}",
+		"instructions": {
+			"title": "So verwendest du es:",
+			"step1": "Öffne deine Banking-App",
+			"step2": "Scanne den QR-Code oben",
+			"step3": "Bestätige die Zahlungsdetails und sende ab"
+		},
+		"close": "Schließen"
 	},
 	"common": {
 		"loading": "Lade...",

@@ -1,15 +1,27 @@
 "use client";
 
-import { Calendar, DollarSign, Plus, Repeat, Trash2, User } from "lucide-react";
+import {
+	Calendar,
+	DollarSign,
+	Eye,
+	EyeOff,
+	Plus,
+	Repeat,
+	Trash2,
+	User,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { AddExpenseDialog } from "@/components/add-expense-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
 	type generateRecurringExpenseInstances,
 	type getGroup,
+	getSettlementCutoffDate,
 	removeExpense,
 } from "@/lib/actions";
 
@@ -20,19 +32,48 @@ interface ExpensesSectionProps {
 
 export function ExpensesSection({ group, expenses }: ExpensesSectionProps) {
 	const [deletingId, setDeletingId] = useState<string | null>(null);
+	const [showHiddenExpenses, setShowHiddenExpenses] = useState(false);
+	const [cutoffDate, setCutoffDate] = useState<Date | null>(null);
+	const [loadingCutoff, setLoadingCutoff] = useState(false);
 	const t = useTranslations("expenses");
+	const showHiddenId = useId();
+
+	// Load cutoff date for filtering
+	useEffect(() => {
+		if (!group) return;
+
+		const loadCutoffDate = async () => {
+			setLoadingCutoff(true);
+			try {
+				const cutoff = await getSettlementCutoffDate(group.id);
+				setCutoffDate(cutoff);
+			} catch (error) {
+				console.error("Failed to load cutoff date:", error);
+			} finally {
+				setLoadingCutoff(false);
+			}
+		};
+
+		loadCutoffDate();
+	}, [group]);
 
 	if (!group) {
 		return null;
 	}
 
 	// Use provided expenses or fall back to group expenses
-	const displayExpenses =
+	const allExpenses =
 		expenses ||
 		group.expenses.map((expense) => ({
 			...expense,
 			effectiveMembers: [],
 		}));
+
+	// Filter expenses based on cutoff date and toggle
+	const displayExpenses =
+		cutoffDate && !showHiddenExpenses
+			? allExpenses.filter((expense) => new Date(expense.date) >= cutoffDate)
+			: allExpenses;
 
 	const handleDeleteExpense = async (expenseId: string) => {
 		setDeletingId(expenseId);
@@ -61,12 +102,34 @@ export function ExpensesSection({ group, expenses }: ExpensesSectionProps) {
 						<DollarSign className="w-5 h-5" />
 						{t("title")}
 					</CardTitle>
-					<AddExpenseDialog group={group}>
-						<Button size="sm">
-							<Plus className="w-4 h-4 mr-2" />
-							{t("addExpense")}
-						</Button>
-					</AddExpenseDialog>
+					<div className="flex items-center gap-3">
+						{cutoffDate && (
+							<div className="flex items-center gap-2">
+								<Label htmlFor={showHiddenId} className="text-sm">
+									{showHiddenExpenses ? (
+										<Eye className="w-4 h-4" />
+									) : (
+										<EyeOff className="w-4 h-4" />
+									)}
+								</Label>
+								<Switch
+									id={showHiddenId}
+									checked={showHiddenExpenses}
+									onCheckedChange={setShowHiddenExpenses}
+									disabled={loadingCutoff}
+								/>
+								<span className="text-sm text-gray-600 dark:text-gray-300">
+									{t("showHidden")}
+								</span>
+							</div>
+						)}
+						<AddExpenseDialog group={group}>
+							<Button size="sm">
+								<Plus className="w-4 h-4 mr-2" />
+								{t("addExpense")}
+							</Button>
+						</AddExpenseDialog>
+					</div>
 				</div>
 			</CardHeader>
 			<CardContent>
