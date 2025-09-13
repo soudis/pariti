@@ -1,10 +1,10 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
-import { useId, useState } from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DatePicker } from "@/components/ui/date-picker";
 import {
 	Dialog,
 	DialogContent,
@@ -13,9 +13,14 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Form } from "@/components/ui/form";
+import {
+	CheckboxField,
+	DateField,
+	TextField,
+} from "@/components/ui/form-field";
 import { addMember } from "@/lib/actions";
+import { type MemberFormData, memberSchema } from "@/lib/schemas";
 
 interface AddMemberDialogProps {
 	groupId: string;
@@ -25,36 +30,33 @@ interface AddMemberDialogProps {
 export function AddMemberDialog({ groupId, children }: AddMemberDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const [activeFrom, setActiveFrom] = useState<Date>(new Date());
-	const [activeTo, setActiveTo] = useState<Date>();
-	const [hasEndDate, setHasEndDate] = useState(false);
 	const t = useTranslations("forms.addMember");
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		setLoading(true);
+	const form = useForm({
+		resolver: zodResolver(memberSchema),
+		defaultValues: {
+			name: "",
+			iban: "",
+			activeFrom: new Date(),
+			activeTo: undefined,
+			hasEndDate: false,
+		},
+	});
 
-		const formData = new FormData(e.currentTarget);
-		const name = formData.get("name") as string;
-		const email = formData.get("email") as string;
-		const iban = formData.get("iban") as string;
+	const onSubmit = async (data: any) => {
+		setLoading(true);
 
 		try {
 			await addMember({
-				name,
-				email: email || undefined,
-				iban: iban || undefined,
+				name: data.name,
+				iban: data.iban || undefined,
 				groupId,
-				activeFrom,
-				activeTo: hasEndDate ? activeTo : undefined,
+				activeFrom: data.activeFrom,
+				activeTo: data.activeTo || undefined,
 			});
 
 			setOpen(false);
-			setActiveFrom(new Date());
-			setActiveTo(undefined);
-			setHasEndDate(false);
-			// Reset form
-			// e.currentTarget.reset()
+			form.reset();
 		} catch (error) {
 			console.error("Failed to add member:", error);
 		} finally {
@@ -70,81 +72,63 @@ export function AddMemberDialog({ groupId, children }: AddMemberDialogProps) {
 					<DialogTitle>{t("title")}</DialogTitle>
 					<DialogDescription>{t("description")}</DialogDescription>
 				</DialogHeader>
-				<form onSubmit={handleSubmit} className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor="name">{t("name")}</Label>
-						<Input
-							id={useId()}
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<TextField
+							control={form.control}
 							name="name"
+							label={t("name")}
 							placeholder={t("namePlaceholder")}
 							required
 						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="email">{t("email")}</Label>
-						<Input
-							id={useId()}
-							name="email"
-							type="email"
-							placeholder={t("emailPlaceholder")}
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="iban">{t("iban")}</Label>
-						<Input
-							id={useId()}
+
+						<TextField
+							control={form.control}
 							name="iban"
+							label={t("iban")}
 							placeholder={t("ibanPlaceholder")}
 						/>
-					</div>
 
-					<div className="space-y-4">
-						<div className="space-y-2">
-							<Label htmlFor="activeFrom">{t("activeFrom")}</Label>
-							<DatePicker
-								value={activeFrom}
-								onChange={(date) => setActiveFrom(date || new Date())}
-								placeholder={t("activeFromPlaceholder")}
-							/>
-						</div>
+						<DateField
+							control={form.control}
+							name="activeFrom"
+							label={t("activeFrom")}
+							placeholder={t("activeFromPlaceholder")}
+						/>
 
 						<div className="space-y-2">
 							<div className="flex items-center space-x-2">
-								<Checkbox
-									id={useId()}
-									checked={hasEndDate}
-									onCheckedChange={(checked) =>
-										setHasEndDate(checked as boolean)
-									}
+								<CheckboxField
+									control={form.control}
+									name="hasEndDate"
+									text={t("setEndDate")}
 								/>
-								<Label htmlFor="hasEndDate" className="text-sm">
-									{t("setEndDate")}
-								</Label>
 							</div>
 
-							{hasEndDate && (
-								<DatePicker
-									value={activeTo}
-									onChange={(date) => setActiveTo(date)}
+							{(form.watch("hasEndDate") as Date) && (
+								<DateField
+									control={form.control}
+									name="activeTo"
+									label={t("activeTo")}
 									placeholder={t("activeToPlaceholder")}
 								/>
 							)}
 						</div>
-					</div>
-					<div className="flex justify-end space-x-2">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => setOpen(false)}
-							disabled={loading}
-						>
-							{t("cancel")}
-						</Button>
-						<Button type="submit" disabled={loading}>
-							{loading ? t("adding") : t("add")}
-						</Button>
-					</div>
-				</form>
+						<div className="flex justify-end space-x-2">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setOpen(false)}
+								disabled={loading}
+							>
+								{t("cancel")}
+							</Button>
+							<Button type="submit" disabled={loading}>
+								{loading ? t("adding") : t("add")}
+							</Button>
+						</div>
+					</form>
+				</Form>
 			</DialogContent>
 		</Dialog>
 	);

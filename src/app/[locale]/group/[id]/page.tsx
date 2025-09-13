@@ -52,7 +52,7 @@ export default async function GroupPage({ params }: GroupPageProps) {
 
 					<SettlementsSection
 						groupId={group.id}
-						settlements={group.settlements as any}
+						settlements={group.settlements}
 						members={group.members}
 						resources={group.resources}
 					/>

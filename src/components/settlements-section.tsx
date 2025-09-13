@@ -17,43 +17,17 @@ import { QRCodeDialog } from "@/components/qr-code-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { removeSettlement, updateSettlementMemberStatus } from "@/lib/actions";
-
-interface SettlementMember {
-	id: string;
-	amount: number;
-	status: string;
-	fromMember?: { id: string; name: string; iban?: string | null } | null;
-	toMember?: { id: string; name: string; iban?: string | null } | null;
-	fromResource?: { id: string; name: string } | null;
-	toResource?: { id: string; name: string } | null;
-}
-
-interface Settlement {
-	id: string;
-	title: string;
-	description?: string | null;
-	status: string;
-	createdAt: Date;
-	updatedAt: Date;
-	settlementMembers: SettlementMember[];
-}
-
-interface Member {
-	id: string;
-	name: string;
-}
-
-interface Resource {
-	id: string;
-	name: string;
-}
+import {
+	type getGroup,
+	removeSettlement,
+	updateSettlementMemberStatus,
+} from "@/lib/actions";
 
 interface SettlementsSectionProps {
 	groupId: string;
-	settlements: Settlement[];
-	members: Member[];
-	resources: Resource[];
+	settlements: Awaited<ReturnType<typeof getGroup>>["settlements"];
+	members: Awaited<ReturnType<typeof getGroup>>["members"];
+	resources: Awaited<ReturnType<typeof getGroup>>["resources"];
 }
 
 export function SettlementsSection({

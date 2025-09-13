@@ -67,7 +67,11 @@ export function ResourcesSection({
 	}, [groupId]);
 
 	// Helper function to filter consumptions based on cutoff date
-	const filterConsumptions = (consumptions: any[]) => {
+	const filterConsumptions = (
+		consumptions: Awaited<
+			ReturnType<typeof getGroup>
+		>["resources"][number]["consumptions"],
+	) => {
 		if (!cutoffDate || showHiddenConsumptions) {
 			return consumptions;
 		}
@@ -180,7 +184,10 @@ export function ResourcesSection({
 									<div className="flex items-center gap-2">
 										<CreateResourceDialog
 											groupId={groupId}
-											resource={resource}
+											resource={{
+												...resource,
+												unitPrice: Number(resource.unitPrice),
+											}}
 											onResourceUpdated={() => window.location.reload()}
 										>
 											<Button
@@ -252,7 +259,14 @@ export function ResourcesSection({
 																groupId={groupId}
 																resources={resources}
 																members={members}
-																consumption={consumption}
+																consumption={{
+																	...consumption,
+																	amount: Number(consumption.amount),
+																	selectedMembers:
+																		consumption.consumptionMembers.map(
+																			(cm) => cm.memberId,
+																		),
+																}}
 																onConsumptionUpdated={() =>
 																	window.location.reload()
 																}

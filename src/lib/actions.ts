@@ -993,7 +993,7 @@ export async function editExpense(
 		title: string;
 		amount: number;
 		description?: string;
-		paidBy: string;
+		paidById: string;
 		date: Date;
 		splitAll: boolean;
 		expenseMembers: Array<{ memberId: string; amount: number }>;
@@ -1008,7 +1008,7 @@ export async function editExpense(
 			title: data.title,
 			amount: data.amount,
 			description: data.description,
-			paidBy: data.paidBy,
+			paidById: data.paidById,
 			date: data.date,
 			splitAll: data.splitAll,
 			isRecurring: data.isRecurring,

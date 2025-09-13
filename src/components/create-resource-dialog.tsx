@@ -1,10 +1,11 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Decimal } from "decimal.js";
 import { useTranslations } from "next-intl";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
 	DialogContent,
@@ -13,15 +14,16 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Form } from "@/components/ui/form";
+import { CheckboxField, TextField } from "@/components/ui/form-field";
 import { createResource, editResource } from "@/lib/actions";
+import { type ResourceFormData, resourceSchema } from "@/lib/schemas";
 import { convertToPlainObject } from "@/lib/utils";
 
 interface CreateResourceDialogProps {
 	groupId: string;
 	children: React.ReactNode;
-	resource?: any; // For editing existing resource
+	resource?: ResourceFormData & { id: string }; // For editing existing resource
 	onResourceUpdated?: () => void;
 }
 
@@ -33,50 +35,64 @@ export function CreateResourceDialog({
 }: CreateResourceDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const [hasUnit, setHasUnit] = useState(false);
 	const t = useTranslations("forms.createResource");
-	const nameId = useId();
+
+	const form = useForm({
+		resolver: zodResolver(resourceSchema),
+		defaultValues: {
+			name: "",
+			description: "",
+			hasUnit: false,
+			unit: "",
+			unitPrice: 0,
+		},
+	});
 
 	// Initialize form with resource data when editing
 	useEffect(() => {
 		if (resource) {
-			setHasUnit(!!(resource.unit && resource.unitPrice));
+			form.reset({
+				name: resource.name,
+				description: resource.description || "",
+				hasUnit: !!(resource.unit && resource.unitPrice),
+				unit: resource.unit || "",
+				unitPrice: resource.unitPrice || 0,
+			});
 		} else {
-			setHasUnit(false);
+			form.reset({
+				name: "",
+				description: "",
+				hasUnit: false,
+				unit: "",
+				unitPrice: 0,
+			});
 		}
-	}, [resource]);
-	const descriptionId = useId();
-	const hasUnitId = useId();
-	const unitId = useId();
-	const unitPriceId = useId();
+	}, [resource, form]);
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
+	const onSubmit = async (data: ResourceFormData) => {
 		setLoading(true);
-
-		const formData = new FormData(e.currentTarget);
-		const name = formData.get("name") as string;
-		const description = formData.get("description") as string;
-		const unit = formData.get("unit") as string;
-		const unitPrice = formData.get("unitPrice") as string;
 
 		try {
 			if (resource) {
 				// Edit existing resource
 				await editResource(resource.id, {
-					name,
-					description: description || undefined,
-					unit: hasUnit ? unit || undefined : undefined,
-					unitPrice: hasUnit && unitPrice ? parseFloat(unitPrice) : undefined,
+					name: data.name,
+					description: data.description || undefined,
+					unit: data.hasUnit ? data.unit || undefined : undefined,
+					unitPrice:
+						data.hasUnit && data.unitPrice ? data.unitPrice : undefined,
 				});
 			} else {
 				// Create new resource
 				await createResource(
 					convertToPlainObject({
-						name,
-						description: description || null,
-						unit: hasUnit ? unit || null : null,
-						unitPrice: hasUnit && unitPrice ? new Decimal(unitPrice) : null,
+						name: data.name,
+						description: data.description || null,
+						unit: data.hasUnit ? data.unit || null : null,
+						unitPrice:
+							data.hasUnit && data.unitPrice
+								? new Decimal(data.unitPrice)
+								: null,
 						groupId,
 					}),
 				);
@@ -106,91 +122,78 @@ export function CreateResourceDialog({
 						{resource ? "Update the resource details." : t("description")}
 					</DialogDescription>
 				</DialogHeader>
-				<form onSubmit={handleSubmit} className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor={nameId}>{t("name")}</Label>
-						<Input
-							id={nameId}
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<TextField
+							control={form.control}
 							name="name"
+							label={t("name")}
 							placeholder={t("namePlaceholder")}
-							defaultValue={resource?.name || ""}
 							required
 						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor={descriptionId}>{t("descriptionLabel")}</Label>
-						<Input
-							id={descriptionId}
+
+						<TextField
+							control={form.control}
 							name="description"
+							label={t("descriptionLabel")}
 							placeholder={t("descriptionPlaceholder")}
-							defaultValue={resource?.description || ""}
 						/>
-					</div>
 
-					<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-						<div className="flex items-center space-x-2">
-							<Checkbox
-								id={hasUnitId}
-								checked={hasUnit}
-								onCheckedChange={(checked) => setHasUnit(checked as boolean)}
+						<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+							<CheckboxField
+								control={form.control}
+								name="hasUnit"
+								label={t("hasUnit")}
 							/>
-							<Label htmlFor={hasUnitId} className="text-sm font-medium">
-								{t("hasUnit")}
-							</Label>
-						</div>
 
-						{hasUnit && (
-							<div className="space-y-4 pl-6">
-								<div className="grid grid-cols-2 gap-4">
-									<div className="space-y-2">
-										<Label htmlFor={unitId}>{t("unitLabel")}</Label>
-										<Input
-											id={unitId}
+							{(form.watch("hasUnit") as boolean) && (
+								<div className="space-y-4 pl-6">
+									<div className="grid grid-cols-2 gap-4">
+										<TextField
+											control={form.control}
 											name="unit"
+											label={t("unitLabel")}
 											placeholder={t("unitPlaceholder")}
-											defaultValue={resource?.unit || ""}
 										/>
-									</div>
-									<div className="space-y-2">
-										<Label htmlFor={unitPriceId}>{t("unitPriceLabel")}</Label>
-										<Input
-											id={unitPriceId}
+
+										<TextField
+											control={form.control}
 											name="unitPrice"
+											label={t("unitPriceLabel")}
 											type="number"
 											step="0.01"
-											min="0"
+											min={0}
 											placeholder="0.00"
-											defaultValue={resource?.unitPrice || ""}
 										/>
 									</div>
+									<p className="text-xs text-gray-600 dark:text-gray-400">
+										{t("unitInfo")}
+									</p>
 								</div>
-								<p className="text-xs text-gray-600 dark:text-gray-400">
-									{t("unitInfo")}
-								</p>
-							</div>
-						)}
-					</div>
+							)}
+						</div>
 
-					<div className="flex justify-end space-x-2">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => setOpen(false)}
-							disabled={loading}
-						>
-							{t("cancel")}
-						</Button>
-						<Button type="submit" disabled={loading}>
-							{loading
-								? resource
-									? "Updating..."
-									: t("creating")
-								: resource
-									? "Update Resource"
-									: t("create")}
-						</Button>
-					</div>
-				</form>
+						<div className="flex justify-end space-x-2">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setOpen(false)}
+								disabled={loading}
+							>
+								{t("cancel")}
+							</Button>
+							<Button type="submit" disabled={loading}>
+								{loading
+									? resource
+										? "Updating..."
+										: t("creating")
+									: resource
+										? "Update Resource"
+										: t("create")}
+							</Button>
+						</div>
+					</form>
+				</Form>
 			</DialogContent>
 		</Dialog>
 	);

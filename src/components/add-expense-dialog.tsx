@@ -1,11 +1,11 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { Group, Member } from "@prisma/client";
 import { Decimal } from "decimal.js";
-import { useEffect, useId, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DatePicker } from "@/components/ui/date-picker";
 import {
 	Dialog,
 	DialogContent,
@@ -14,20 +14,20 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Form } from "@/components/ui/form";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+	CheckboxField,
+	DateField,
+	SelectField,
+	TextField,
+} from "@/components/ui/form-field";
+import { MemberSelection } from "@/components/ui/member-selection";
 import {
 	createExpense,
 	editExpense,
 	getActiveMembersForDate,
 } from "@/lib/actions";
+import { type ExpenseFormData, expenseSchema } from "@/lib/schemas";
 import { convertToPlainObject } from "@/lib/utils";
 
 interface AddExpenseDialogProps {
@@ -35,7 +35,7 @@ interface AddExpenseDialogProps {
 		members: Member[];
 	};
 	children: React.ReactNode;
-	expense?: any; // For editing existing expense
+	expense?: ExpenseFormData & { id: string }; // For editing existing expense
 	onExpenseUpdated?: () => void;
 }
 
@@ -47,149 +47,135 @@ export function AddExpenseDialog({
 }: AddExpenseDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
-	const [splitAll, setSplitAll] = useState(false);
-	const [amount, setAmount] = useState("");
-	const [isRecurring, setIsRecurring] = useState(false);
-	const [recurringType, setRecurringType] = useState<
-		"weekly" | "monthly" | "yearly"
-	>("monthly");
-	const [recurringStartDate, setRecurringStartDate] = useState<Date>();
-	const [expenseDate, setExpenseDate] = useState<Date>(new Date());
 	const [activeMembersAtDate, setActiveMembersAtDate] = useState<Member[]>(
 		group.members,
 	);
 
+	const form = useForm({
+		resolver: zodResolver(expenseSchema),
+		defaultValues: {
+			title: "",
+			description: "",
+			amount: 0,
+			paidById: "",
+			date: new Date(),
+			splitAll: false,
+			selectedMembers: [],
+			isRecurring: false,
+			recurringType: "monthly",
+			recurringStartDate: undefined,
+		},
+	});
+
 	// Initialize form with expense data when editing
 	useEffect(() => {
 		if (expense) {
-			setAmount(expense.amount.toString());
-			setSplitAll(expense.splitAll);
-			setIsRecurring(expense.isRecurring);
-			setRecurringType(expense.recurringType || "monthly");
-			setRecurringStartDate(
-				expense.recurringStartDate
+			form.reset({
+				title: expense.title,
+				description: expense.description || "",
+				amount: expense.amount,
+				paidById: expense.paidById,
+				date: new Date(expense.date),
+				splitAll: expense.splitAll,
+				selectedMembers: expense.splitAll ? [] : expense.selectedMembers,
+				isRecurring: expense.isRecurring,
+				recurringType: expense.recurringType || "monthly",
+				recurringStartDate: expense.recurringStartDate
 					? new Date(expense.recurringStartDate)
 					: undefined,
-			);
-			setExpenseDate(new Date(expense.date));
-			if (!expense.splitAll && expense.expenseMembers) {
-				setSelectedMembers(
-					expense.expenseMembers.map((em: any) => em.memberId),
-				);
-			}
+			});
 		} else {
-			// Reset form for new expense
-			setAmount("");
-			setSplitAll(false);
-			setIsRecurring(false);
-			setRecurringType("monthly");
-			setRecurringStartDate(undefined);
-			setExpenseDate(new Date());
-			setSelectedMembers([]);
+			form.reset({
+				title: "",
+				description: "",
+				amount: 0,
+				paidById: "",
+				date: new Date(),
+				splitAll: false,
+				selectedMembers: [],
+				isRecurring: false,
+				recurringType: "monthly",
+				recurringStartDate: undefined,
+			});
 		}
-	}, [expense]);
+	}, [expense, form]);
+
+	const updateActiveMembersForDate = useCallback(
+		async (date: Date) => {
+			try {
+				const activeMembers = await getActiveMembersForDate(group.id, date);
+				setActiveMembersAtDate(activeMembers);
+
+				// If split all is enabled, update selected members to active members at this date
+				const splitAll = form.getValues("splitAll");
+				if (splitAll) {
+					form.setValue(
+						"selectedMembers",
+						activeMembers.map((member) => member.id),
+					);
+				}
+			} catch (error) {
+				console.error("Failed to get active members:", error);
+			}
+		},
+		[group.id, form],
+	);
 
 	// Initialize active members when dialog opens
-	// biome-ignore lint/correctness/useExhaustiveDependencies: no update needed
 	useEffect(() => {
 		if (open) {
-			updateActiveMembersForDate(expenseDate);
+			const currentDate = form.getValues("date") as Date;
+			updateActiveMembersForDate(currentDate);
 		}
-	}, [open]);
+	}, [open, form, updateActiveMembersForDate]);
 
-	const handleMemberToggle = (memberId: string, checked: boolean) => {
-		if (checked) {
-			setSelectedMembers([...selectedMembers, memberId]);
-		} else {
-			setSelectedMembers(selectedMembers.filter((id) => id !== memberId));
-		}
-	};
-
-	const handleSplitAllToggle = (checked: boolean) => {
-		setSplitAll(checked);
-		if (checked) {
-			// Select all active members at the expense date when "split all" is enabled
-			setSelectedMembers(activeMembersAtDate.map((member) => member.id));
-		} else {
-			// Clear selection when "split all" is disabled
-			setSelectedMembers([]);
-		}
-	};
-
-	const updateActiveMembersForDate = async (date: Date) => {
-		try {
-			const activeMembers = await getActiveMembersForDate(group.id, date);
-			setActiveMembersAtDate(activeMembers);
-
-			// If split all is enabled, update selected members to active members at this date
-			if (splitAll) {
-				setSelectedMembers(activeMembers.map((member) => member.id));
-			}
-		} catch (error) {
-			console.error("Failed to get active members:", error);
-		}
-	};
-
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
+	const onSubmit = async (data: ExpenseFormData) => {
 		setLoading(true);
-
-		const formData = new FormData(e.currentTarget);
-		const title = formData.get("title") as string;
-		const description = formData.get("description") as string;
-		const amount = parseFloat(formData.get("amount") as string);
-		const paidById = formData.get("paidBy") as string;
-
-		if (selectedMembers.length === 0) {
-			alert("Please select at least one member for this expense");
-			setLoading(false);
-			return;
-		}
-
-		if (isRecurring && !recurringStartDate) {
-			alert("Please select a start date for recurring expenses");
-			setLoading(false);
-			return;
-		}
 
 		try {
 			if (expense) {
 				// Edit existing expense
-				const expenseMembers = selectedMembers.map((memberId) => ({
+				const expenseMembers = data.selectedMembers.map((memberId) => ({
 					memberId,
-					amount: amount / selectedMembers.length,
+					amount: data.amount / data.selectedMembers.length,
 				}));
 
-				await editExpense(expense.id, {
-					title,
-					description: description || undefined,
-					amount,
-					paidBy: paidById,
-					date: expenseDate,
-					splitAll,
-					expenseMembers,
-					isRecurring,
-					recurringType: isRecurring ? recurringType : undefined,
-					recurringStartDate: isRecurring ? recurringStartDate : undefined,
-				});
+				await editExpense(
+					expense.id,
+					convertToPlainObject({
+						title: data.title,
+						description: data.description || undefined,
+						amount: data.amount,
+						paidById: data.paidById,
+						date: data.date,
+						splitAll: data.splitAll,
+						expenseMembers,
+						isRecurring: data.isRecurring,
+						recurringType: data.isRecurring
+							? (data.recurringType ?? undefined)
+							: undefined,
+						recurringStartDate: data.isRecurring
+							? (data.recurringStartDate ?? undefined)
+							: undefined,
+					}),
+				);
 			} else {
 				// Create new expense
 				await createExpense(
 					convertToPlainObject({
-						title,
-						description: description || null,
-						amount: new Decimal(amount),
+						title: data.title,
+						description: data.description || null,
+						amount: new Decimal(data.amount),
 						groupId: group.id,
-						paidById,
-						memberIds: selectedMembers,
-						splitAll,
-						isRecurring,
-						recurringType: isRecurring ? recurringType : null,
-						recurringStartDate: isRecurring
-							? (recurringStartDate ?? null)
+						paidById: data.paidById,
+						memberIds: data.selectedMembers,
+						splitAll: data.splitAll,
+						isRecurring: data.isRecurring,
+						recurringType: data.isRecurring ? data.recurringType || null : null,
+						recurringStartDate: data.isRecurring
+							? (data.recurringStartDate ?? null)
 							: null,
-						date: expenseDate,
+						date: data.date,
 					}),
 				);
 			}
@@ -220,218 +206,128 @@ export function AddExpenseDialog({
 							: "Add a new expense to your group. Select which members this expense applies to."}
 					</DialogDescription>
 				</DialogHeader>
-				<form onSubmit={handleSubmit} className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor="title">Title</Label>
-						<Input
-							id={useId()}
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<TextField
+							control={form.control}
 							name="title"
+							label="Title"
 							placeholder="e.g., Dinner at restaurant"
-							defaultValue={expense?.title || ""}
 							required
 						/>
-					</div>
 
-					<div className="space-y-2">
-						<Label htmlFor="description">Description (optional)</Label>
-						<Input
-							id={useId()}
+						<TextField
+							control={form.control}
 							name="description"
+							label="Description (optional)"
 							placeholder="e.g., Great food and drinks"
-							defaultValue={expense?.description || ""}
 						/>
-					</div>
 
-					<div className="grid grid-cols-2 gap-4">
-						<div className="space-y-2">
-							<Label htmlFor="amount">Amount</Label>
-							<Input
-								id={useId()}
+						<div className="grid grid-cols-2 gap-4">
+							<TextField
+								control={form.control}
 								name="amount"
+								label="Amount"
 								type="number"
 								step="0.01"
-								min="0"
+								min={0}
 								placeholder="0.00"
-								value={amount}
-								onChange={(e) => setAmount(e.target.value)}
 								required
+							/>
+
+							<SelectField
+								control={form.control}
+								name="paidById"
+								label="Paid by"
+								placeholder="Select member"
+								required
+								options={group.members.map((member) => ({
+									value: member.id,
+									label: member.name,
+								}))}
 							/>
 						</div>
 
-						<div className="space-y-2">
-							<Label htmlFor="paidBy">Paid by</Label>
-							<Select
-								name="paidBy"
-								required
-								defaultValue={expense?.paidBy || ""}
-							>
-								<SelectTrigger>
-									<SelectValue placeholder="Select member" />
-								</SelectTrigger>
-								<SelectContent>
-									{group.members.map((member) => (
-										<SelectItem key={member.id} value={member.id}>
-											{member.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-					</div>
-
-					<div className="space-y-2">
-						<Label htmlFor="expenseDate">Date</Label>
-						<DatePicker
-							value={expenseDate}
-							onChange={(date) => {
-								const newDate = date || new Date();
-								setExpenseDate(newDate);
-								updateActiveMembersForDate(newDate);
-							}}
+						<DateField
+							control={form.control}
+							name="date"
+							label="Date"
 							placeholder="Select expense date"
 						/>
-					</div>
 
-					{/* Recurring Options */}
-					<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-						<div className="flex items-center space-x-2">
-							<Checkbox
-								id={useId()}
-								checked={isRecurring}
-								onCheckedChange={(checked) =>
-									setIsRecurring(checked as boolean)
-								}
+						{/* Recurring Options */}
+						<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+							<CheckboxField
+								control={form.control}
+								name="isRecurring"
+								label="Make this a recurring expense"
 							/>
-							<Label htmlFor="isRecurring" className="text-sm font-medium">
-								Make this a recurring expense
-							</Label>
-						</div>
 
-						{isRecurring && (
-							<div className="space-y-4 pl-6">
-								<div className="grid grid-cols-2 gap-4">
-									<div className="space-y-2">
-										<Label htmlFor="recurringType">Frequency</Label>
-										<Select
-											value={recurringType}
-											onValueChange={(value: "weekly" | "monthly" | "yearly") =>
-												setRecurringType(value)
-											}
-										>
-											<SelectTrigger>
-												<SelectValue />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="weekly">Weekly</SelectItem>
-												<SelectItem value="monthly">Monthly</SelectItem>
-												<SelectItem value="yearly">Yearly</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
+							{(form.watch("isRecurring") as boolean) && (
+								<div className="space-y-4 pl-6">
+									<div className="grid grid-cols-2 gap-4">
+										<SelectField
+											control={form.control}
+											name="recurringType"
+											label="Frequency"
+											options={[
+												{ value: "weekly", label: "Weekly" },
+												{ value: "monthly", label: "Monthly" },
+												{ value: "yearly", label: "Yearly" },
+											]}
+										/>
 
-									<div className="space-y-2">
-										<Label htmlFor="recurringStartDate">Start Date</Label>
-										<DatePicker
-											value={recurringStartDate}
-											onChange={(date) => setRecurringStartDate(date)}
+										<DateField
+											control={form.control}
+											name="recurringStartDate"
+											label="Start Date"
 											placeholder="Select start date"
 										/>
 									</div>
+
+									<p className="text-xs text-gray-600 dark:text-gray-400">
+										This expense will be automatically generated for each{" "}
+										{form.watch("recurringType")} period from the start date.
+									</p>
 								</div>
-
-								<p className="text-xs text-gray-600 dark:text-gray-400">
-									This expense will be automatically generated for each{" "}
-									{recurringType} period from the start date.
-								</p>
-							</div>
-						)}
-					</div>
-
-					<div className="space-y-2">
-						<Label>Split between</Label>
-
-						{/* All Members Option */}
-						<div className="flex items-center space-x-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
-							<Checkbox
-								id={useId()}
-								checked={splitAll}
-								onCheckedChange={(checked) =>
-									handleSplitAllToggle(checked as boolean)
-								}
-							/>
-							<Label
-								htmlFor={useId()}
-								className="text-sm font-medium text-blue-700 dark:text-blue-300"
-							>
-								All Members (including future members)
-							</Label>
-						</div>
-
-						<div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-3">
-							{activeMembersAtDate.map((member) => (
-								<div key={member.id} className="flex items-center space-x-2">
-									<Checkbox
-										id={member.id}
-										checked={selectedMembers.includes(member.id)}
-										onCheckedChange={(checked) =>
-											handleMemberToggle(member.id, checked as boolean)
-										}
-										disabled={splitAll}
-									/>
-									<Label
-										htmlFor={member.id}
-										className={`text-sm font-normal ${splitAll ? "text-gray-400 dark:text-gray-500" : ""}`}
-									>
-										{member.name}
-									</Label>
-								</div>
-							))}
-							{activeMembersAtDate.length === 0 && (
-								<p className="text-sm text-gray-500 dark:text-gray-400 text-center py-2">
-									No active members on this date
-								</p>
 							)}
 						</div>
 
-						{selectedMembers.length > 0 && (
-							<div className="space-y-1">
-								<p className="text-sm text-gray-600 dark:text-gray-300">
-									Amount per person: $
-									{(Number(amount || 0) / selectedMembers.length).toFixed(2)}
-								</p>
-								{splitAll && (
-									<p className="text-xs text-blue-600 dark:text-blue-400">
-										This expense will include all {activeMembersAtDate.length}{" "}
-										active members on {expenseDate.toLocaleDateString()}
-									</p>
-								)}
-							</div>
-						)}
-					</div>
+						<MemberSelection
+							members={group.members}
+							selectedMembers={form.watch("selectedMembers")}
+							onSelectionChange={(members) =>
+								form.setValue("selectedMembers", members)
+							}
+							splitAll={form.watch("splitAll") as boolean}
+							onSplitAllChange={(splitAll) =>
+								form.setValue("splitAll", splitAll)
+							}
+							activeMembersAtDate={activeMembersAtDate}
+							expenseDate={form.watch("date") as Date}
+						/>
 
-					<div className="flex justify-end space-x-2">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => setOpen(false)}
-							disabled={loading}
-						>
-							Cancel
-						</Button>
-						<Button
-							type="submit"
-							disabled={loading || selectedMembers.length === 0}
-						>
-							{loading
-								? expense
-									? "Updating..."
-									: "Adding..."
-								: expense
-									? "Update Expense"
-									: "Add Expense"}
-						</Button>
-					</div>
-				</form>
+						<div className="flex justify-end space-x-2">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setOpen(false)}
+								disabled={loading}
+							>
+								Cancel
+							</Button>
+							<Button type="submit" disabled={loading}>
+								{loading
+									? expense
+										? "Updating..."
+										: "Adding..."
+									: expense
+										? "Update Expense"
+										: "Add Expense"}
+							</Button>
+						</div>
+					</form>
+				</Form>
 			</DialogContent>
 		</Dialog>
 	);

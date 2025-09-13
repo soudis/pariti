@@ -173,7 +173,20 @@ export function ExpensesSection({ group, expenses }: ExpensesSectionProps) {
 										</Badge>
 										<AddExpenseDialog
 											group={group}
-											expense={expense}
+											expense={{
+												...expense,
+												amount: Number(expense.amount),
+												recurringType: expense.recurringType as
+													| "weekly"
+													| "monthly"
+													| "yearly"
+													| undefined,
+												recurringStartDate:
+													expense.recurringStartDate ?? undefined,
+												selectedMembers: expense.splitAll
+													? []
+													: expense.expenseMembers.map((em) => em.memberId),
+											}}
 											onExpenseUpdated={() => window.location.reload()}
 										>
 											<Button
@@ -215,31 +228,29 @@ export function ExpensesSection({ group, expenses }: ExpensesSectionProps) {
 									</p>
 									<div className="flex flex-wrap gap-2">
 										{expense.splitAll ? (
-											<>
-												{expense.effectiveMembers &&
-												expense.effectiveMembers.length > 0 ? (
-													expense.effectiveMembers.map((member) => (
-														<Badge
-															key={member.id}
-															variant="outline"
-															className="text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300"
-														>
-															{member.name}: ${member.amount.toFixed(2)}
-														</Badge>
-													))
-												) : (
+											expense.effectiveMembers &&
+											expense.effectiveMembers.length > 0 ? (
+												expense.effectiveMembers.map((member) => (
 													<Badge
-														variant="secondary"
-														className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+														key={member.id}
+														variant="outline"
+														className="text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300"
 													>
-														{t("allActiveMembers")}: $
-														{(
-															Number(expense.amount) / group.members.length
-														).toFixed(2)}{" "}
-														{t("each")}
+														{member.name}: ${member.amount.toFixed(2)}
 													</Badge>
-												)}
-											</>
+												))
+											) : (
+												<Badge
+													variant="secondary"
+													className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+												>
+													{t("allActiveMembers")}: $
+													{(
+														Number(expense.amount) / group.members.length
+													).toFixed(2)}{" "}
+													{t("each")}
+												</Badge>
+											)
 										) : (
 											expense.expenseMembers.map((expenseMember) => (
 												<Badge
