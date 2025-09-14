@@ -2,24 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { convertToPlainObject } from "@/lib/utils";
+import { actionClient } from "@/lib/safe-action";
+import {
+	type ExpenseFormData,
+	editExpenseInputSchema,
+	editExpenseReturnSchema,
+} from "@/lib/schemas";
 import { calculateWeightedAmounts } from "./utils";
 
-export async function editExpense(
-	expenseId: string,
-	data: {
-		title: string;
-		amount: number;
-		description?: string;
-		paidById: string;
-		date: Date;
-		splitAll: boolean;
-		expenseMembers: Array<{ memberId: string; amount: number }>;
-		isRecurring: boolean;
-		recurringType?: "weekly" | "monthly" | "yearly";
-		recurringStartDate?: Date;
-	},
-) {
+async function editExpense(expenseId: string, data: ExpenseFormData) {
 	const expense = await db.expense.update({
 		where: { id: expenseId },
 		data: {
@@ -40,7 +31,7 @@ export async function editExpense(
 		where: { expenseId },
 	});
 
-	if (!data.splitAll && data.expenseMembers.length > 0) {
+	if (!data.splitAll && data.selectedMembers.length > 0) {
 		// Get group to check if weights are enabled
 		const group = await db.group.findUnique({
 			where: { id: expense.groupId },
@@ -49,7 +40,7 @@ export async function editExpense(
 
 		// Get member weights
 		const members = await db.member.findMany({
-			where: { id: { in: data.expenseMembers.map((m) => m.memberId) } },
+			where: { id: { in: data.selectedMembers } },
 			select: { id: true, weight: true },
 		});
 
@@ -70,5 +61,12 @@ export async function editExpense(
 	}
 
 	revalidatePath(`/group/${expense.groupId}`);
-	return convertToPlainObject(expense);
+	return { expense };
 }
+
+export const editExpenseAction = actionClient
+	.inputSchema(editExpenseInputSchema)
+	.outputSchema(editExpenseReturnSchema)
+	.action(async ({ parsedInput }) =>
+		editExpense(parsedInput.expenseId, parsedInput.expense),
+	);

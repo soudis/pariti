@@ -2,18 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
+import { actionClient } from "@/lib/safe-action";
+import {
+	type GroupFormData,
+	updateGroupInputSchema,
+	updateGroupReturnSchema,
+} from "@/lib/schemas";
 
-export async function updateGroup(
-	id: string,
-	data: {
-		name: string;
-		description?: string;
-		currency: string;
-		weightsEnabled: boolean;
-	},
-) {
+async function updateGroup(groupId: string, data: GroupFormData) {
 	const group = await db.group.update({
-		where: { id },
+		where: { id: groupId },
 		data: {
 			name: data.name,
 			description: data.description,
@@ -21,6 +19,13 @@ export async function updateGroup(
 			weightsEnabled: data.weightsEnabled,
 		},
 	});
-	revalidatePath(`/group/${id}`);
-	return group;
+	revalidatePath(`/group/${groupId}`);
+	return { group };
 }
+
+export const updateGroupAction = actionClient
+	.inputSchema(updateGroupInputSchema)
+	.outputSchema(updateGroupReturnSchema)
+	.action(async ({ parsedInput }) =>
+		updateGroup(parsedInput.groupId, parsedInput.group),
+	);

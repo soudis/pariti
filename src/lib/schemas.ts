@@ -88,6 +88,7 @@ export const memberSchema = z.object({
 	hasEndDate: z.coerce.boolean().nullish(),
 });
 
+// Group schemas
 export const groupSchema = z.object({
 	name: z.string().min(1, "Name is required"),
 	description: z.string().nullish(),
@@ -95,6 +96,140 @@ export const groupSchema = z.object({
 	weightsEnabled: z.coerce.boolean(),
 });
 
+export const createGroupInputSchema = z.object({
+	group: groupSchema,
+});
+
+export const createGroupReturnSchema = z.object({
+	id: z.string(),
+});
+
+export const updateGroupInputSchema = z.object({
+	groupId: z.string().min(1, "Group ID is required"),
+	group: groupSchema,
+});
+
+export const updateGroupReturnSchema = z.object({
+	id: z.string(),
+});
+
+// Member schemas
+export const addMemberInputSchema = z.object({
+	groupId: z.string().min(1, "Group ID is required"),
+	member: memberSchema,
+});
+
+export const addMemberReturnSchema = z.object({
+	member: z.any(), // Allow any member type from database
+});
+
+export const updateMemberInputSchema = z.object({
+	memberId: z.string().min(1, "Member ID is required"),
+	member: memberSchema,
+});
+
+export const updateMemberReturnSchema = z.object({
+	member: z.any(), // Allow any member type from database
+});
+
+export const removeMemberInputSchema = z.object({
+	memberId: z.string().min(1, "Member ID is required"),
+});
+
+export const removeMemberReturnSchema = z.object({
+	success: z.boolean(),
+});
+
+// Expense schemas
+export const createExpenseInputSchema = z.object({
+	groupId: z.string().min(1, "Group ID is required"),
+	expense: expenseSchema,
+});
+
+export const createExpenseReturnSchema = z.object({
+	expense: z.any(), // Allow any expense type from database
+});
+
+export const removeExpenseInputSchema = z.object({
+	expenseId: z.string().min(1, "Expense ID is required"),
+});
+
+export const removeExpenseReturnSchema = z.object({
+	success: z.boolean(),
+});
+
+export const editExpenseInputSchema = z.object({
+	expenseId: z.string().min(1, "Expense ID is required"),
+	expense: expenseSchema,
+});
+
+export const editExpenseReturnSchema = z.object({
+	expense: z.any(), // Allow any expense type from database
+});
+
+// Resource schemas
+export const createResourceInputSchema = z.object({
+	groupId: z.string().min(1, "Group ID is required"),
+	resource: resourceSchema,
+});
+
+export const createResourceReturnSchema = z.object({
+	resource: z.any(), // Allow any resource type from database
+});
+
+export const updateResourceInputSchema = z.object({
+	resourceId: z.string().min(1, "Resource ID is required"),
+	resource: resourceSchema,
+});
+
+export const updateResourceReturnSchema = z.object({
+	resource: z.any(), // Allow any resource type from database
+});
+
+export const removeResourceInputSchema = z.object({
+	resourceId: z.string().min(1, "Resource ID is required"),
+});
+
+export const removeResourceReturnSchema = z.object({
+	success: z.boolean(),
+});
+
+export const editResourceInputSchema = z.object({
+	resourceId: z.string().min(1, "Resource ID is required"),
+	resource: resourceSchema,
+});
+
+export const editResourceReturnSchema = z.object({
+	resource: z.any(), // Allow any resource type from database
+});
+
+// Consumption schemas
+export const createConsumptionInputSchema = z.object({
+	consumption: consumptionSchema,
+});
+
+export const createConsumptionReturnSchema = z.object({
+	consumption: z.any(), // Allow any consumption type from database
+});
+
+export const removeConsumptionInputSchema = z.object({
+	consumptionId: z.string().min(1, "Consumption ID is required"),
+});
+
+export const removeConsumptionReturnSchema = z.object({
+	success: z.boolean(),
+});
+
+export const editConsumptionInputSchema = z.object({
+	consumptionId: z.string().min(1, "Consumption ID is required"),
+	consumption: consumptionSchema,
+});
+
+export const editConsumptionReturnSchema = z.object({
+	consumption: z.any(), // Allow any consumption type from database
+});
+
+// Settlement schemas
 export const settlementSchema = z.object({
 	title: z.string().min(1, "Title is required"),
 	description: z.string().nullish(),
@@ -102,6 +237,33 @@ export const settlementSchema = z.object({
 	centerId: z.string().optional(),
 });
 
+export const createSettlementInputSchema = z.object({
+	groupId: z.string().min(1, "Group ID is required"),
+	settlement: settlementSchema,
+});
+
+export const createSettlementReturnSchema = z.object({
+	settlement: z.any(), // Allow any settlement type from database
+});
+
+export const updateSettlementMemberStatusInputSchema = z.object({
+	settlementMemberId: z.string().min(1, "Settlement Member ID is required"),
+	status: z.enum(["open", "completed"]),
+});
+
+export const updateSettlementMemberStatusReturnSchema = z.object({
+	success: z.boolean(),
+});
+
+export const removeSettlementInputSchema = z.object({
+	settlementId: z.string().min(1, "Settlement ID is required"),
+});
+
+export const removeSettlementReturnSchema = z.object({
+	success: z.boolean(),
+});
+
+// Type exports
 export type ExpenseFormData = z.infer<typeof expenseSchema>;
 export type ResourceFormData = z.infer<typeof resourceSchema>;
 export type ConsumptionFormData = z.infer<typeof consumptionSchema>;

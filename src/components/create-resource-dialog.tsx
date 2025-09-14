@@ -2,9 +2,10 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
+import { useAction } from "next-safe-action/hooks";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { createResource, editResource } from "@/actions";
+import { createResourceAction, editResourceAction } from "@/actions";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -16,8 +17,8 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { CheckboxField, TextField } from "@/components/ui/form-field";
-
 import { type ResourceFormData, resourceSchema } from "@/lib/schemas";
+import { handleActionErrors } from "@/lib/utils";
 
 interface CreateResourceDialogProps {
 	groupId: string;
@@ -35,6 +36,9 @@ export function CreateResourceDialog({
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const t = useTranslations("forms.createResource");
+
+	const { executeAsync: createResource } = useAction(createResourceAction);
+	const { executeAsync: editResource } = useAction(editResourceAction);
 
 	const form = useForm({
 		resolver: zodResolver(resourceSchema),
@@ -74,10 +78,12 @@ export function CreateResourceDialog({
 		try {
 			if (resource) {
 				// Edit existing resource
-				await editResource(resource.id, data);
+				handleActionErrors(
+					await editResource({ resourceId: resource.id, resource: data }),
+				);
 			} else {
 				// Create new resource
-				await createResource(groupId, data);
+				handleActionErrors(await createResource({ groupId, resource: data }));
 			}
 
 			setOpen(false);

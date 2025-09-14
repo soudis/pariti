@@ -2,14 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import type { SettlementFormData } from "@/lib/schemas";
-import { convertToPlainObject } from "@/lib/utils";
+import { actionClient } from "@/lib/safe-action";
+import {
+	createSettlementInputSchema,
+	createSettlementReturnSchema,
+	type SettlementFormData,
+} from "@/lib/schemas";
 import { calculateBalances } from "./utils";
 
-export async function createSettlement(
-	groupId: string,
-	data: SettlementFormData,
-) {
+async function createSettlement(groupId: string, data: SettlementFormData) {
 	const group = await db.group.findUnique({
 		where: { id: groupId },
 		include: {
@@ -103,8 +104,15 @@ export async function createSettlement(
 	});
 
 	revalidatePath(`/group/${groupId}`);
-	return convertToPlainObject(settlement);
+	return { settlement };
 }
+
+export const createSettlementAction = actionClient
+	.inputSchema(createSettlementInputSchema)
+	.outputSchema(createSettlementReturnSchema)
+	.action(async ({ parsedInput }) =>
+		createSettlement(parsedInput.groupId, parsedInput.settlement),
+	);
 
 // Helper function to generate settlement transactions
 function generateSettlementTransactions(

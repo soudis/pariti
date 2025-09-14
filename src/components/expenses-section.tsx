@@ -12,12 +12,13 @@ import {
 	User,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useAction } from "next-safe-action/hooks";
 import { useQueryState } from "nuqs";
 import { useId, useState } from "react";
 import {
 	type generateRecurringExpenseInstances,
 	type getGroup,
-	removeExpense,
+	removeExpenseAction,
 } from "@/actions";
 import { AddExpenseDialog } from "@/components/add-expense-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -25,8 +26,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-
 import { formatCurrency } from "@/lib/currency";
+import { handleActionErrors } from "@/lib/utils";
 
 interface ExpensesSectionProps {
 	group: Awaited<ReturnType<typeof getGroup>>;
@@ -49,6 +50,8 @@ export function ExpensesSection({
 	const t = useTranslations("expenses");
 	const showHiddenId = useId();
 
+	const { executeAsync: removeExpense } = useAction(removeExpenseAction);
+
 	if (!group) {
 		return null;
 	}
@@ -69,13 +72,8 @@ export function ExpensesSection({
 
 	const handleDeleteExpense = async (expenseId: string) => {
 		setDeletingId(expenseId);
-		try {
-			await removeExpense(expenseId);
-		} catch (error) {
-			console.error("Failed to remove expense:", error);
-		} finally {
-			setDeletingId(null);
-		}
+		await handleActionErrors(await removeExpense({ expenseId }));
+		setDeletingId(null);
 	};
 
 	const formatDate = (date: Date) => {

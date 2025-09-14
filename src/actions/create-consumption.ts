@@ -2,10 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import type { ConsumptionFormData } from "@/lib/schemas";
-import { convertToPlainObject } from "@/lib/utils";
+import { actionClient } from "@/lib/safe-action";
+import {
+	type ConsumptionFormData,
+	createConsumptionInputSchema,
+	createConsumptionReturnSchema,
+} from "@/lib/schemas";
 
-export async function createConsumption(data: ConsumptionFormData) {
+async function createConsumption(data: ConsumptionFormData) {
 	const resource = await db.resource.findUnique({
 		where: { id: data.resourceId },
 		include: { group: true },
@@ -43,5 +47,12 @@ export async function createConsumption(data: ConsumptionFormData) {
 	});
 
 	revalidatePath(`/group/${resource.groupId}`);
-	return convertToPlainObject(consumption);
+	return { consumption };
 }
+
+export const createConsumptionAction = actionClient
+	.inputSchema(createConsumptionInputSchema)
+	.outputSchema(createConsumptionReturnSchema)
+	.action(async ({ parsedInput }) =>
+		createConsumption(parsedInput.consumption),
+	);

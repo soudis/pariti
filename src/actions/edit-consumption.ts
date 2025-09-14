@@ -2,12 +2,19 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import type { ConsumptionFormData } from "@/lib/schemas";
-import { convertToPlainObject } from "@/lib/utils";
+import { actionClient } from "@/lib/safe-action";
+import {
+	type ConsumptionFormData,
+	editConsumptionInputSchema,
+	editConsumptionReturnSchema,
+} from "@/lib/schemas";
 
-export async function editConsumption(id: string, data: ConsumptionFormData) {
+async function editConsumption(
+	consumptionId: string,
+	data: ConsumptionFormData,
+) {
 	const consumption = await db.consumption.findUnique({
-		where: { id },
+		where: { id: consumptionId },
 		include: {
 			resource: true,
 		},
@@ -22,7 +29,7 @@ export async function editConsumption(id: string, data: ConsumptionFormData) {
 	const amountPerMember = totalCost / data.selectedMembers.length;
 
 	const updatedConsumption = await db.consumption.update({
-		where: { id },
+		where: { id: consumptionId },
 		data: {
 			amount: data.amount,
 			isUnitAmount: data.isUnitAmount,
@@ -40,17 +47,24 @@ export async function editConsumption(id: string, data: ConsumptionFormData) {
 
 	// Update consumption members
 	await db.consumptionMember.deleteMany({
-		where: { consumptionId: id },
+		where: { consumptionId },
 	});
 
 	await db.consumptionMember.createMany({
 		data: data.selectedMembers.map((memberId) => ({
-			consumptionId: id,
+			consumptionId,
 			memberId,
 			amount: amountPerMember,
 		})),
 	});
 
 	revalidatePath(`/group/${consumption.resource.groupId}`);
-	return convertToPlainObject(updatedConsumption);
+	return { consumption: updatedConsumption };
 }
+
+export const editConsumptionAction = actionClient
+	.inputSchema(editConsumptionInputSchema)
+	.outputSchema(editConsumptionReturnSchema)
+	.action(async ({ parsedInput }) =>
+		editConsumption(parsedInput.consumptionId, parsedInput.consumption),
+	);

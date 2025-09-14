@@ -2,11 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
+import { useAction } from "next-safe-action/hooks";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
-	createConsumption,
-	editConsumption,
+	createConsumptionAction,
+	editConsumptionAction,
 	getActiveMembersForDate,
 	type getGroup,
 } from "@/actions";
@@ -28,8 +29,8 @@ import {
 } from "@/components/ui/form-field";
 import { Label } from "@/components/ui/label";
 import { MemberSelection } from "@/components/ui/member-selection";
-
 import { type ConsumptionFormData, consumptionSchema } from "@/lib/schemas";
+import { handleActionErrors } from "@/lib/utils";
 
 interface CreateConsumptionDialogProps {
 	groupId: string;
@@ -53,6 +54,11 @@ export function CreateConsumptionDialog({
 	const [activeMembersAtDate, setActiveMembersAtDate] =
 		useState<Awaited<ReturnType<typeof getGroup>>["members"]>(members);
 	const t = useTranslations("forms.createConsumption");
+
+	const { executeAsync: createConsumption } = useAction(
+		createConsumptionAction,
+	);
+	const { executeAsync: editConsumption } = useAction(editConsumptionAction);
 
 	const form = useForm({
 		resolver: zodResolver(consumptionSchema),
@@ -114,10 +120,15 @@ export function CreateConsumptionDialog({
 
 		try {
 			if (consumption) {
-				await editConsumption(consumption.id, data);
+				handleActionErrors(
+					await editConsumption({
+						consumptionId: consumption.id,
+						consumption: data,
+					}),
+				);
 			} else {
 				// Create new consumption
-				await createConsumption(data);
+				handleActionErrors(await createConsumption({ consumption: data }));
 			}
 
 			setOpen(false);

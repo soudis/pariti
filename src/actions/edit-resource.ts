@@ -2,12 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import type { ResourceFormData } from "@/lib/schemas";
-import { convertToPlainObject } from "@/lib/utils";
+import { actionClient } from "@/lib/safe-action";
+import {
+	editResourceInputSchema,
+	editResourceReturnSchema,
+	type ResourceFormData,
+} from "@/lib/schemas";
 
-export async function editResource(id: string, data: ResourceFormData) {
+async function editResource(resourceId: string, data: ResourceFormData) {
 	const resource = await db.resource.update({
-		where: { id },
+		where: { id: resourceId },
 		data: {
 			name: data.name,
 			description: data.description,
@@ -28,5 +32,12 @@ export async function editResource(id: string, data: ResourceFormData) {
 	});
 
 	revalidatePath(`/group/${resource.groupId}`);
-	return convertToPlainObject(resource);
+	return { resource };
 }
+
+export const editResourceAction = actionClient
+	.inputSchema(editResourceInputSchema)
+	.outputSchema(editResourceReturnSchema)
+	.action(async ({ parsedInput }) =>
+		editResource(parsedInput.resourceId, parsedInput.resource),
+	);

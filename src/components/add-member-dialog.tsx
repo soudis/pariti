@@ -2,9 +2,10 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
+import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { addMember } from "@/actions";
+import { addMemberAction } from "@/actions/add-member";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -21,8 +22,8 @@ import {
 	NumberField,
 	TextField,
 } from "@/components/ui/form-field";
-
 import { type MemberFormData, memberSchema } from "@/lib/schemas";
+import { handleActionErrors } from "@/lib/utils";
 
 interface AddMemberDialogProps {
 	groupId: string;
@@ -39,6 +40,7 @@ export function AddMemberDialog({
 	const [loading, setLoading] = useState(false);
 	const t = useTranslations("forms.addMember");
 
+	const { executeAsync: addMember } = useAction(addMemberAction);
 	const form = useForm({
 		resolver: zodResolver(memberSchema),
 		defaultValues: {
@@ -55,14 +57,7 @@ export function AddMemberDialog({
 		setLoading(true);
 
 		try {
-			await addMember({
-				name: data.name,
-				iban: data.iban || undefined,
-				weight: data.weight || 1,
-				groupId,
-				activeFrom: data.activeFrom,
-				activeTo: data.activeTo || undefined,
-			});
+			handleActionErrors(await addMember({ groupId, member: data }));
 
 			setOpen(false);
 			form.reset();

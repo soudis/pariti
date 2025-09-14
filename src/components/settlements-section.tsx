@@ -11,19 +11,20 @@ import {
 	Trash2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import {
 	type getGroup,
-	removeSettlement,
-	updateSettlementMemberStatus,
+	removeSettlementAction,
+	updateSettlementMemberStatusAction,
 } from "@/actions";
 import { CreateSettlementDialog } from "@/components/create-settlement-dialog";
 import { QRCodeDialog } from "@/components/qr-code-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { formatCurrency } from "@/lib/currency";
+import { handleActionErrors } from "@/lib/utils";
 
 interface SettlementsSectionProps {
 	groupId: string;
@@ -44,29 +45,26 @@ export function SettlementsSection({
 	const [deletingId, setDeletingId] = useState<string | null>(null);
 	const t = useTranslations("settlements");
 
+	const { executeAsync: updateSettlementMemberStatus } = useAction(
+		updateSettlementMemberStatusAction,
+	);
+	const { executeAsync: removeSettlement } = useAction(removeSettlementAction);
+
 	const handleStatusUpdate = async (
 		settlementMemberId: string,
 		status: "open" | "completed",
 	) => {
 		setUpdatingStatus(settlementMemberId);
-		try {
-			await updateSettlementMemberStatus(settlementMemberId, status);
-		} catch (error) {
-			console.error("Failed to update settlement status:", error);
-		} finally {
-			setUpdatingStatus(null);
-		}
+		handleActionErrors(
+			await updateSettlementMemberStatus({ settlementMemberId, status }),
+		);
+		setUpdatingStatus(null);
 	};
 
 	const handleDeleteSettlement = async (settlementId: string) => {
 		setDeletingId(settlementId);
-		try {
-			await removeSettlement(settlementId);
-		} catch (error) {
-			console.error("Failed to remove settlement:", error);
-		} finally {
-			setDeletingId(null);
-		}
+		handleActionErrors(await removeSettlement({ settlementId }));
+		setDeletingId(null);
 	};
 
 	const formatDate = (date: Date) => new Date(date).toLocaleDateString();

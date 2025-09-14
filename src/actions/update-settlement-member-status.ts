@@ -2,8 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
+import { actionClient } from "@/lib/safe-action";
+import {
+	updateSettlementMemberStatusInputSchema,
+	updateSettlementMemberStatusReturnSchema,
+} from "@/lib/schemas";
 
-export async function updateSettlementMemberStatus(
+async function updateSettlementMemberStatus(
 	settlementMemberId: string,
 	status: "open" | "completed",
 ) {
@@ -18,7 +23,7 @@ export async function updateSettlementMemberStatus(
 		},
 	});
 
-	if (!settlementMember) return null;
+	if (!settlementMember) throw new Error("Settlement member not found");
 
 	// Update the specific settlement member status
 	await db.settlementMember.update({
@@ -42,5 +47,15 @@ export async function updateSettlementMemberStatus(
 	}
 
 	revalidatePath(`/group/${settlementMember.settlement.groupId}`);
-	return settlementMember;
+	return { success: true };
 }
+
+export const updateSettlementMemberStatusAction = actionClient
+	.inputSchema(updateSettlementMemberStatusInputSchema)
+	.outputSchema(updateSettlementMemberStatusReturnSchema)
+	.action(async ({ parsedInput }) =>
+		updateSettlementMemberStatus(
+			parsedInput.settlementMemberId,
+			parsedInput.status,
+		),
+	);

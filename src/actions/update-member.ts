@@ -3,18 +3,23 @@
 import type { Member } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import type { MemberFormData } from "@/lib/schemas";
+import { actionClient } from "@/lib/safe-action";
+import {
+	type MemberFormData,
+	updateMemberInputSchema,
+	updateMemberReturnSchema,
+} from "@/lib/schemas";
 
-export async function updateMember(id: Member["id"], data: MemberFormData) {
+async function updateMember(memberId: Member["id"], data: MemberFormData) {
 	const member = await db.member.findUnique({
-		where: { id },
+		where: { id: memberId },
 		include: { group: true },
 	});
 
-	if (!member) return null;
+	if (!member) throw new Error("Member not found");
 
 	const updatedMember = await db.member.update({
-		where: { id },
+		where: { id: memberId },
 		data: {
 			name: data.name,
 			email: data.email,
@@ -26,5 +31,12 @@ export async function updateMember(id: Member["id"], data: MemberFormData) {
 	});
 
 	revalidatePath(`/group/${member.groupId}`);
-	return updatedMember;
+	return { member: { ...updatedMember, weight: Number(updatedMember.weight) } };
 }
+
+export const updateMemberAction = actionClient
+	.inputSchema(updateMemberInputSchema)
+	.outputSchema(updateMemberReturnSchema)
+	.action(async ({ parsedInput }) =>
+		updateMember(parsedInput.memberId, parsedInput.member),
+	);

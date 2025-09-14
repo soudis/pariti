@@ -3,9 +3,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Group, Member } from "@prisma/client";
 import { Decimal } from "decimal.js";
+import { useAction } from "next-safe-action/hooks";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { createExpense, editExpense, getActiveMembersForDate } from "@/actions";
+import {
+	createExpenseAction,
+	editExpenseAction,
+	getActiveMembersForDate,
+} from "@/actions";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -23,9 +28,8 @@ import {
 	TextField,
 } from "@/components/ui/form-field";
 import { MemberSelection } from "@/components/ui/member-selection";
-
 import { type ExpenseFormData, expenseSchema } from "@/lib/schemas";
-import { convertToPlainObject } from "@/lib/utils";
+import { convertToPlainObject, handleActionErrors } from "@/lib/utils";
 
 interface AddExpenseDialogProps {
 	group: Group & {
@@ -47,6 +51,8 @@ export function AddExpenseDialog({
 	const [activeMembersAtDate, setActiveMembersAtDate] = useState<Member[]>(
 		group.members,
 	);
+	const { executeAsync: createExpense } = useAction(createExpenseAction);
+	const { executeAsync: editExpense } = useAction(editExpenseAction);
 
 	const form = useForm({
 		resolver: zodResolver(expenseSchema),
@@ -131,49 +137,13 @@ export function AddExpenseDialog({
 
 		try {
 			if (expense) {
-				// Edit existing expense
-				const expenseMembers = data.selectedMembers.map((memberId) => ({
-					memberId,
-					amount: data.amount / data.selectedMembers.length,
-				}));
-
-				await editExpense(
-					expense.id,
-					convertToPlainObject({
-						title: data.title,
-						description: data.description || undefined,
-						amount: data.amount,
-						paidById: data.paidById,
-						date: data.date,
-						splitAll: data.splitAll,
-						expenseMembers,
-						isRecurring: data.isRecurring,
-						recurringType: data.isRecurring
-							? (data.recurringType ?? undefined)
-							: undefined,
-						recurringStartDate: data.isRecurring
-							? (data.recurringStartDate ?? undefined)
-							: undefined,
-					}),
+				handleActionErrors(
+					await editExpense({ expenseId: expense.id, expense: data }),
 				);
 			} else {
 				// Create new expense
-				await createExpense(
-					convertToPlainObject({
-						title: data.title,
-						description: data.description || null,
-						amount: new Decimal(data.amount),
-						groupId: group.id,
-						paidById: data.paidById,
-						memberIds: data.selectedMembers,
-						splitAll: data.splitAll,
-						isRecurring: data.isRecurring,
-						recurringType: data.isRecurring ? data.recurringType || null : null,
-						recurringStartDate: data.isRecurring
-							? (data.recurringStartDate ?? null)
-							: null,
-						date: data.date,
-					}),
+				handleActionErrors(
+					await createExpense({ groupId: group.id, expense: data }),
 				);
 			}
 

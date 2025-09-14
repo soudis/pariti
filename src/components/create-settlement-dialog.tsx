@@ -2,9 +2,10 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
+import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { createSettlement } from "@/actions";
+import { createSettlementAction } from "@/actions";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -16,8 +17,8 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { SelectField, TextField } from "@/components/ui/form-field";
-
 import { type SettlementFormData, settlementSchema } from "@/lib/schemas";
+import { handleActionErrors } from "@/lib/utils";
 
 interface Member {
 	id: string;
@@ -46,6 +47,8 @@ export function CreateSettlementDialog({
 	const [loading, setLoading] = useState(false);
 	const t = useTranslations("forms.createSettlement");
 
+	const { executeAsync: createSettlement } = useAction(createSettlementAction);
+
 	const form = useForm({
 		resolver: zodResolver(settlementSchema),
 		defaultValues: {
@@ -60,7 +63,7 @@ export function CreateSettlementDialog({
 		setLoading(true);
 
 		try {
-			await createSettlement(groupId, data);
+			handleActionErrors(await createSettlement({ groupId, settlement: data }));
 
 			setOpen(false);
 			form.reset();

@@ -2,10 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
+import { actionClient } from "@/lib/safe-action";
+import {
+	removeConsumptionInputSchema,
+	removeConsumptionReturnSchema,
+} from "@/lib/schemas";
 
-export async function removeConsumption(id: string) {
+async function removeConsumption(consumptionId: string) {
 	const consumption = await db.consumption.findUnique({
-		where: { id },
+		where: { id: consumptionId },
 		include: {
 			resource: {
 				include: { group: true },
@@ -13,10 +18,17 @@ export async function removeConsumption(id: string) {
 		},
 	});
 
-	if (!consumption) return null;
+	if (!consumption) throw new Error("Consumption not found");
 
-	await db.consumption.delete({ where: { id } });
+	await db.consumption.delete({ where: { id: consumptionId } });
 
 	revalidatePath(`/group/${consumption.resource.groupId}`);
-	return consumption;
+	return { success: true };
 }
+
+export const removeConsumptionAction = actionClient
+	.inputSchema(removeConsumptionInputSchema)
+	.outputSchema(removeConsumptionReturnSchema)
+	.action(async ({ parsedInput }) =>
+		removeConsumption(parsedInput.consumptionId),
+	);

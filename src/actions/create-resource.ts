@@ -2,10 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import type { ResourceFormData } from "@/lib/schemas";
-import { convertToPlainObject } from "@/lib/utils";
+import { actionClient } from "@/lib/safe-action";
+import {
+	createResourceInputSchema,
+	createResourceReturnSchema,
+	type ResourceFormData,
+} from "@/lib/schemas";
 
-export async function createResource(groupId: string, data: ResourceFormData) {
+async function createResource(groupId: string, data: ResourceFormData) {
 	const resource = await db.resource.create({
 		data: {
 			name: data.name,
@@ -28,5 +32,12 @@ export async function createResource(groupId: string, data: ResourceFormData) {
 	});
 
 	revalidatePath(`/group/${groupId}`);
-	return convertToPlainObject(resource);
+	return { resource };
 }
+
+export const createResourceAction = actionClient
+	.inputSchema(createResourceInputSchema)
+	.outputSchema(createResourceReturnSchema)
+	.action(async ({ parsedInput }) =>
+		createResource(parsedInput.groupId, parsedInput.resource),
+	);

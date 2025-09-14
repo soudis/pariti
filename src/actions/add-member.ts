@@ -1,25 +1,24 @@
 "use server";
 
+import Decimal from "decimal.js";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
+import { actionClient } from "@/lib/safe-action";
+import {
+	addMemberInputSchema,
+	addMemberReturnSchema,
+	type MemberFormData,
+} from "@/lib/schemas";
 import { calculateWeightedAmounts } from "./utils";
 
-export async function addMember(data: {
-	name: string;
-	email?: string;
-	iban?: string;
-	weight?: number;
-	groupId: string;
-	activeFrom?: Date;
-	activeTo?: Date;
-}) {
+async function addMember(groupId: string, data: MemberFormData) {
 	const member = await db.member.create({
 		data: {
 			name: data.name,
 			email: data.email,
 			iban: data.iban,
 			weight: data.weight || 1,
-			groupId: data.groupId,
+			groupId: groupId,
 			activeFrom: data.activeFrom || new Date(),
 			activeTo: data.activeTo,
 		},
@@ -27,14 +26,14 @@ export async function addMember(data: {
 
 	// Add this member to all "split all" expenses in the group
 	const group = await db.group.findUnique({
-		where: { id: data.groupId },
+		where: { id: groupId },
 		select: { weightsEnabled: true },
 	});
 
 	if (group) {
 		const splitAllExpenses = await db.expense.findMany({
 			where: {
-				groupId: data.groupId,
+				groupId: groupId,
 				splitAll: true,
 			},
 			include: {
@@ -86,6 +85,13 @@ export async function addMember(data: {
 		}
 	}
 
-	revalidatePath(`/group/${data.groupId}`);
-	return member;
+	revalidatePath(`/group/${groupId}`);
+	return { member: { ...member, weight: Number(member.weight) } };
 }
+
+export const addMemberAction = actionClient
+	.inputSchema(addMemberInputSchema)
+	.outputSchema(addMemberReturnSchema)
+	.action(async ({ parsedInput }) =>
+		addMember(parsedInput.groupId, parsedInput.member),
+	);

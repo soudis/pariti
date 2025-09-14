@@ -10,9 +10,14 @@ import {
 	Users,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useAction } from "next-safe-action/hooks";
 import { useQueryState } from "nuqs";
 import { useId, useState } from "react";
-import { type getGroup, removeConsumption, removeResource } from "@/actions";
+import {
+	type getGroup,
+	removeConsumptionAction,
+	removeResourceAction,
+} from "@/actions";
 import { CreateConsumptionDialog } from "@/components/create-consumption-dialog";
 import { CreateResourceDialog } from "@/components/create-resource-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { formatCurrency } from "@/lib/currency";
+import { handleActionErrors } from "@/lib/utils";
 
 interface ResourcesSectionProps {
 	groupId: string;
@@ -49,6 +55,11 @@ export function ResourcesSection({
 	const t = useTranslations("resources");
 	const showHiddenId = useId();
 
+	const { executeAsync: removeResource } = useAction(removeResourceAction);
+	const { executeAsync: removeConsumption } = useAction(
+		removeConsumptionAction,
+	);
+
 	// Helper function to filter consumptions based on cutoff date
 	const filterConsumptions = (
 		consumptions: Awaited<
@@ -65,24 +76,14 @@ export function ResourcesSection({
 
 	const handleDeleteResource = async (resourceId: string) => {
 		setDeletingResourceId(resourceId);
-		try {
-			await removeResource(resourceId);
-		} catch (error) {
-			console.error("Failed to remove resource:", error);
-		} finally {
-			setDeletingResourceId(null);
-		}
+		await handleActionErrors(await removeResource({ resourceId }));
+		setDeletingResourceId(null);
 	};
 
 	const handleDeleteConsumption = async (consumptionId: string) => {
 		setDeletingConsumptionId(consumptionId);
-		try {
-			await removeConsumption(consumptionId);
-		} catch (error) {
-			console.error("Failed to remove consumption:", error);
-		} finally {
-			setDeletingConsumptionId(null);
-		}
+		await handleActionErrors(await removeConsumption({ consumptionId }));
+		setDeletingConsumptionId(null);
 	};
 
 	const formatDate = (date: Date) => new Date(date).toLocaleDateString();

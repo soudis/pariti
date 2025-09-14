@@ -3,20 +3,21 @@
 import type { Member } from "@prisma/client";
 import { Edit, Plus, Trash2, User } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useAction } from "next-safe-action/hooks";
 import { useEffect, useState } from "react";
 import {
 	calculateMemberBalances,
 	type getGroup,
-	removeMember,
-	updateMember,
+	removeMemberAction,
+	updateMemberAction,
 } from "@/actions";
 import { AddMemberDialog } from "@/components/add-member-dialog";
 import { EditMemberDialog } from "@/components/edit-member-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { formatCurrency } from "@/lib/currency";
 import type { MemberFormData } from "@/lib/schemas";
+import { handleActionErrors } from "@/lib/utils";
 
 interface MembersSectionProps {
 	group: Awaited<ReturnType<typeof getGroup>>;
@@ -29,6 +30,9 @@ export function MembersSection({ group }: MembersSectionProps) {
 	>([]);
 	const [loadingBalances, setLoadingBalances] = useState(false);
 	const t = useTranslations("members");
+
+	const { executeAsync: removeMember } = useAction(removeMemberAction);
+	const { executeAsync: updateMember } = useAction(updateMemberAction);
 
 	// Load member balances
 	useEffect(() => {
@@ -66,25 +70,15 @@ export function MembersSection({ group }: MembersSectionProps) {
 
 	const handleDeleteMember = async (memberId: string) => {
 		setDeletingId(memberId);
-		try {
-			await removeMember(memberId);
-		} catch (error) {
-			console.error("Failed to remove member:", error);
-		} finally {
-			setDeletingId(null);
-		}
+		await handleActionErrors(await removeMember({ memberId }));
+		setDeletingId(null);
 	};
 
 	const handleUpdateMember = async (
 		memberId: Member["id"],
 		data: MemberFormData,
 	) => {
-		try {
-			await updateMember(memberId, data);
-		} catch (error) {
-			console.error("Failed to update member:", error);
-			throw error; // Re-throw to let the dialog handle the error
-		}
+		handleActionErrors(await updateMember({ memberId, member: data }));
 	};
 
 	return (

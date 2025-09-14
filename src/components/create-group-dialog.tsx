@@ -3,9 +3,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { flattenValidationErrors } from "next-safe-action";
+import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { createGroup } from "@/actions";
+import { createGroupAction } from "@/actions/create-group";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -21,8 +23,8 @@ import {
 	SelectField,
 	TextField,
 } from "@/components/ui/form-field";
-
 import { type GroupFormData, groupSchema } from "@/lib/schemas";
+import { handleActionErrors } from "@/lib/utils";
 
 interface CreateGroupDialogProps {
 	children: React.ReactNode;
@@ -35,6 +37,7 @@ export function CreateGroupDialog({ children }: CreateGroupDialogProps) {
 	const locale = useLocale();
 	const t = useTranslations("forms.createGroup");
 
+	const { executeAsync: createGroup } = useAction(createGroupAction);
 	const form = useForm({
 		resolver: zodResolver(groupSchema),
 		defaultValues: {
@@ -49,10 +52,11 @@ export function CreateGroupDialog({ children }: CreateGroupDialogProps) {
 		setLoading(true);
 
 		try {
-			const group = await createGroup(data);
+			const group = handleActionErrors(await createGroup({ group: data }));
 
 			setOpen(false);
 			form.reset();
+
 			router.push(`/${locale}/group/${group.id}`);
 		} catch (error) {
 			console.error("Failed to create group:", error);

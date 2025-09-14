@@ -1,9 +1,10 @@
 "use server";
 
 import { db } from "@/lib/db";
+import { convertToPlainObject } from "@/lib/utils";
 
 export async function getActiveMembersForDate(groupId: string, date: Date) {
-	return await db.member.findMany({
+	const members = await db.member.findMany({
 		where: {
 			groupId,
 			activeFrom: { lte: date },
@@ -11,4 +12,5 @@ export async function getActiveMembersForDate(groupId: string, date: Date) {
 		},
 		orderBy: { name: "asc" },
 	});
+	return convertToPlainObject(members);
 }

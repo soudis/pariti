@@ -3,9 +3,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Settings } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { updateGroup } from "@/actions";
+import { updateGroupAction } from "@/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
@@ -14,8 +15,8 @@ import {
 	SelectField,
 	TextField,
 } from "@/components/ui/form-field";
-
 import { type GroupFormData, groupSchema } from "@/lib/schemas";
+import { handleActionErrors } from "@/lib/utils";
 
 interface SettingsSectionProps {
 	group: {
@@ -35,6 +36,8 @@ export function SettingsSection({ group }: SettingsSectionProps) {
 	} | null>(null);
 	const t = useTranslations("forms.settings");
 
+	const { executeAsync: updateGroup } = useAction(updateGroupAction);
+
 	const form = useForm({
 		resolver: zodResolver(groupSchema),
 		defaultValues: {
@@ -50,12 +53,7 @@ export function SettingsSection({ group }: SettingsSectionProps) {
 		setMessage(null);
 
 		try {
-			await updateGroup(group.id, {
-				name: data.name,
-				description: data.description || undefined,
-				currency: data.currency,
-				weightsEnabled: data.weightsEnabled,
-			});
+			handleActionErrors(await updateGroup({ groupId: group.id, group: data }));
 
 			setMessage({ type: "success", text: t("settingsUpdated") });
 		} catch (error) {

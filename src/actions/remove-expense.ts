@@ -2,17 +2,27 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
+import { actionClient } from "@/lib/safe-action";
+import {
+	removeExpenseInputSchema,
+	removeExpenseReturnSchema,
+} from "@/lib/schemas";
 
-export async function removeExpense(id: string) {
+async function removeExpense(expenseId: string) {
 	const expense = await db.expense.findUnique({
-		where: { id },
+		where: { id: expenseId },
 		include: { group: true },
 	});
 
-	if (!expense) return null;
+	if (!expense) throw new Error("Expense not found");
 
-	await db.expense.delete({ where: { id } });
+	await db.expense.delete({ where: { id: expenseId } });
 
 	revalidatePath(`/group/${expense.groupId}`);
-	return expense;
+	return { success: true };
 }
+
+export const removeExpenseAction = actionClient
+	.inputSchema(removeExpenseInputSchema)
+	.outputSchema(removeExpenseReturnSchema)
+	.action(async ({ parsedInput }) => removeExpense(parsedInput.expenseId));
