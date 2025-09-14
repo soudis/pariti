@@ -17,6 +17,7 @@ import { Form } from "@/components/ui/form";
 import {
 	CheckboxField,
 	DateField,
+	NumberField,
 	TextField,
 } from "@/components/ui/form-field";
 import { addMember } from "@/lib/actions";
@@ -24,10 +25,15 @@ import { type MemberFormData, memberSchema } from "@/lib/schemas";
 
 interface AddMemberDialogProps {
 	groupId: string;
+	weightsEnabled: boolean;
 	children: React.ReactNode;
 }
 
-export function AddMemberDialog({ groupId, children }: AddMemberDialogProps) {
+export function AddMemberDialog({
+	groupId,
+	weightsEnabled,
+	children,
+}: AddMemberDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const t = useTranslations("forms.addMember");
@@ -37,6 +43,7 @@ export function AddMemberDialog({ groupId, children }: AddMemberDialogProps) {
 		defaultValues: {
 			name: "",
 			iban: "",
+			weight: 1,
 			activeFrom: new Date(),
 			activeTo: undefined,
 			hasEndDate: false,
@@ -50,6 +57,7 @@ export function AddMemberDialog({ groupId, children }: AddMemberDialogProps) {
 			await addMember({
 				name: data.name,
 				iban: data.iban || undefined,
+				weight: data.weight || 1,
 				groupId,
 				activeFrom: data.activeFrom,
 				activeTo: data.activeTo || undefined,
@@ -88,6 +96,18 @@ export function AddMemberDialog({ groupId, children }: AddMemberDialogProps) {
 							label={t("iban")}
 							placeholder={t("ibanPlaceholder")}
 						/>
+
+						{weightsEnabled && (
+							<NumberField
+								control={form.control}
+								name="weight"
+								label={t("weight")}
+								placeholder={t("weightPlaceholder")}
+								description={t("weightDescription")}
+								step="0.1"
+								min={0.1}
+							/>
+						)}
 
 						<DateField
 							control={form.control}

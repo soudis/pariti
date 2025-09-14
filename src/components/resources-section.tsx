@@ -25,16 +25,19 @@ import {
 	removeConsumption,
 	removeResource,
 } from "@/lib/actions";
+import { formatCurrency } from "@/lib/currency";
 
 interface ResourcesSectionProps {
 	groupId: string;
 	resources: Awaited<ReturnType<typeof getGroup>>["resources"];
 	members: Awaited<ReturnType<typeof getGroup>>["members"];
+	group: Awaited<ReturnType<typeof getGroup>>;
 	cutoffDate: Date | null;
 }
 
 export function ResourcesSection({
 	groupId,
+	group,
 	resources,
 	members,
 	cutoffDate,
@@ -161,7 +164,11 @@ export function ResourcesSection({
 											<h3 className="font-medium text-lg">{resource.name}</h3>
 											{resource.unit && resource.unitPrice && (
 												<Badge variant="outline" className="text-xs">
-													€{Number(resource.unitPrice)}/{resource.unit}
+													{formatCurrency(
+														Number(resource.unitPrice),
+														group.currency,
+													)}
+													/{resource.unit}
 												</Badge>
 											)}
 										</div>
@@ -221,7 +228,10 @@ export function ResourcesSection({
 																<Badge variant="secondary" className="text-sm">
 																	{consumption.isUnitAmount
 																		? `${consumption.amount} ${resource.unit}`
-																		: `€${Number(consumption.amount).toFixed(2)}`}
+																		: formatCurrency(
+																				Number(consumption.amount),
+																				group.currency,
+																			)}
 																</Badge>
 																{consumption.isUnitAmount &&
 																	resource.unitPrice && (
@@ -229,11 +239,11 @@ export function ResourcesSection({
 																			variant="outline"
 																			className="text-xs"
 																		>
-																			€
-																			{(
+																			{formatCurrency(
 																				Number(consumption.amount) *
-																				Number(resource.unitPrice)
-																			).toFixed(2)}{" "}
+																					Number(resource.unitPrice),
+																				group.currency,
+																			)}{" "}
 																			{t("total")}
 																		</Badge>
 																	)}

@@ -1,11 +1,12 @@
 "use client";
 
-import { Package, Receipt, Scale, Users } from "lucide-react";
+import { Package, Receipt, Scale, Settings, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useQueryState } from "nuqs";
 import { ExpensesSection } from "@/components/expenses-section";
 import { MembersSection } from "@/components/members-section";
 import { ResourcesSection } from "@/components/resources-section";
+import { SettingsSection } from "@/components/settings-section";
 import { SettlementsSection } from "@/components/settlements-section";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -32,7 +33,7 @@ export function GroupTabs({
 
 	return (
 		<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-			<TabsList className="grid w-full grid-cols-4 min-h-12">
+			<TabsList className="grid w-full grid-cols-5 min-h-12">
 				<TabsTrigger value="members" className="flex items-center gap-2">
 					<Users className="w-4 h-4" />
 					<span className="hidden sm:inline">{t("members")}</span>
@@ -48,6 +49,10 @@ export function GroupTabs({
 				<TabsTrigger value="settlements" className="flex items-center gap-2">
 					<Scale className="w-4 h-4" />
 					<span className="hidden sm:inline">{t("settlements")}</span>
+				</TabsTrigger>
+				<TabsTrigger value="settings" className="flex items-center gap-2">
+					<Settings className="w-4 h-4" />
+					<span className="hidden sm:inline">{t("settings")}</span>
 				</TabsTrigger>
 			</TabsList>
 
@@ -66,6 +71,7 @@ export function GroupTabs({
 			<TabsContent value="resources" className="mt-6">
 				<ResourcesSection
 					groupId={group.id}
+					group={group}
 					resources={resources}
 					members={group.members}
 					cutoffDate={cutoffDate}
@@ -78,7 +84,12 @@ export function GroupTabs({
 					settlements={settlements}
 					members={group.members}
 					resources={resources}
+					currency={group.currency}
 				/>
+			</TabsContent>
+
+			<TabsContent value="settings" className="mt-6">
+				<SettingsSection group={group} />
 			</TabsContent>
 		</Tabs>
 	);

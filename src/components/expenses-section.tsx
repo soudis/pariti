@@ -25,6 +25,7 @@ import {
 	type getGroup,
 	removeExpense,
 } from "@/lib/actions";
+import { formatCurrency } from "@/lib/currency";
 
 interface ExpensesSectionProps {
 	group: Awaited<ReturnType<typeof getGroup>>;
@@ -160,7 +161,7 @@ export function ExpensesSection({
 									</div>
 									<div className="flex items-center gap-2">
 										<Badge variant="secondary" className="text-sm">
-											${Number(expense.amount).toFixed(2)}
+											{formatCurrency(Number(expense.amount), group.currency)}
 										</Badge>
 										<AddExpenseDialog
 											group={group}
@@ -227,7 +228,8 @@ export function ExpensesSection({
 														variant="outline"
 														className="text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300"
 													>
-														{member.name}: ${member.amount.toFixed(2)}
+														{member.name}:{" "}
+														{formatCurrency(member.amount, group.currency)}
 													</Badge>
 												))
 											) : (

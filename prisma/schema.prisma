@@ -14,11 +14,13 @@ datasource db {
 }
 
 model Group {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  currency      String   @default("USD")
+  weightsEnabled Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Relations
   members      Member[]
@@ -34,6 +36,7 @@ model Member {
   name       String
   email      String?
   iban       String?
+  weight     Decimal   @default(1) @db.Decimal(5, 2)
   groupId    String
   activeFrom DateTime  @default(now())
   activeTo   DateTime?

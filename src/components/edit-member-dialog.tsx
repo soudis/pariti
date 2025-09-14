@@ -18,18 +18,21 @@ import { Form } from "@/components/ui/form";
 import {
 	CheckboxField,
 	DateField,
+	NumberField,
 	TextField,
 } from "@/components/ui/form-field";
 import { type MemberFormData, memberSchema } from "@/lib/schemas";
 
 interface EditMemberDialogProps {
 	member: MemberFormData & { id: string };
+	weightsEnabled: boolean;
 	onUpdate: (memberId: Member["id"], data: MemberFormData) => Promise<void>;
 	children: React.ReactNode;
 }
 
 export function EditMemberDialog({
 	member,
+	weightsEnabled,
 	onUpdate,
 	children,
 }: EditMemberDialogProps) {
@@ -43,6 +46,7 @@ export function EditMemberDialog({
 			name: member.name,
 			email: member.email || "",
 			iban: member.iban || "",
+			weight: member.weight || 1,
 			activeFrom: member.activeFrom,
 			activeTo: member.activeTo ? new Date(member.activeTo) : undefined,
 			hasEndDate: !!member.activeTo,
@@ -56,6 +60,7 @@ export function EditMemberDialog({
 				name: member.name,
 				email: member.email || "",
 				iban: member.iban || "",
+				weight: member.weight || 1,
 				activeFrom: member.activeFrom,
 				activeTo: member.activeTo ? new Date(member.activeTo) : undefined,
 				hasEndDate: !!member.activeTo,
@@ -71,6 +76,7 @@ export function EditMemberDialog({
 				name: data.name,
 				email: data.email || null,
 				iban: data.iban || null,
+				weight: data.weight || 1,
 				activeFrom: data.activeFrom || new Date(),
 				activeTo: data.hasEndDate ? (data.activeTo ?? null) : null,
 			});
@@ -115,6 +121,18 @@ export function EditMemberDialog({
 							label={t("iban")}
 							placeholder={t("ibanPlaceholder")}
 						/>
+
+						{weightsEnabled && (
+							<NumberField
+								control={form.control}
+								name="weight"
+								label={t("weight")}
+								placeholder={t("weightPlaceholder")}
+								description={t("weightDescription")}
+								step="0.1"
+								min={0.1}
+							/>
+						)}
 
 						<DateField
 							control={form.control}

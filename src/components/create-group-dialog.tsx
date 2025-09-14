@@ -15,7 +15,11 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { TextField } from "@/components/ui/form-field";
+import {
+	CheckboxField,
+	SelectField,
+	TextField,
+} from "@/components/ui/form-field";
 import { createGroup } from "@/lib/actions";
 import { type GroupFormData, groupSchema } from "@/lib/schemas";
 
@@ -35,6 +39,8 @@ export function CreateGroupDialog({ children }: CreateGroupDialogProps) {
 		defaultValues: {
 			name: "",
 			description: "",
+			currency: "USD",
+			weightsEnabled: false,
 		},
 	});
 
@@ -45,6 +51,8 @@ export function CreateGroupDialog({ children }: CreateGroupDialogProps) {
 			const group = await createGroup({
 				name: data.name,
 				description: data.description || undefined,
+				currency: data.currency,
+				weightsEnabled: data.weightsEnabled,
 			});
 
 			setOpen(false);
@@ -80,6 +88,32 @@ export function CreateGroupDialog({ children }: CreateGroupDialogProps) {
 							name="description"
 							label={t("descriptionLabel")}
 							placeholder={t("descriptionPlaceholder")}
+						/>
+
+						<SelectField
+							control={form.control}
+							name="currency"
+							label={t("currency")}
+							options={[
+								{ value: "USD", label: "USD - US Dollar" },
+								{ value: "EUR", label: "EUR - Euro" },
+								{ value: "GBP", label: "GBP - British Pound" },
+								{ value: "CHF", label: "CHF - Swiss Franc" },
+								{ value: "CAD", label: "CAD - Canadian Dollar" },
+								{ value: "AUD", label: "AUD - Australian Dollar" },
+								{ value: "JPY", label: "JPY - Japanese Yen" },
+								{ value: "CNY", label: "CNY - Chinese Yuan" },
+								{ value: "INR", label: "INR - Indian Rupee" },
+								{ value: "BRL", label: "BRL - Brazilian Real" },
+							]}
+							required
+						/>
+
+						<CheckboxField
+							control={form.control}
+							name="weightsEnabled"
+							label={t("weightsEnabled")}
+							description={t("weightsEnabledDescription")}
 						/>
 
 						<div className="flex justify-end space-x-2">

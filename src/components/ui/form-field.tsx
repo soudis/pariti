@@ -103,6 +103,47 @@ export function TextField<TFormValues extends FieldValues = FieldValues>({
 	);
 }
 
+export function NumberField<TFormValues extends FieldValues = FieldValues>({
+	control,
+	name,
+	label,
+	description,
+	placeholder,
+	required,
+	disabled,
+	className,
+	step = "0.01",
+	min = 0,
+	max,
+}: TextFieldProps<TFormValues>) {
+	return (
+		<FormFieldPrimitive
+			control={control}
+			name={name}
+			render={({ field }) => (
+				<FormItem className={className}>
+					{label && <FormLabel>{label}</FormLabel>}
+					<FormControl>
+						<Input
+							{...field}
+							type="number"
+							placeholder={placeholder}
+							required={required}
+							disabled={disabled}
+							step={step}
+							min={min}
+							max={max}
+							value={field.value || ""}
+						/>
+					</FormControl>
+					{description && <FormDescription>{description}</FormDescription>}
+					<FormMessage />
+				</FormItem>
+			)}
+		/>
+	);
+}
+
 export function TextareaField<TFormValues extends FieldValues = FieldValues>({
 	control,
 	name,

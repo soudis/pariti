@@ -79,6 +79,10 @@ export const memberSchema = z.object({
 	name: z.string().min(1, "Name is required"),
 	email: z.email().nullish().or(z.literal("")),
 	iban: z.string().nullish(),
+	weight: z.coerce
+		.number()
+		.min(0.01, "Weight must be greater than 0")
+		.optional(),
 	activeFrom: z.coerce.date(),
 	activeTo: z.coerce.date().nullish(),
 	hasEndDate: z.coerce.boolean().nullish(),
@@ -87,6 +91,8 @@ export const memberSchema = z.object({
 export const groupSchema = z.object({
 	name: z.string().min(1, "Name is required"),
 	description: z.string().nullish(),
+	currency: z.string().min(1, "Currency is required"),
+	weightsEnabled: z.coerce.boolean(),
 });
 
 export const settlementSchema = z.object({

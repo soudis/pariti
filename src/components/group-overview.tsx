@@ -18,6 +18,7 @@ import { CreateResourceDialog } from "@/components/create-resource-dialog";
 import { CreateSettlementDialog } from "@/components/create-settlement-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatCurrency } from "@/lib/currency";
 
 interface GroupOverviewProps {
 	group: Group & { expenses: Expense[]; members: Member[] };
@@ -107,7 +108,8 @@ export function GroupOverview({
 							{t("expenses")}
 						</p>
 						<p className="text-lg font-semibold">
-							{filteredExpenses.length} (${totalExpenses.toFixed(2)})
+							{filteredExpenses.length} (
+							{formatCurrency(totalExpenses, group.currency)})
 						</p>
 					</div>
 					<div className="text-center">
@@ -127,7 +129,8 @@ export function GroupOverview({
 							{t("consumptions")}
 						</p>
 						<p className="text-lg font-semibold">
-							{filteredConsumptions.length} (${totalConsumptions.toFixed(2)})
+							{filteredConsumptions.length} (
+							{formatCurrency(totalConsumptions, group.currency)})
 						</p>
 					</div>
 				</div>
@@ -161,7 +164,10 @@ export function GroupOverview({
 
 					{/* Secondary Actions */}
 					<div className="grid grid-cols-3 gap-2">
-						<AddMemberDialog groupId={group.id}>
+						<AddMemberDialog
+							groupId={group.id}
+							weightsEnabled={group.weightsEnabled}
+						>
 							<Button variant="outline" size="sm" className="w-full">
 								<Plus className="w-4 h-4 mr-2" />
 								{t("addMember")}

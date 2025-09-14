@@ -6,25 +6,20 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { AddMemberDialog } from "@/components/add-member-dialog";
 import { EditMemberDialog } from "@/components/edit-member-dialog";
-import { Badge } from "@/components/ui/badge";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	calculateMemberBalances,
+	type getGroup,
 	removeMember,
 	updateMember,
 } from "@/lib/actions";
+import { formatCurrency } from "@/lib/currency";
 import type { MemberFormData } from "@/lib/schemas";
 
 interface MembersSectionProps {
-	group: {
-		id: string;
-		name: string;
-		description: string | null;
-		createdAt: Date;
-		updatedAt: Date;
-		members: Member[];
-	};
+	group: Awaited<ReturnType<typeof getGroup>>;
 }
 
 export function MembersSection({ group }: MembersSectionProps) {
@@ -58,9 +53,9 @@ export function MembersSection({ group }: MembersSectionProps) {
 	};
 
 	const formatBalance = (balance: number) => {
-		if (balance === 0) return "€0.00";
+		if (balance === 0) return formatCurrency(0, group.currency);
 		const sign = balance > 0 ? "+" : "";
-		return `${sign}€${balance.toFixed(2)}`;
+		return `${sign}${formatCurrency(Math.abs(balance), group.currency)}`;
 	};
 
 	const getBalanceColor = (balance: number) => {
@@ -100,7 +95,10 @@ export function MembersSection({ group }: MembersSectionProps) {
 						<User className="w-5 h-5" />
 						{t("title")}
 					</CardTitle>
-					<AddMemberDialog groupId={group.id}>
+					<AddMemberDialog
+						groupId={group.id}
+						weightsEnabled={group.weightsEnabled}
+					>
 						<Button size="sm">
 							<Plus className="w-4 h-4 mr-2" />
 							{t("addMember")}
@@ -187,7 +185,8 @@ export function MembersSection({ group }: MembersSectionProps) {
 								{/* Actions column */}
 								<div className="flex items-center gap-2 w-24 justify-end">
 									<EditMemberDialog
-										member={member}
+										member={{ ...member, weight: Number(member.weight) }}
+										weightsEnabled={group.weightsEnabled}
 										onUpdate={handleUpdateMember}
 									>
 										<Button

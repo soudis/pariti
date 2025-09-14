@@ -22,12 +22,14 @@ import {
 	removeSettlement,
 	updateSettlementMemberStatus,
 } from "@/lib/actions";
+import { formatCurrency } from "@/lib/currency";
 
 interface SettlementsSectionProps {
 	groupId: string;
 	settlements: Awaited<ReturnType<typeof getGroup>>["settlements"];
 	members: Awaited<ReturnType<typeof getGroup>>["members"];
 	resources: Awaited<ReturnType<typeof getGroup>>["resources"];
+	currency: string;
 }
 
 export function SettlementsSection({
@@ -35,6 +37,7 @@ export function SettlementsSection({
 	settlements,
 	members,
 	resources,
+	currency,
 }: SettlementsSectionProps) {
 	const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 	const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -183,7 +186,10 @@ export function SettlementsSection({
 																	</span>
 																</div>
 																<Badge variant="secondary" className="text-sm">
-																	€{Number(settlementMember.amount).toFixed(2)}
+																	{formatCurrency(
+																		Number(settlementMember.amount),
+																		currency,
+																	)}
 																</Badge>
 															</div>
 															<div className="flex items-center gap-2">
@@ -323,7 +329,10 @@ export function SettlementsSection({
 															</div>
 															<div className="flex items-center gap-2">
 																<span className="text-sm font-medium">
-																	€{Number(settlementMember.amount).toFixed(2)}
+																	{formatCurrency(
+																		Number(settlementMember.amount),
+																		currency,
+																	)}
 																</span>
 																<CheckCircle className="w-4 h-4 text-green-500" />
 															</div>

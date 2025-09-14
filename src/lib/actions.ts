@@ -9,6 +9,7 @@ import type {
 	Settlement,
 	SettlementMember,
 } from "@prisma/client";
+import Decimal from "decimal.js";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { convertToPlainObject } from "@/lib/utils";
@@ -17,11 +18,15 @@ import { convertToPlainObject } from "@/lib/utils";
 export async function createGroup(data: {
 	name: string;
 	description?: string;
+	currency: string;
+	weightsEnabled: boolean;
 }) {
 	const group = await db.group.create({
 		data: {
 			name: data.name,
 			description: data.description,
+			currency: data.currency,
+			weightsEnabled: data.weightsEnabled,
 		},
 	});
 	revalidatePath("/");
@@ -81,11 +86,34 @@ export async function getGroup(id: string) {
 	return convertToPlainObject(group);
 }
 
+export async function updateGroup(
+	id: string,
+	data: {
+		name: string;
+		description?: string;
+		currency: string;
+		weightsEnabled: boolean;
+	},
+) {
+	const group = await db.group.update({
+		where: { id },
+		data: {
+			name: data.name,
+			description: data.description,
+			currency: data.currency,
+			weightsEnabled: data.weightsEnabled,
+		},
+	});
+	revalidatePath(`/group/${id}`);
+	return group;
+}
+
 // Member actions
 export async function addMember(data: {
 	name: string;
 	email?: string;
 	iban?: string;
+	weight?: number;
 	groupId: string;
 	activeFrom?: Date;
 	activeTo?: Date;
@@ -95,6 +123,7 @@ export async function addMember(data: {
 			name: data.name,
 			email: data.email,
 			iban: data.iban,
+			weight: data.weight || 1,
 			groupId: data.groupId,
 			activeFrom: data.activeFrom || new Date(),
 			activeTo: data.activeTo,
@@ -102,34 +131,64 @@ export async function addMember(data: {
 	});
 
 	// Add this member to all "split all" expenses in the group
-	const splitAllExpenses = await db.expense.findMany({
-		where: {
-			groupId: data.groupId,
-			splitAll: true,
-		},
-		include: {
-			expenseMembers: true,
-		},
+	const group = await db.group.findUnique({
+		where: { id: data.groupId },
+		select: { weightsEnabled: true },
 	});
 
-	for (const expense of splitAllExpenses) {
-		const currentMemberCount = expense.expenseMembers.length;
-		const newAmount = Number(expense.amount) / (currentMemberCount + 1);
-
-		// Update existing expense members to new amount
-		await db.expenseMember.updateMany({
-			where: { expenseId: expense.id },
-			data: { amount: newAmount },
-		});
-
-		// Add new member to expense
-		await db.expenseMember.create({
-			data: {
-				expenseId: expense.id,
-				memberId: member.id,
-				amount: newAmount,
+	if (group) {
+		const splitAllExpenses = await db.expense.findMany({
+			where: {
+				groupId: data.groupId,
+				splitAll: true,
+			},
+			include: {
+				expenseMembers: {
+					include: {
+						member: true,
+					},
+				},
 			},
 		});
+
+		for (const expense of splitAllExpenses) {
+			// Get all current members including the new one
+			const allMembers = [
+				...expense.expenseMembers.map((em) => ({
+					id: em.member.id,
+					weight: Number(em.member.weight),
+				})),
+				{ id: member.id, weight: Number(member.weight) },
+			];
+
+			// Recalculate amounts with weights
+			const weightedAmounts = calculateWeightedAmounts(
+				Number(expense.amount),
+				allMembers.map((member) => ({
+					id: member.id,
+					weight: new Decimal(member.weight),
+				})),
+				group.weightsEnabled,
+			);
+
+			// Update all expense members with new amounts
+			for (const weightedAmount of weightedAmounts) {
+				await db.expenseMember.upsert({
+					where: {
+						expenseId_memberId: {
+							expenseId: expense.id,
+							memberId: weightedAmount.memberId,
+						},
+					},
+					update: { amount: weightedAmount.amount },
+					create: {
+						expenseId: expense.id,
+						memberId: weightedAmount.memberId,
+						amount: weightedAmount.amount,
+					},
+				});
+			}
+		}
 	}
 
 	revalidatePath(`/group/${data.groupId}`);
@@ -153,6 +212,7 @@ export async function updateMember(
 			name: data.name,
 			email: data.email,
 			iban: data.iban,
+			weight: data.weight,
 			activeFrom: data.activeFrom,
 			activeTo: data.activeTo,
 		},
@@ -196,6 +256,27 @@ export async function createExpense(
 		memberIds: Member["id"][];
 	},
 ) {
+	// Get group to check if weights are enabled
+	const group = await db.group.findUnique({
+		where: { id: data.groupId },
+		select: { weightsEnabled: true },
+	});
+
+	if (!group) throw new Error("Group not found");
+
+	// Get member weights
+	const members = await db.member.findMany({
+		where: { id: { in: data.memberIds } },
+		select: { id: true, weight: true },
+	});
+
+	// Calculate weighted amounts
+	const weightedAmounts = calculateWeightedAmounts(
+		Number(data.amount),
+		members,
+		group.weightsEnabled,
+	);
+
 	const expense = await db.expense.create({
 		data: {
 			title: data.title,
@@ -209,10 +290,7 @@ export async function createExpense(
 			recurringType: data.recurringType,
 			recurringStartDate: data.recurringStartDate,
 			expenseMembers: {
-				create: data.memberIds.map((memberId) => ({
-					memberId,
-					amount: Number(data.amount) / data.memberIds.length,
-				})),
+				create: weightedAmounts,
 			},
 		},
 		include: {
@@ -266,14 +344,31 @@ export async function generateRecurringExpenseInstances(
 			? activeMembers
 			: expense.expenseMembers.map((em) => em.member);
 
+		// Get group to check if weights are enabled
+		const group = await db.group.findUnique({
+			where: { id: expense.groupId },
+			select: { weightsEnabled: true },
+		});
+
+		const weightedAmounts = calculateWeightedAmounts(
+			Number(expense.amount),
+			effectiveMembers,
+			group?.weightsEnabled || false,
+		);
+
 		return [
 			{
 				...expense,
-				effectiveMembers: effectiveMembers.map((member) => ({
-					id: member.id,
-					name: member.name,
-					amount: Number(expense.amount) / effectiveMembers.length,
-				})),
+				effectiveMembers: effectiveMembers.map((member) => {
+					const weightedAmount = weightedAmounts.find(
+						(wa) => wa.memberId === member.id,
+					);
+					return {
+						id: member.id,
+						name: member.name,
+						amount: weightedAmount?.amount || 0,
+					};
+				}),
 			},
 		];
 	}
@@ -293,15 +388,32 @@ export async function generateRecurringExpenseInstances(
 				? activeMembers
 				: expense.expenseMembers.map((em) => em.member);
 
+			// Get group to check if weights are enabled
+			const group = await db.group.findUnique({
+				where: { id: expense.groupId },
+				select: { weightsEnabled: true },
+			});
+
+			const weightedAmounts = calculateWeightedAmounts(
+				Number(expense.amount),
+				effectiveMembers,
+				group?.weightsEnabled || false,
+			);
+
 			instances.push({
 				...expense,
 				id: `${expense.id}-${currentInstanceDate.toISOString().split("T")[0]}`,
 				date: new Date(currentInstanceDate),
-				effectiveMembers: effectiveMembers.map((member) => ({
-					id: member.id,
-					name: member.name,
-					amount: Number(expense.amount) / effectiveMembers.length,
-				})),
+				effectiveMembers: effectiveMembers.map((member) => {
+					const weightedAmount = weightedAmounts.find(
+						(wa) => wa.memberId === member.id,
+					);
+					return {
+						id: member.id,
+						name: member.name,
+						amount: weightedAmount?.amount || 0,
+					};
+				}),
 			});
 		}
 
@@ -648,6 +760,32 @@ export async function removeSettlement(id: string) {
 
 	revalidatePath(`/group/${settlement.groupId}`);
 	return { success: true };
+}
+
+// Helper function to calculate weighted amounts for members
+function calculateWeightedAmounts(
+	totalAmount: number,
+	members: Pick<Member, "id" | "weight">[],
+	weightsEnabled: boolean,
+): Array<{ memberId: string; amount: number }> {
+	if (!weightsEnabled) {
+		// Equal split when weights are disabled
+		const amountPerMember = totalAmount / members.length;
+		return members.map((member) => ({
+			memberId: member.id,
+			amount: amountPerMember,
+		}));
+	}
+
+	// Weighted split when weights are enabled
+	const totalWeight = members.reduce(
+		(sum, member) => sum + Number(member.weight),
+		0,
+	);
+	return members.map((member) => ({
+		memberId: member.id,
+		amount: (totalAmount * Number(member.weight)) / totalWeight,
+	}));
 }
 
 // Helper function to calculate balances
@@ -1024,8 +1162,27 @@ export async function editExpense(
 	});
 
 	if (!data.splitAll && data.expenseMembers.length > 0) {
+		// Get group to check if weights are enabled
+		const group = await db.group.findUnique({
+			where: { id: expense.groupId },
+			select: { weightsEnabled: true },
+		});
+
+		// Get member weights
+		const members = await db.member.findMany({
+			where: { id: { in: data.expenseMembers.map((m) => m.memberId) } },
+			select: { id: true, weight: true },
+		});
+
+		// Calculate weighted amounts
+		const weightedAmounts = calculateWeightedAmounts(
+			data.amount,
+			members,
+			group?.weightsEnabled || false,
+		);
+
 		await db.expenseMember.createMany({
-			data: data.expenseMembers.map((member) => ({
+			data: weightedAmounts.map((member) => ({
 				expenseId,
 				memberId: member.memberId,
 				amount: member.amount,
