@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
-import { GroupOverview } from "@/components/group-overview";
-import { GroupTabs } from "@/components/group-tabs";
 import {
 	generateRecurringExpenseInstances,
 	getGroup,
 	getSettlementCutoffDate,
-} from "@/lib/actions";
+} from "@/actions";
+import { GroupOverview } from "@/components/group-overview";
+import { GroupTabs } from "@/components/group-tabs";
 
 interface GroupPageProps {
 	params: {
@@ -56,8 +56,6 @@ export default async function GroupPage({ params }: GroupPageProps) {
 					<GroupTabs
 						group={group}
 						expenses={allExpenses}
-						resources={group.resources}
-						settlements={group.settlements}
 						cutoffDate={cutoffDate}
 					/>
 				</div>

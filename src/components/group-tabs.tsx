@@ -3,6 +3,7 @@
 import { Package, Receipt, Scale, Settings, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useQueryState } from "nuqs";
+import type { generateRecurringExpenseInstances, getGroup } from "@/actions";
 import { ExpensesSection } from "@/components/expenses-section";
 import { MembersSection } from "@/components/members-section";
 import { ResourcesSection } from "@/components/resources-section";
@@ -11,18 +12,15 @@ import { SettlementsSection } from "@/components/settlements-section";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface GroupTabsProps {
-	group: any;
-	expenses: any[];
-	resources: any[];
-	settlements: any[];
+	group: Awaited<ReturnType<typeof getGroup>>;
+	expenses?: Awaited<ReturnType<typeof generateRecurringExpenseInstances>>;
 	cutoffDate: Date | null;
 }
 
 export function GroupTabs({
 	group,
 	expenses,
-	resources,
-	settlements,
+	group: { resources, settlements },
 	cutoffDate,
 }: GroupTabsProps) {
 	const t = useTranslations("group");
@@ -72,8 +70,6 @@ export function GroupTabs({
 				<ResourcesSection
 					groupId={group.id}
 					group={group}
-					resources={resources}
-					members={group.members}
 					cutoffDate={cutoffDate}
 				/>
 			</TabsContent>

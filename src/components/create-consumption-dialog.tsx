@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Decimal } from "decimal.js";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -31,7 +30,6 @@ import { Label } from "@/components/ui/label";
 import { MemberSelection } from "@/components/ui/member-selection";
 
 import { type ConsumptionFormData, consumptionSchema } from "@/lib/schemas";
-import { convertToPlainObject } from "@/lib/utils";
 
 interface CreateConsumptionDialogProps {
 	groupId: string;

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
+import type { getGroup } from "@/actions";
 import { AddExpenseDialog } from "@/components/add-expense-dialog";
 import { AddMemberDialog } from "@/components/add-member-dialog";
 import { CreateConsumptionDialog } from "@/components/create-consumption-dialog";
@@ -22,8 +23,10 @@ import { formatCurrency } from "@/lib/currency";
 
 interface GroupOverviewProps {
 	group: Group & { expenses: Expense[]; members: Member[] };
-	resources: any[];
-	consumptions: any[];
+	resources: Awaited<ReturnType<typeof getGroup>>["resources"];
+	consumptions: Awaited<
+		ReturnType<typeof getGroup>
+	>["resources"][number]["consumptions"];
 	cutoffDate: Date | null;
 }
 

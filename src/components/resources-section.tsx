@@ -1,5 +1,4 @@
 "use client";
-
 import {
 	Calendar,
 	Edit,
@@ -21,13 +20,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-
 import { formatCurrency } from "@/lib/currency";
 
 interface ResourcesSectionProps {
 	groupId: string;
-	resources: Awaited<ReturnType<typeof getGroup>>["resources"];
-	members: Awaited<ReturnType<typeof getGroup>>["members"];
 	group: Awaited<ReturnType<typeof getGroup>>;
 	cutoffDate: Date | null;
 }
@@ -35,8 +31,7 @@ interface ResourcesSectionProps {
 export function ResourcesSection({
 	groupId,
 	group,
-	resources,
-	members,
+	group: { resources, members },
 	cutoffDate,
 }: ResourcesSectionProps) {
 	const [deletingResourceId, setDeletingResourceId] = useState<string | null>(
@@ -312,7 +307,11 @@ export function ResourcesSection({
 														</p>
 														<div className="flex flex-wrap gap-2">
 															{consumption.consumptionMembers.map(
-																(consumptionMember: any) => (
+																(
+																	consumptionMember: Awaited<
+																		ReturnType<typeof getGroup>
+																	>["resources"][number]["consumptions"][number]["consumptionMembers"][number],
+																) => (
 																	<Badge
 																		key={consumptionMember.member.id}
 																		variant="outline"

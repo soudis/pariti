@@ -15,7 +15,7 @@ import {
 	TextField,
 } from "@/components/ui/form-field";
 
-import { groupSchema } from "@/lib/schemas";
+import { type GroupFormData, groupSchema } from "@/lib/schemas";
 
 interface SettingsSectionProps {
 	group: {
@@ -45,7 +45,7 @@ export function SettingsSection({ group }: SettingsSectionProps) {
 		},
 	});
 
-	const onSubmit = async (data: any) => {
+	const onSubmit = async (data: GroupFormData) => {
 		setLoading(true);
 		setMessage(null);
 
