@@ -19,18 +19,39 @@ async function createExpense(groupId: string, data: ExpenseFormData) {
 
 	if (!group) throw new Error("Group not found");
 
-	// Get member weights
-	const members = await db.member.findMany({
-		where: { id: { in: data.selectedMembers } },
-		select: { id: true, weight: true },
-	});
+	// Prepare expense members data
+	let expenseMembersData: Array<{
+		memberId: string;
+		amount: number;
+		isManuallyEdited: boolean;
+	}>;
 
-	// Calculate weighted amounts
-	const weightedAmounts = calculateWeightedAmounts(
-		Number(data.amount),
-		members,
-		group.weightsEnabled,
-	);
+	if (data.memberAmounts && data.memberAmounts.length > 0) {
+		// Use manually specified amounts
+		expenseMembersData = data.memberAmounts.map((ma) => ({
+			memberId: ma.memberId,
+			amount: ma.amount,
+			isManuallyEdited: ma.isManuallyEdited,
+		}));
+	} else {
+		// Calculate weighted amounts automatically
+		const members = await db.member.findMany({
+			where: { id: { in: data.selectedMembers } },
+			select: { id: true, weight: true },
+		});
+
+		const weightedAmounts = calculateWeightedAmounts(
+			Number(data.amount),
+			members,
+			group.weightsEnabled,
+		);
+
+		expenseMembersData = weightedAmounts.map((wa) => ({
+			memberId: wa.memberId,
+			amount: wa.amount,
+			isManuallyEdited: false,
+		}));
+	}
 
 	const expense = await db.expense.create({
 		data: {
@@ -45,7 +66,7 @@ async function createExpense(groupId: string, data: ExpenseFormData) {
 			recurringType: data.recurringType,
 			recurringStartDate: data.recurringStartDate,
 			expenseMembers: {
-				create: weightedAmounts,
+				create: expenseMembersData,
 			},
 		},
 		include: {

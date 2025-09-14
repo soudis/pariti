@@ -126,7 +126,7 @@ export function MembersSection({ group }: MembersSectionProps) {
 						{group.members.map((member) => (
 							<div
 								key={member.id}
-								className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+								className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border"
 							>
 								<div className="flex items-center gap-3 flex-1">
 									<div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">

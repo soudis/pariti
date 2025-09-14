@@ -14,7 +14,7 @@ export const CURRENCY_SYMBOLS: Record<string, string> = {
 };
 
 export function formatCurrency(
-	amount: number,
+	amount: number | string,
 	currency: string = "USD",
 ): string {
 	const symbol = CURRENCY_SYMBOLS[currency] || currency;
@@ -22,7 +22,7 @@ export function formatCurrency(
 	// For currencies like JPY that don't use decimal places
 	const decimals = ["JPY"].includes(currency) ? 0 : 2;
 
-	return `${symbol}${amount.toFixed(decimals)}`;
+	return `${symbol}${Number(amount).toFixed(decimals)}`;
 }
 
 export function getCurrencySymbol(currency: string = "USD"): string {

@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+export const memberAmountSchema = z.object({
+	memberId: z.string(),
+	amount: z.coerce.number().min(0, "Amount must be non-negative"),
+	isManuallyEdited: z.coerce.boolean().default(false),
+});
+
 export const expenseSchema = z
 	.object({
 		title: z.string().min(1, "Title is required"),
@@ -11,6 +17,7 @@ export const expenseSchema = z
 		selectedMembers: z
 			.array(z.string())
 			.min(1, "Please select at least one member"),
+		memberAmounts: z.array(memberAmountSchema).optional(),
 		isRecurring: z.coerce.boolean(),
 		recurringType: z.enum(["weekly", "monthly", "yearly"]).nullish(),
 		recurringStartDate: z.coerce.date().nullish(),
@@ -73,6 +80,7 @@ export const consumptionSchema = z.object({
 	selectedMembers: z
 		.array(z.string())
 		.min(1, "Please select at least one member"),
+	memberAmounts: z.array(memberAmountSchema).optional(),
 });
 
 export const memberSchema = z.object({

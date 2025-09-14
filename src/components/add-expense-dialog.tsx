@@ -26,6 +26,7 @@ import {
 	SelectField,
 	TextField,
 } from "@/components/ui/form-field";
+import { MemberAmountEditor } from "@/components/ui/member-amount-editor";
 import { MemberSelection } from "@/components/ui/member-selection";
 import { type ExpenseFormData, expenseSchema } from "@/lib/schemas";
 import { handleActionErrors } from "@/lib/utils";
@@ -50,6 +51,9 @@ export function AddExpenseDialog({
 	const [activeMembersAtDate, setActiveMembersAtDate] = useState<Member[]>(
 		group.members,
 	);
+	const [memberAmounts, setMemberAmounts] = useState<
+		Array<{ memberId: string; amount: number; isManuallyEdited: boolean }>
+	>([]);
 	const { executeAsync: createExpense } = useAction(createExpenseAction);
 	const { executeAsync: editExpense } = useAction(editExpenseAction);
 
@@ -135,14 +139,20 @@ export function AddExpenseDialog({
 		setLoading(true);
 
 		try {
+			// Include member amounts in the data
+			const expenseData = {
+				...data,
+				memberAmounts: memberAmounts.length > 0 ? memberAmounts : undefined,
+			};
+
 			if (expense) {
 				handleActionErrors(
-					await editExpense({ expenseId: expense.id, expense: data }),
+					await editExpense({ expenseId: expense.id, expense: expenseData }),
 				);
 			} else {
 				// Create new expense
 				handleActionErrors(
-					await createExpense({ groupId: group.id, expense: data }),
+					await createExpense({ groupId: group.id, expense: expenseData }),
 				);
 			}
 
@@ -163,8 +173,8 @@ export function AddExpenseDialog({
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent className="sm:max-w-[500px]">
-				<DialogHeader>
+			<DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
+				<DialogHeader className="flex-shrink-0">
 					<DialogTitle>{expense ? "Edit Expense" : "Add Expense"}</DialogTitle>
 					<DialogDescription>
 						{expense
@@ -172,128 +182,153 @@ export function AddExpenseDialog({
 							: "Add a new expense to your group. Select which members this expense applies to."}
 					</DialogDescription>
 				</DialogHeader>
-				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-						<TextField
-							control={form.control}
-							name="title"
-							label="Title"
-							placeholder="e.g., Dinner at restaurant"
-							required
-						/>
-
-						<TextField
-							control={form.control}
-							name="description"
-							label="Description (optional)"
-							placeholder="e.g., Great food and drinks"
-						/>
-
-						<div className="grid grid-cols-2 gap-4">
+				<div className="flex-1 overflow-y-auto">
+					<Form {...form}>
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 							<TextField
 								control={form.control}
-								name="amount"
-								label="Amount"
-								type="number"
-								step="0.01"
-								min={0}
-								placeholder="0.00"
+								name="title"
+								label="Title"
+								placeholder="e.g., Dinner at restaurant"
 								required
 							/>
 
-							<SelectField
+							<TextField
 								control={form.control}
-								name="paidById"
-								label="Paid by"
-								placeholder="Select member"
-								required
-								options={group.members.map((member) => ({
-									value: member.id,
-									label: member.name,
-								}))}
-							/>
-						</div>
-
-						<DateField
-							control={form.control}
-							name="date"
-							label="Date"
-							placeholder="Select expense date"
-						/>
-
-						{/* Recurring Options */}
-						<div className="space-y-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-							<CheckboxField
-								control={form.control}
-								name="isRecurring"
-								label="Make this a recurring expense"
+								name="description"
+								label="Description (optional)"
+								placeholder="e.g., Great food and drinks"
 							/>
 
-							{(form.watch("isRecurring") as boolean) && (
-								<div className="space-y-4 pl-6">
-									<div className="grid grid-cols-2 gap-4">
-										<SelectField
-											control={form.control}
-											name="recurringType"
-											label="Frequency"
-											options={[
-												{ value: "weekly", label: "Weekly" },
-												{ value: "monthly", label: "Monthly" },
-												{ value: "yearly", label: "Yearly" },
-											]}
-										/>
+							<div className="grid grid-cols-2 gap-4">
+								<TextField
+									control={form.control}
+									name="amount"
+									label="Amount"
+									type="number"
+									step="0.01"
+									min={0}
+									placeholder="0.00"
+									required
+								/>
 
-										<DateField
-											control={form.control}
-											name="recurringStartDate"
-											label="Start Date"
-											placeholder="Select start date"
-										/>
+								<SelectField
+									control={form.control}
+									name="paidById"
+									label="Paid by"
+									placeholder="Select member"
+									required
+									options={group.members.map((member) => ({
+										value: member.id,
+										label: member.name,
+									}))}
+								/>
+							</div>
+
+							<DateField
+								control={form.control}
+								name="date"
+								label="Date"
+								placeholder="Select expense date"
+							/>
+
+							{/* Recurring Options */}
+							<div className="space-y-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+								<CheckboxField
+									control={form.control}
+									name="isRecurring"
+									label="Make this a recurring expense"
+								/>
+
+								{(form.watch("isRecurring") as boolean) && (
+									<div className="space-y-4 pl-6">
+										<div className="grid grid-cols-2 gap-4">
+											<SelectField
+												control={form.control}
+												name="recurringType"
+												label="Frequency"
+												options={[
+													{ value: "weekly", label: "Weekly" },
+													{ value: "monthly", label: "Monthly" },
+													{ value: "yearly", label: "Yearly" },
+												]}
+											/>
+
+											<DateField
+												control={form.control}
+												name="recurringStartDate"
+												label="Start Date"
+												placeholder="Select start date"
+											/>
+										</div>
+
+										<p className="text-xs text-gray-600 dark:text-gray-400">
+											This expense will be automatically generated for each{" "}
+											{form.watch("recurringType")} period from the start date.
+										</p>
 									</div>
+								)}
+							</div>
 
-									<p className="text-xs text-gray-600 dark:text-gray-400">
-										This expense will be automatically generated for each{" "}
-										{form.watch("recurringType")} period from the start date.
-									</p>
-								</div>
-							)}
-						</div>
+							<MemberSelection
+								members={group.members}
+								selectedMembers={form.watch("selectedMembers")}
+								onSelectionChange={(members) =>
+									form.setValue("selectedMembers", members)
+								}
+								splitAll={form.watch("splitAll") as boolean}
+								onSplitAllChange={(splitAll) =>
+									form.setValue("splitAll", splitAll)
+								}
+								activeMembersAtDate={activeMembersAtDate}
+								expenseDate={form.watch("date") as Date}
+							/>
 
-						<MemberSelection
-							members={group.members}
-							selectedMembers={form.watch("selectedMembers")}
-							onSelectionChange={(members) =>
-								form.setValue("selectedMembers", members)
-							}
-							splitAll={form.watch("splitAll") as boolean}
-							onSplitAllChange={(splitAll) =>
-								form.setValue("splitAll", splitAll)
-							}
-							activeMembersAtDate={activeMembersAtDate}
-							expenseDate={form.watch("date") as Date}
-						/>
-
-						<div className="flex justify-end space-x-2">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => setOpen(false)}
-								disabled={loading}
-							>
-								Cancel
-							</Button>
-							<Button type="submit" disabled={loading}>
-								{loading
-									? expense
-										? "Updating..."
-										: "Adding..."
-									: expense
-										? "Update Expense"
-										: "Add Expense"}
-							</Button>
-						</div>
-					</form>
-				</Form>
+							{/* Member Amount Editor - only show if not splitAll and members are selected */}
+							{!form.watch("splitAll") &&
+								form.watch("selectedMembers").length > 0 && (
+									<MemberAmountEditor
+										members={activeMembersAtDate
+											.filter((member) =>
+												form.watch("selectedMembers").includes(member.id),
+											)
+											.map((member) => ({
+												...member,
+												weight: Number(member.weight),
+											}))}
+										memberAmounts={memberAmounts}
+										totalAmount={form.watch("amount") as number}
+										currency={group.currency}
+										weightsEnabled={group.weightsEnabled}
+										onAmountsChange={setMemberAmounts}
+									/>
+								)}
+						</form>
+					</Form>
+				</div>
+				<div className="flex-shrink-0 flex justify-end space-x-2 pt-4 border-t">
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => setOpen(false)}
+						disabled={loading}
+					>
+						Cancel
+					</Button>
+					<Button
+						type="submit"
+						disabled={loading}
+						onClick={form.handleSubmit(onSubmit)}
+					>
+						{loading
+							? expense
+								? "Updating..."
+								: "Adding..."
+							: expense
+								? "Update Expense"
+								: "Add Expense"}
+					</Button>
+				</div>
 			</DialogContent>
 		</Dialog>
 	);

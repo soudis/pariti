@@ -28,6 +28,7 @@ import {
 	TextField,
 } from "@/components/ui/form-field";
 import { Label } from "@/components/ui/label";
+import { MemberAmountEditor } from "@/components/ui/member-amount-editor";
 import { MemberSelection } from "@/components/ui/member-selection";
 import { type ConsumptionFormData, consumptionSchema } from "@/lib/schemas";
 import { handleActionErrors } from "@/lib/utils";
@@ -53,6 +54,9 @@ export function CreateConsumptionDialog({
 	const [loading, setLoading] = useState(false);
 	const [activeMembersAtDate, setActiveMembersAtDate] =
 		useState<Awaited<ReturnType<typeof getGroup>>["members"]>(members);
+	const [memberAmounts, setMemberAmounts] = useState<
+		Array<{ memberId: string; amount: number; isManuallyEdited: boolean }>
+	>([]);
 	const t = useTranslations("forms.createConsumption");
 
 	const { executeAsync: createConsumption } = useAction(
@@ -119,16 +123,24 @@ export function CreateConsumptionDialog({
 		setLoading(true);
 
 		try {
+			// Include member amounts in the data
+			const consumptionData = {
+				...data,
+				memberAmounts: memberAmounts.length > 0 ? memberAmounts : undefined,
+			};
+
 			if (consumption) {
 				handleActionErrors(
 					await editConsumption({
 						consumptionId: consumption.id,
-						consumption: data,
+						consumption: consumptionData,
 					}),
 				);
 			} else {
 				// Create new consumption
-				handleActionErrors(await createConsumption({ consumption: data }));
+				handleActionErrors(
+					await createConsumption({ consumption: consumptionData }),
+				);
 			}
 
 			setOpen(false);
@@ -168,8 +180,8 @@ export function CreateConsumptionDialog({
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent className="sm:max-w-[500px]">
-				<DialogHeader>
+			<DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
+				<DialogHeader className="flex-shrink-0">
 					<DialogTitle>
 						{consumption ? "Edit Consumption" : t("title")}
 					</DialogTitle>
@@ -177,132 +189,156 @@ export function CreateConsumptionDialog({
 						{consumption ? "Update the consumption details." : t("description")}
 					</DialogDescription>
 				</DialogHeader>
-				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-						<SelectField
-							control={form.control}
-							name="resourceId"
-							label={t("resourceLabel")}
-							placeholder={t("resourcePlaceholder")}
-							required
-							options={resources.map((resource) => ({
-								value: resource.id,
-								label: `${resource.name}${resource.unit && resource.unitPrice ? ` (${Number(resource.unitPrice)}€/${resource.unit})` : ""}`,
-							}))}
-						/>
+				<div className="flex-1 overflow-y-auto">
+					<Form {...form}>
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+							<SelectField
+								control={form.control}
+								name="resourceId"
+								label={t("resourceLabel")}
+								placeholder={t("resourcePlaceholder")}
+								required
+								options={resources.map((resource) => ({
+									value: resource.id,
+									label: `${resource.name}${resource.unit && resource.unitPrice ? ` (${Number(resource.unitPrice)}€/${resource.unit})` : ""}`,
+								}))}
+							/>
 
-						<TextField
-							control={form.control}
-							name="description"
-							label={t("descriptionLabel")}
-							placeholder={t("descriptionPlaceholder")}
-						/>
+							<TextField
+								control={form.control}
+								name="description"
+								label={t("descriptionLabel")}
+								placeholder={t("descriptionPlaceholder")}
+							/>
 
-						<DateField
-							control={form.control}
-							name="date"
-							label={t("dateLabel")}
-							placeholder={t("datePlaceholder")}
-						/>
+							<DateField
+								control={form.control}
+								name="date"
+								label={t("dateLabel")}
+								placeholder={t("datePlaceholder")}
+							/>
 
-						{form.watch("resourceId") && (
-							<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-								<div className="space-y-2">
-									<Label>{t("amountLabel")}</Label>
-									<div className="flex items-center space-x-2">
-										<TextField
-											control={form.control}
-											name="amount"
-											type="number"
-											step="0.01"
-											min={0}
-											placeholder="0.00"
-											required
-											className="flex-1"
-										/>
-										{(() => {
-											const selectedResource = resources.find(
-												(r) => r.id === form.getValues("resourceId"),
-											);
-											const isUnitAmount = form.watch("isUnitAmount");
-											return (
-												selectedResource?.unit && (
-													<span className="text-sm text-gray-500 whitespace-nowrap">
-														{isUnitAmount ? selectedResource.unit : "€"}
-													</span>
-												)
-											);
-										})()}
-									</div>
-								</div>
-
-								{(() => {
-									const selectedResource = resources.find(
-										(r) => r.id === form.getValues("resourceId"),
-									);
-									return (
-										selectedResource?.unit &&
-										selectedResource?.unitPrice && (
-											<CheckboxField
+							{form.watch("resourceId") && (
+								<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+									<div className="space-y-2">
+										<Label>{t("amountLabel")}</Label>
+										<div className="flex items-center space-x-2">
+											<TextField
 												control={form.control}
-												name="isUnitAmount"
-												text={t("isUnitAmount", {
-													unit: selectedResource.unit,
-												})}
+												name="amount"
+												type="number"
+												step="0.01"
+												min={0}
+												placeholder="0.00"
+												required
+												className="flex-1"
 											/>
-										)
-									);
-								})()}
-
-								{(form.watch("amount") as number) && (
-									<div className="space-y-1">
-										<p className="text-sm text-gray-600 dark:text-gray-300">
-											{t("totalCost")}: €{calculateTotalCost().toFixed(2)}
-										</p>
-										{form.watch("selectedMembers").length > 0 && (
-											<p className="text-sm text-gray-600 dark:text-gray-300">
-												{t("amountPerPerson")}: €
-												{calculateAmountPerMember().toFixed(2)}
-											</p>
-										)}
+											{(() => {
+												const selectedResource = resources.find(
+													(r) => r.id === form.getValues("resourceId"),
+												);
+												const isUnitAmount = form.watch("isUnitAmount");
+												return (
+													selectedResource?.unit && (
+														<span className="text-sm text-gray-500 whitespace-nowrap">
+															{isUnitAmount ? selectedResource.unit : "€"}
+														</span>
+													)
+												);
+											})()}
+										</div>
 									</div>
-								)}
-							</div>
-						)}
 
-						<MemberSelection
-							members={members}
-							selectedMembers={form.watch("selectedMembers")}
-							onSelectionChange={(members) =>
-								form.setValue("selectedMembers", members)
-							}
-							splitAll={false}
-							onSplitAllChange={() => {}} // Not used in consumption
-							activeMembersAtDate={activeMembersAtDate}
-							expenseDate={form.watch("date") as Date}
-						/>
+									{(() => {
+										const selectedResource = resources.find(
+											(r) => r.id === form.getValues("resourceId"),
+										);
+										return (
+											selectedResource?.unit &&
+											selectedResource?.unitPrice && (
+												<CheckboxField
+													control={form.control}
+													name="isUnitAmount"
+													text={t("isUnitAmount", {
+														unit: selectedResource.unit,
+													})}
+												/>
+											)
+										);
+									})()}
 
-						<div className="flex justify-end space-x-2">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => setOpen(false)}
-								disabled={loading}
-							>
-								{t("cancel")}
-							</Button>
-							<Button type="submit" disabled={loading}>
-								{loading
-									? consumption
-										? "Updating..."
-										: t("adding")
-									: consumption
-										? "Update Consumption"
-										: t("add")}
-							</Button>
-						</div>
-					</form>
-				</Form>
+									{(form.watch("amount") as number) && (
+										<div className="space-y-1">
+											<p className="text-sm text-gray-600 dark:text-gray-300">
+												{t("totalCost")}: €{calculateTotalCost().toFixed(2)}
+											</p>
+											{form.watch("selectedMembers").length > 0 && (
+												<p className="text-sm text-gray-600 dark:text-gray-300">
+													{t("amountPerPerson")}: €
+													{calculateAmountPerMember().toFixed(2)}
+												</p>
+											)}
+										</div>
+									)}
+								</div>
+							)}
+
+							<MemberSelection
+								members={members}
+								selectedMembers={form.watch("selectedMembers")}
+								onSelectionChange={(members) =>
+									form.setValue("selectedMembers", members)
+								}
+								splitAll={false}
+								onSplitAllChange={() => {}} // Not used in consumption
+								activeMembersAtDate={activeMembersAtDate}
+								expenseDate={form.watch("date") as Date}
+							/>
+
+							{/* Member Amount Editor - only show if members are selected */}
+							{form.watch("selectedMembers").length > 0 && (
+								<MemberAmountEditor
+									members={activeMembersAtDate
+										.filter((member) =>
+											form.watch("selectedMembers").includes(member.id),
+										)
+										.map((member) => ({
+											...member,
+											weight: Number(member.weight),
+										}))}
+									memberAmounts={memberAmounts}
+									totalAmount={calculateTotalCost()}
+									currency="€" // TODO: Get from group
+									weightsEnabled={false} // TODO: Get from group
+									onAmountsChange={setMemberAmounts}
+								/>
+							)}
+						</form>
+					</Form>
+				</div>
+				<div className="flex-shrink-0 flex justify-end space-x-2 pt-4 border-t">
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => setOpen(false)}
+						disabled={loading}
+					>
+						{t("cancel")}
+					</Button>
+					<Button
+						type="submit"
+						disabled={loading}
+						onClick={form.handleSubmit(onSubmit)}
+					>
+						{loading
+							? consumption
+								? "Updating..."
+								: t("adding")
+							: consumption
+								? "Update Consumption"
+								: t("add")}
+					</Button>
+				</div>
 			</DialogContent>
 		</Dialog>
 	);

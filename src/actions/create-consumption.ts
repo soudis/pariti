@@ -21,7 +21,29 @@ async function createConsumption(data: ConsumptionFormData) {
 		? data.amount * Number(resource.unitPrice || 0)
 		: data.amount;
 
-	const amountPerMember = totalCost / data.selectedMembers.length;
+	// Prepare consumption members data
+	let consumptionMembersData: Array<{
+		memberId: string;
+		amount: number;
+		isManuallyEdited: boolean;
+	}>;
+
+	if (data.memberAmounts && data.memberAmounts.length > 0) {
+		// Use manually specified amounts
+		consumptionMembersData = data.memberAmounts.map((ma) => ({
+			memberId: ma.memberId,
+			amount: ma.amount,
+			isManuallyEdited: ma.isManuallyEdited,
+		}));
+	} else {
+		// Calculate equal split automatically
+		const amountPerMember = totalCost / data.selectedMembers.length;
+		consumptionMembersData = data.selectedMembers.map((memberId) => ({
+			memberId,
+			amount: amountPerMember,
+			isManuallyEdited: false,
+		}));
+	}
 
 	const consumption = await db.consumption.create({
 		data: {
@@ -31,10 +53,7 @@ async function createConsumption(data: ConsumptionFormData) {
 			date: data.date,
 			description: data.description,
 			consumptionMembers: {
-				create: data.selectedMembers.map((memberId) => ({
-					memberId,
-					amount: amountPerMember,
-				})),
+				create: consumptionMembersData,
 			},
 		},
 		include: {

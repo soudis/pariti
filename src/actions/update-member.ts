@@ -4,6 +4,12 @@ import type { Member } from "@prisma/client";
 import Decimal from "decimal.js";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
+import {
+	convertDecimalAmounts,
+	convertToDecimalAmounts,
+	type Member as RedistributionMember,
+	redistributeAmounts,
+} from "@/lib/redistribution";
 import { actionClient } from "@/lib/safe-action";
 import {
 	type MemberFormData,
@@ -11,7 +17,6 @@ import {
 	updateMemberReturnSchema,
 } from "@/lib/schemas";
 import { getActiveMembersForDate } from "./get-active-members-for-date";
-import { calculateWeightedAmounts } from "./utils";
 
 async function updateMember(memberId: Member["id"], data: MemberFormData) {
 	const member = await db.member.findUnique({
@@ -93,12 +98,24 @@ async function updateMember(memberId: Member["id"], data: MemberFormData) {
 					expense.date,
 				);
 
-				const weightedAmounts = calculateWeightedAmounts(
-					Number(expense.amount),
+				// Get existing expense members to preserve manually edited amounts
+				const existingExpenseMembers = await db.expenseMember.findMany({
+					where: { expenseId: expense.id },
+				});
+
+				// Convert to redistribution format
+				const existingAmounts = convertDecimalAmounts(existingExpenseMembers);
+				const membersForRedistribution: RedistributionMember[] =
 					activeMembers.map((member) => ({
 						id: member.id,
-						weight: new Decimal(member.weight),
-					})),
+						weight: Number(member.weight),
+					}));
+
+				// Use redistribution logic to preserve manually edited amounts
+				const redistributedAmounts = redistributeAmounts(
+					membersForRedistribution,
+					existingAmounts,
+					Number(expense.amount),
 					member.group.weightsEnabled,
 				);
 
@@ -107,12 +124,13 @@ async function updateMember(memberId: Member["id"], data: MemberFormData) {
 					where: { expenseId: expense.id },
 				});
 
-				// Create new expense members with correct amounts
+				// Create new expense members with redistributed amounts
 				await db.expenseMember.createMany({
-					data: weightedAmounts.map((weightedAmount) => ({
+					data: convertToDecimalAmounts(redistributedAmounts).map((ma) => ({
 						expenseId: expense.id,
-						memberId: weightedAmount.memberId,
-						amount: weightedAmount.amount,
+						memberId: ma.memberId,
+						amount: ma.amount,
+						isManuallyEdited: ma.isManuallyEdited,
 					})),
 				});
 			} else {
@@ -132,31 +150,45 @@ async function updateMember(memberId: Member["id"], data: MemberFormData) {
 								data.activeTo >= expense.date);
 
 						if (isActive) {
-							// Recalculate this member's share
-							const allMembers = expense.expenseMembers.map((em) => ({
-								id: em.member.id,
-								weight:
-									em.memberId === memberId
-										? new Decimal(data.weight || 1)
-										: new Decimal(em.member.weight),
-							}));
+							// Get current expense members
+							const currentExpenseMembers = await db.expenseMember.findMany({
+								where: { expenseId: expense.id },
+							});
 
-							const weightedAmounts = calculateWeightedAmounts(
+							// Convert to redistribution format
+							const existingAmounts = convertDecimalAmounts(
+								currentExpenseMembers,
+							);
+							const membersForRedistribution: RedistributionMember[] =
+								expense.expenseMembers.map((em) => ({
+									id: em.member.id,
+									weight:
+										em.memberId === memberId
+											? Number(data.weight || 1)
+											: Number(em.member.weight),
+								}));
+
+							// Use redistribution logic to preserve manually edited amounts
+							const redistributedAmounts = redistributeAmounts(
+								membersForRedistribution,
+								existingAmounts,
 								Number(expense.amount),
-								allMembers,
 								member.group.weightsEnabled,
 							);
 
-							// Update all expense members with new amounts
-							for (const weightedAmount of weightedAmounts) {
+							// Update all expense members with redistributed amounts
+							for (const redistributedAmount of redistributedAmounts) {
 								await db.expenseMember.update({
 									where: {
 										expenseId_memberId: {
 											expenseId: expense.id,
-											memberId: weightedAmount.memberId,
+											memberId: redistributedAmount.memberId,
 										},
 									},
-									data: { amount: weightedAmount.amount },
+									data: {
+										amount: new Decimal(redistributedAmount.amount),
+										isManuallyEdited: redistributedAmount.isManuallyEdited,
+									},
 								});
 							}
 						} else {

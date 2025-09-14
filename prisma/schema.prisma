@@ -78,11 +78,12 @@ model Expense {
 }
 
 model ExpenseMember {
-  id        String   @id @default(cuid())
-  expenseId String
-  memberId  String
-  amount    Decimal  @db.Decimal(10, 2) // How much this member owes for this expense
-  createdAt DateTime @default(now())
+  id               String   @id @default(cuid())
+  expenseId        String
+  memberId         String
+  amount           Decimal  @db.Decimal(10, 2) // How much this member owes for this expense
+  isManuallyEdited Boolean  @default(false) // Whether this amount was manually edited by user
+  createdAt        DateTime @default(now())
 
   // Relations
   expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
@@ -129,11 +130,12 @@ model Consumption {
 }
 
 model ConsumptionMember {
-  id            String   @id @default(cuid())
-  createdAt     DateTime @default(now())
-  consumptionId String
-  memberId      String
-  amount        Decimal  @db.Decimal(10, 2) // amount this member owes
+  id               String   @id @default(cuid())
+  createdAt        DateTime @default(now())
+  consumptionId    String
+  memberId         String
+  amount           Decimal  @db.Decimal(10, 2) // amount this member owes
+  isManuallyEdited Boolean  @default(false) // Whether this amount was manually edited by user
 
   // Relations
   consumption   Consumption @relation(fields: [consumptionId], references: [id], onDelete: Cascade)
