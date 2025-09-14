@@ -8,6 +8,7 @@ import {
 	editExpenseInputSchema,
 	editExpenseReturnSchema,
 } from "@/lib/schemas";
+import { convertToPlainObject } from "@/lib/utils";
 import { calculateWeightedAmounts } from "./utils";
 
 async function updateExpense(expenseId: string, data: ExpenseFormData) {
@@ -95,7 +96,7 @@ async function updateExpense(expenseId: string, data: ExpenseFormData) {
 	}
 
 	revalidatePath(`/group/${expense.groupId}`);
-	return { expense };
+	return { expense: convertToPlainObject(expense) };
 }
 
 export const updateExpenseAction = actionClient

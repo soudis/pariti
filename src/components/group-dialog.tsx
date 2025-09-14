@@ -34,7 +34,7 @@ export function GroupDialog({ children }: GroupDialogProps) {
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
 	const locale = useLocale();
-	const t = useTranslations("forms.createGroup");
+	const t = useTranslations("forms.group");
 
 	const { executeAsync: createGroup } = useAction(createGroupAction);
 	const form = useForm({

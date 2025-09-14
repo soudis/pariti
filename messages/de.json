@@ -134,7 +134,7 @@
 		"qrCode": "QR-Code"
 	},
 	"forms": {
-		"createGroup": {
+		"group": {
 			"title": "Neue Gruppe erstellen",
 			"description": "Erstelle eine neue Ausgaben-Gruppe. Du kannst Mitglieder hinzufügen und Ausgaben verfolgen.",
 			"name": "Gruppenname",
@@ -187,21 +187,23 @@
 			"create": "Mitglied erstellen",
 			"creating": "Erstelle..."
 		},
-		"addExpense": {
+		"expense": {
 			"title": "Ausgabe hinzufügen",
-			"description": "Füge eine neue Ausgabe zu deiner Gruppe hinzu. Wähle aus, für welche Mitglieder diese Ausgabe gilt.",
-			"titleLabel": "Titel",
+			"editTitle": "Ausgabe bearbeiten",
+			"editDescription": "Aktualisiere die Ausgabedetails und Mitgliederauswahl.",
+			"titleField": "Titel",
 			"titlePlaceholder": "z.B. Abendessen im Restaurant",
-			"descriptionLabel": "Beschreibung (optional)",
+			"description": "Beschreibung (optional)",
 			"descriptionPlaceholder": "z.B. Leckeres Essen und Getränke",
-			"amountLabel": "Betrag",
-			"paidByLabel": "Bezahlt von",
+			"amount": "Betrag",
+			"amountPlaceholder": "0,00",
+			"paidBy": "Bezahlt von",
 			"paidByPlaceholder": "Mitglied auswählen",
-			"dateLabel": "Datum",
+			"date": "Datum",
 			"datePlaceholder": "Ausgabedatum auswählen",
 			"recurring": {
-				"makeRecurring": "Diese Ausgabe wiederkehrend machen",
-				"frequencyLabel": "Häufigkeit",
+				"title": "Diese Ausgabe wiederkehrend machen",
+				"frequency": "Häufigkeit",
 				"weekly": "Wöchentlich",
 				"monthly": "Monatlich",
 				"yearly": "Jährlich",
@@ -209,18 +211,29 @@
 				"startDatePlaceholder": "Startdatum auswählen",
 				"description": "Diese Ausgabe wird automatisch für jeden {type} Zeitraum ab dem Startdatum generiert."
 			},
-			"splitBetween": "Aufteilen zwischen",
+			"splitBetween": "Aufteilen zwischen allen aktiven Mitgliedern",
 			"allMembers": "Alle Mitglieder (einschließlich zukünftiger Mitglieder)",
 			"noActiveMembers": "Keine aktiven Mitglieder an diesem Datum",
 			"amountPerPerson": "Betrag pro Person: {amount}€",
 			"includesActiveMembers": "Diese Ausgabe wird alle {count} aktiven Mitglieder vom {date} einbeziehen",
+			"selectMembersAndAmounts": "Mitglieder & Beträge auswählen",
+			"resetToDefaults": "Auf Standard zurücksetzen",
+			"weight": "Gewicht",
+			"inactive": "Inaktiv",
+			"allowAutomaticRecalculation": "Automatische Neuberechnung erlauben",
+			"protectFromAutomaticRecalculation": "Vor automatischer Neuberechnung schützen",
+			"totalAmount": "Gesamtbetrag",
+			"currentSplit": "Aktuelle Aufteilung",
+			"difference": "Differenz",
 			"cancel": "Abbrechen",
 			"add": "Ausgabe hinzufügen",
+			"update": "Ausgabe aktualisieren",
 			"adding": "Füge hinzu...",
+			"updating": "Aktualisiere...",
 			"selectMembers": "Bitte wähle mindestens ein Mitglied für diese Ausgabe aus",
 			"selectStartDate": "Bitte wähle ein Startdatum für wiederkehrende Ausgaben aus"
 		},
-		"createResource": {
+		"resource": {
 			"title": "Ressource hinzufügen",
 			"description": "Füge eine neue Ressource hinzu, um geteilte Nutzung zu verfolgen.",
 			"name": "Ressourcenname",
@@ -236,7 +249,7 @@
 			"create": "Ressource hinzufügen",
 			"creating": "Füge hinzu..."
 		},
-		"createConsumption": {
+		"consumption": {
 			"title": "Nutzung erfassen",
 			"description": "Erfasse den Nutzung einer Ressource durch Gruppenmitglieder.",
 			"resourceLabel": "Ressource",
@@ -260,7 +273,7 @@
 				"noUnitPrice": "Diese Ressource hat keinen Einheitspreis festgelegt"
 			}
 		},
-		"createSettlement": {
+		"settlement": {
 			"title": "Abrechnung erstellen",
 			"description": "Erstelle Abrechnungsdatensätze, um Zahlungen zwischen Mitgliedern und Ressourcen auszugleichen.",
 			"titleLabel": "Abrechnungstitel",

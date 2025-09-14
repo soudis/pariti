@@ -1,13 +1,6 @@
 "use client";
 
-import {
-	Package,
-	Receipt,
-	ReceiptEuro,
-	Scale,
-	Settings,
-	Users,
-} from "lucide-react";
+import { Package, ReceiptEuro, Scale, Settings, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useQueryState } from "nuqs";
 import type { generateRecurringExpenseInstances, getGroup } from "@/actions";

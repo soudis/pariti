@@ -83,7 +83,7 @@ export async function generateRecurringExpenseInstances(
 
 			instances.push({
 				...expense,
-				id: `${expense.id}-${currentInstanceDate.toISOString().split("T")[0]}`,
+				id: expense.id,
 				date: new Date(currentInstanceDate),
 				effectiveMembers: effectiveMembers.map((member) => {
 					const weightedAmount = weightedAmounts.find(

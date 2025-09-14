@@ -8,6 +8,7 @@ import {
 	createExpenseReturnSchema,
 	type ExpenseFormData,
 } from "@/lib/schemas";
+import { convertToPlainObject } from "@/lib/utils";
 import { calculateWeightedAmounts } from "./utils";
 
 async function createExpense(groupId: string, data: ExpenseFormData) {
@@ -81,7 +82,7 @@ async function createExpense(groupId: string, data: ExpenseFormData) {
 
 	revalidatePath(`/group/${groupId}`);
 
-	return { expense };
+	return { expense: convertToPlainObject(expense) };
 }
 
 export const createExpenseAction = actionClient

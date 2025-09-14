@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Group, Member } from "@prisma/client";
+import { useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -48,9 +49,7 @@ export function ExpenseDialog({
 	const [activeMembersAtDate, setActiveMembersAtDate] = useState<Member[]>(
 		group.members,
 	);
-	const [memberAmounts, setMemberAmounts] = useState<
-		Array<{ memberId: string; amount: number; isManuallyEdited: boolean }>
-	>([]);
+	const t = useTranslations("forms.expense");
 	const { executeAsync: createExpense } = useAction(createExpenseAction);
 	const { executeAsync: editExpense } = useAction(editExpenseAction);
 
@@ -67,8 +66,11 @@ export function ExpenseDialog({
 			isRecurring: false,
 			recurringType: "monthly",
 			recurringStartDate: undefined,
+			memberAmounts: [],
 		},
 	});
+
+	const currentDate = form.watch("date") as Date;
 
 	// Initialize form with expense data when editing
 	useEffect(() => {
@@ -99,6 +101,7 @@ export function ExpenseDialog({
 				isRecurring: false,
 				recurringType: "monthly",
 				recurringStartDate: undefined,
+				memberAmounts: [],
 			});
 		}
 	}, [expense, form]);
@@ -127,12 +130,13 @@ export function ExpenseDialog({
 	// Initialize active members when dialog opens
 	useEffect(() => {
 		if (open) {
-			const currentDate = form.getValues("date") as Date;
-			updateActiveMembersForDate(currentDate);
 			form.reset();
-			setMemberAmounts([]);
 		}
-	}, [open, form, updateActiveMembersForDate]);
+	}, [open, form]);
+
+	useEffect(() => {
+		updateActiveMembersForDate(currentDate);
+	}, [currentDate, updateActiveMembersForDate]);
 
 	const onSubmit = async (data: ExpenseFormData) => {
 		setLoading(true);
@@ -141,7 +145,9 @@ export function ExpenseDialog({
 			// Include member amounts in the data
 			const expenseData = {
 				...data,
-				memberAmounts: memberAmounts.length > 0 ? memberAmounts : undefined,
+				memberAmounts: data.memberAmounts?.length
+					? data.memberAmounts
+					: undefined,
 			};
 
 			if (expense) {
@@ -171,11 +177,9 @@ export function ExpenseDialog({
 			<DialogTrigger asChild>{children}</DialogTrigger>
 			<DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
 				<DialogHeader className="flex-shrink-0">
-					<DialogTitle>{expense ? "Edit Expense" : "Add Expense"}</DialogTitle>
+					<DialogTitle>{expense ? t("editTitle") : t("title")}</DialogTitle>
 					<DialogDescription>
-						{expense
-							? "Update the expense details and member selection."
-							: "Add a new expense to your group. Select which members this expense applies to."}
+						{expense ? t("editDescription") : t("description")}
 					</DialogDescription>
 				</DialogHeader>
 				<div className="flex-1 overflow-y-auto">
@@ -184,35 +188,35 @@ export function ExpenseDialog({
 							<TextField
 								control={form.control}
 								name="title"
-								label="Title"
-								placeholder="e.g., Dinner at restaurant"
+								label={t("titleField")}
+								placeholder={t("titlePlaceholder")}
 								required
 							/>
 
 							<TextField
 								control={form.control}
 								name="description"
-								label="Description (optional)"
-								placeholder="e.g., Great food and drinks"
+								label={t("description")}
+								placeholder={t("descriptionPlaceholder")}
 							/>
 
 							<div className="grid grid-cols-2 gap-4">
 								<TextField
 									control={form.control}
 									name="amount"
-									label="Amount"
+									label={t("amount")}
 									type="number"
 									step="0.01"
 									min={0}
-									placeholder="0.00"
+									placeholder={t("amountPlaceholder")}
 									required
 								/>
 
 								<SelectField
 									control={form.control}
 									name="paidById"
-									label="Paid by"
-									placeholder="Select member"
+									label={t("paidBy")}
+									placeholder={t("paidByPlaceholder")}
 									required
 									options={group.members.map((member) => ({
 										value: member.id,
@@ -224,8 +228,8 @@ export function ExpenseDialog({
 							<DateField
 								control={form.control}
 								name="date"
-								label="Date"
-								placeholder="Select expense date"
+								label={t("date")}
+								placeholder={t("datePlaceholder")}
 							/>
 
 							{/* Recurring Options */}
@@ -233,7 +237,7 @@ export function ExpenseDialog({
 								<CheckboxField
 									control={form.control}
 									name="isRecurring"
-									label="Make this a recurring expense"
+									label={t("recurring.title")}
 								/>
 
 								{(form.watch("isRecurring") as boolean) && (
@@ -242,25 +246,26 @@ export function ExpenseDialog({
 											<SelectField
 												control={form.control}
 												name="recurringType"
-												label="Frequency"
+												label={t("recurring.frequency")}
 												options={[
-													{ value: "weekly", label: "Weekly" },
-													{ value: "monthly", label: "Monthly" },
-													{ value: "yearly", label: "Yearly" },
+													{ value: "weekly", label: t("recurring.weekly") },
+													{ value: "monthly", label: t("recurring.monthly") },
+													{ value: "yearly", label: t("recurring.yearly") },
 												]}
 											/>
 
 											<DateField
 												control={form.control}
 												name="recurringStartDate"
-												label="Start Date"
-												placeholder="Select start date"
+												label={t("recurring.startDate")}
+												placeholder={t("recurring.startDatePlaceholder")}
 											/>
 										</div>
 
 										<p className="text-xs text-gray-600 dark:text-gray-400">
-											This expense will be automatically generated for each{" "}
-											{form.watch("recurringType")} period from the start date.
+											{t("recurring.description", {
+												type: form.watch("recurringType") || "monthly",
+											})}
 										</p>
 									</div>
 								)}
@@ -271,24 +276,13 @@ export function ExpenseDialog({
 									...member,
 									weight: Number(member.weight),
 								}))}
-								selectedMembers={form.watch("selectedMembers")}
-								onSelectionChange={(members) =>
-									form.setValue("selectedMembers", members)
-								}
-								splitAll={form.watch("splitAll") as boolean}
-								onSplitAllChange={(splitAll) =>
-									form.setValue("splitAll", splitAll)
-								}
 								activeMembersAtDate={activeMembersAtDate.map((member) => ({
 									...member,
 									weight: Number(member.weight),
 								}))}
 								expenseDate={form.watch("date") as Date}
-								memberAmounts={memberAmounts}
-								totalAmount={form.watch("amount") as number}
 								currency={group.currency}
 								weightsEnabled={group.weightsEnabled}
-								onAmountsChange={setMemberAmounts}
 							/>
 						</form>
 					</Form>
@@ -300,7 +294,7 @@ export function ExpenseDialog({
 						onClick={() => setOpen(false)}
 						disabled={loading}
 					>
-						Cancel
+						{t("cancel")}
 					</Button>
 					<Button
 						type="submit"
@@ -309,11 +303,11 @@ export function ExpenseDialog({
 					>
 						{loading
 							? expense
-								? "Updating..."
-								: "Adding..."
+								? t("updating")
+								: t("adding")
 							: expense
-								? "Update Expense"
-								: "Add Expense"}
+								? t("update")
+								: t("add")}
 					</Button>
 				</div>
 			</DialogContent>

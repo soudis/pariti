@@ -1,13 +1,16 @@
 "use client";
 
-import { Edit3, Lock, Unlock, User, Users } from "lucide-react";
-import { useEffect, useId, useState } from "react";
+import { Check, Edit3, Lock, Unlock, User, Users } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useId, useState } from "react";
+import { useFormContext } from "react-hook-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatCurrency } from "@/lib/currency";
+import { type MemberAmount, redistributeAmounts } from "@/lib/redistribution";
 import { cn } from "@/lib/utils";
 
 interface Member {
@@ -18,76 +21,39 @@ interface Member {
 	activeTo?: Date | null;
 }
 
-interface MemberAmount {
-	memberId: string;
-	amount: number;
-	isManuallyEdited: boolean;
-}
-
 interface MemberEditorProps {
 	members: Member[];
-	selectedMembers: string[];
-	onSelectionChange: (memberIds: string[]) => void;
-	splitAll: boolean;
-	onSplitAllChange: (splitAll: boolean) => void;
 	activeMembersAtDate: Member[];
 	expenseDate: Date;
-	memberAmounts: MemberAmount[];
-	totalAmount: number;
 	currency: string;
 	weightsEnabled: boolean;
-	onAmountsChange: (amounts: MemberAmount[]) => void;
 	className?: string;
 }
 
 export function MemberEditor({
 	members,
-	selectedMembers,
-	onSelectionChange,
-	splitAll,
-	onSplitAllChange,
 	activeMembersAtDate,
 	expenseDate,
-	memberAmounts,
-	totalAmount,
 	currency,
 	weightsEnabled,
-	onAmountsChange,
 	className,
 }: MemberEditorProps) {
 	const splitAllId = useId();
 	const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
+	const [memberAmounts, setMemberAmounts] = useState<MemberAmount[]>([]);
+	const t = useTranslations("forms.expense");
 
-	// Calculate default amounts based on weights or equal split
-	const calculateDefaultAmounts = (): MemberAmount[] => {
-		if (weightsEnabled) {
-			const totalWeight = members.reduce(
-				(sum, member) => sum + member.weight,
-				0,
-			);
-			return members.map((member) => ({
-				memberId: member.id,
-				amount: (totalAmount * member.weight) / totalWeight,
-				isManuallyEdited: false,
-			}));
-		} else {
-			const amountPerMember = totalAmount / members.length;
-			return members.map((member) => ({
-				memberId: member.id,
-				amount: amountPerMember,
-				isManuallyEdited: false,
-			}));
-		}
-	};
+	const { watch, setValue } = useFormContext();
+	const selectedMembers = watch("selectedMembers") || [];
+	const splitAll = watch("splitAll") || false;
+	const totalAmount = watch("amount") || 0;
 
-	// Get current amounts, using defaults for members not in memberAmounts
+	// Get current amounts for selected members only
 	const getCurrentAmounts = (): MemberAmount[] => {
-		const defaults = calculateDefaultAmounts();
 		return members.map((member) => {
 			const existing = memberAmounts.find((ma) => ma.memberId === member.id);
 			return (
-				existing ||
-				defaults.find((d) => d.memberId === member.id) || {
+				existing || {
 					memberId: member.id,
 					amount: 0,
 					isManuallyEdited: false,
@@ -103,192 +69,83 @@ export function MemberEditor({
 	);
 	const difference = totalAmount - totalCurrentAmount;
 
-	// Handle member changes and redistribution
-	useEffect(() => {
-		const currentMemberIds = members.map((m) => m.id);
-		const existingMemberIds = memberAmounts.map((ma) => ma.memberId);
-
-		// Check if members have changed
-		const membersChanged =
-			currentMemberIds.length !== existingMemberIds.length ||
-			!currentMemberIds.every((id) => existingMemberIds.includes(id));
-
-		if (membersChanged) {
-			// Get manually edited amounts that are still valid
-			const preservedAmounts = memberAmounts.filter(
-				(ma) => ma.isManuallyEdited && currentMemberIds.includes(ma.memberId),
+	const redistribute = useCallback(
+		(
+			selectedMembersLocal: string[] = selectedMembers,
+			amountsLocal: MemberAmount[] = currentAmounts,
+		) => {
+			const selectedMembersList = activeMembersAtDate.filter((member) =>
+				selectedMembersLocal.includes(member.id),
 			);
+			const selectedAmounts = amountsLocal.filter(
+				(ma) =>
+					selectedMembersLocal.includes(ma.memberId) &&
+					activeMembersAtDate.find((member) => member.id === ma.memberId),
+			);
+			const redistributedAmounts = redistributeAmounts(
+				selectedMembersList,
+				selectedAmounts,
+				totalAmount,
+				weightsEnabled,
+			);
+			setMemberAmounts(redistributedAmounts);
+		},
+		[
+			activeMembersAtDate,
+			selectedMembers,
+			currentAmounts,
+			totalAmount,
+			weightsEnabled,
+		],
+	);
 
-			// Calculate new amounts for all current members
-			const newAmounts = members.map((member) => {
-				const preserved = preservedAmounts.find(
-					(pa) => pa.memberId === member.id,
-				);
-				if (preserved) {
-					return preserved; // Keep manually edited amounts
-				}
-
-				// Calculate default amount for new members
-				if (weightsEnabled) {
-					const totalWeight = members.reduce((sum, m) => sum + m.weight, 0);
-					return {
-						memberId: member.id,
-						amount: (totalAmount * member.weight) / totalWeight,
-						isManuallyEdited: false,
-					};
-				} else {
-					const amountPerMember = totalAmount / members.length;
-					return {
-						memberId: member.id,
-						amount: amountPerMember,
-						isManuallyEdited: false,
-					};
-				}
-			});
-
-			// If we have manually edited amounts, redistribute the remaining
-			if (preservedAmounts.length > 0) {
-				const totalManualAmount = preservedAmounts.reduce(
-					(sum, ma) => sum + ma.amount,
-					0,
-				);
-				const remainingAmount = totalAmount - totalManualAmount;
-				const automaticMembers = newAmounts.filter(
-					(ma) => !ma.isManuallyEdited,
-				);
-
-				if (automaticMembers.length > 0) {
-					if (weightsEnabled) {
-						const totalWeight = automaticMembers.reduce((sum, ma) => {
-							const member = members.find((m) => m.id === ma.memberId);
-							return sum + (member?.weight || 1);
-						}, 0);
-
-						automaticMembers.forEach((ma) => {
-							const member = members.find((m) => m.id === ma.memberId);
-							const weight = member?.weight || 1;
-							ma.amount =
-								totalWeight > 0
-									? (remainingAmount * weight) / totalWeight
-									: remainingAmount / automaticMembers.length;
-						});
-					} else {
-						const equalShare = remainingAmount / automaticMembers.length;
-						automaticMembers.forEach((ma) => {
-							ma.amount = equalShare;
-						});
-					}
-				}
-			}
-
-			onAmountsChange(newAmounts);
-		}
-	}, [members, totalAmount, weightsEnabled, memberAmounts, onAmountsChange]);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: always needs to update when totalAmount changes
+	useEffect(() => {
+		redistribute();
+	}, [totalAmount, activeMembersAtDate]);
 
 	const handleMemberToggle = (memberId: string, checked: boolean) => {
+		let updatedSelectedMembers = selectedMembers;
 		if (checked) {
-			onSelectionChange([...selectedMembers, memberId]);
+			updatedSelectedMembers = [...selectedMembers, memberId];
 		} else {
-			onSelectionChange(selectedMembers.filter((id) => id !== memberId));
+			updatedSelectedMembers = selectedMembers.filter(
+				(id: string) => id !== memberId,
+			);
 		}
+		setValue("selectedMembers", updatedSelectedMembers);
+		redistribute(updatedSelectedMembers);
 	};
 
 	const handleSplitAllToggle = (checked: boolean) => {
-		onSplitAllChange(checked);
+		setValue("splitAll", checked);
 		if (checked) {
 			// Select all active members at the expense date
-			onSelectionChange(activeMembersAtDate.map((member) => member.id));
+			setValue(
+				"selectedMembers",
+				activeMembersAtDate.map((member) => member.id),
+			);
+			redistribute(activeMembersAtDate.map((member) => member.id));
 		} else {
 			// Clear selection when "split all" is disabled
-			onSelectionChange([]);
+			setValue("selectedMembers", []);
+			redistribute([]);
 		}
 	};
 
 	const handleAmountChange = (memberId: string, newAmount: number) => {
-		// Find the member being edited
-		const editedMember = currentAmounts.find((ma) => ma.memberId === memberId);
-		if (!editedMember) return;
-
-		// Calculate the remaining amount to redistribute
-		const remainingAmount = totalAmount - newAmount;
-		const otherMembers = currentAmounts.filter(
-			(ma) => ma.memberId !== memberId,
-		);
-
-		// If there are no other members, just update the single member
-		if (otherMembers.length === 0) {
+		// Update the amount and mark as manually edited
+		const hasChanged =
+			newAmount !==
+			currentAmounts.find((ma) => ma.memberId === memberId)?.amount;
+		if (hasChanged) {
 			const updatedAmounts = currentAmounts.map((ma) =>
 				ma.memberId === memberId
 					? { ...ma, amount: newAmount, isManuallyEdited: true }
 					: ma,
 			);
-			onAmountsChange(updatedAmounts);
-			return;
+			redistribute(selectedMembers, updatedAmounts);
 		}
-
-		// Redistribute the remaining amount among other members
-		let updatedAmounts: MemberAmount[];
-
-		if (weightsEnabled) {
-			// Redistribute based on weights
-			const otherMembersWithWeights = otherMembers.map((ma) => {
-				const member = members.find((m) => m.id === ma.memberId);
-				return {
-					...ma,
-					weight: member?.weight || 1,
-				};
-			});
-
-			const totalWeight = otherMembersWithWeights.reduce(
-				(sum, member) => sum + member.weight,
-				0,
-			);
-
-			updatedAmounts = currentAmounts.map((ma) => {
-				if (ma.memberId === memberId) {
-					return { ...ma, amount: newAmount, isManuallyEdited: true };
-				}
-
-				// Only redistribute if this member is not manually edited
-				if (ma.isManuallyEdited) {
-					return ma;
-				}
-
-				const member = otherMembersWithWeights.find(
-					(m) => m.memberId === ma.memberId,
-				);
-				const redistributedAmount =
-					totalWeight > 0
-						? (remainingAmount * (member?.weight || 1)) / totalWeight
-						: remainingAmount / otherMembers.length;
-
-				return { ...ma, amount: redistributedAmount };
-			});
-		} else {
-			// Redistribute equally among non-manually-edited members
-			const nonManualMembers = otherMembers.filter(
-				(ma) => !ma.isManuallyEdited,
-			);
-			const equalShare =
-				nonManualMembers.length > 0
-					? remainingAmount / nonManualMembers.length
-					: 0;
-
-			updatedAmounts = currentAmounts.map((ma) => {
-				if (ma.memberId === memberId) {
-					return { ...ma, amount: newAmount, isManuallyEdited: true };
-				}
-
-				// Only redistribute if this member is not manually edited
-				if (ma.isManuallyEdited) {
-					return ma;
-				}
-
-				return { ...ma, amount: equalShare };
-			});
-		}
-
-		onAmountsChange(updatedAmounts);
 	};
 
 	const handleToggleManualEdit = (memberId: string) => {
@@ -298,108 +155,23 @@ export function MemberEditor({
 		if (!memberToToggle) return;
 
 		const isCurrentlyManual = memberToToggle.isManuallyEdited;
-		const willBeManual = !isCurrentlyManual;
 
-		if (willBeManual) {
-			// Switching to manual - no redistribution needed
-			const updatedAmounts = currentAmounts.map((ma) =>
-				ma.memberId === memberId ? { ...ma, isManuallyEdited: true } : ma,
-			);
-			onAmountsChange(updatedAmounts);
-		} else {
-			// Switching to automatic - need to redistribute
-			const otherMembers = currentAmounts.filter(
-				(ma) => ma.memberId !== memberId,
-			);
-			const manuallyEditedMembers = otherMembers.filter(
-				(ma) => ma.isManuallyEdited,
-			);
-			const totalManualAmount = manuallyEditedMembers.reduce(
-				(sum, ma) => sum + ma.amount,
-				0,
-			);
-			const remainingAmount = totalAmount - totalManualAmount;
-			const automaticMembers = otherMembers.filter(
-				(ma) => !ma.isManuallyEdited,
-			);
-			automaticMembers.push(memberToToggle); // Include the member being switched to automatic
-
-			let updatedAmounts: MemberAmount[];
-
-			if (weightsEnabled) {
-				// Redistribute based on weights among automatic members
-				const automaticMembersWithWeights = automaticMembers.map((ma) => {
-					const member = members.find((m) => m.id === ma.memberId);
-					return {
-						...ma,
-						weight: member?.weight || 1,
-					};
-				});
-
-				const totalWeight = automaticMembersWithWeights.reduce(
-					(sum, member) => sum + member.weight,
-					0,
-				);
-
-				updatedAmounts = currentAmounts.map((ma) => {
-					if (ma.memberId === memberId) {
-						const member = automaticMembersWithWeights.find(
-							(m) => m.memberId === memberId,
-						);
-						const redistributedAmount =
-							totalWeight > 0
-								? (remainingAmount * (member?.weight || 1)) / totalWeight
-								: remainingAmount / automaticMembers.length;
-						return {
-							...ma,
-							amount: redistributedAmount,
-							isManuallyEdited: false,
-						};
-					}
-
-					// Only redistribute if this member is not manually edited
-					if (ma.isManuallyEdited) {
-						return ma;
-					}
-
-					const member = automaticMembersWithWeights.find(
-						(m) => m.memberId === ma.memberId,
-					);
-					const redistributedAmount =
-						totalWeight > 0
-							? (remainingAmount * (member?.weight || 1)) / totalWeight
-							: remainingAmount / automaticMembers.length;
-
-					return { ...ma, amount: redistributedAmount };
-				});
-			} else {
-				// Redistribute equally among automatic members
-				const equalShare =
-					automaticMembers.length > 0
-						? remainingAmount / automaticMembers.length
-						: 0;
-
-				updatedAmounts = currentAmounts.map((ma) => {
-					if (ma.memberId === memberId) {
-						return { ...ma, amount: equalShare, isManuallyEdited: false };
-					}
-
-					// Only redistribute if this member is not manually edited
-					if (ma.isManuallyEdited) {
-						return ma;
-					}
-
-					return { ...ma, amount: equalShare };
-				});
-			}
-
-			onAmountsChange(updatedAmounts);
-		}
+		// Toggle the manual edit status
+		const updatedAmounts = currentAmounts.map((ma) =>
+			ma.memberId === memberId
+				? { ...ma, isManuallyEdited: !isCurrentlyManual }
+				: ma,
+		);
+		redistribute(selectedMembers, updatedAmounts);
 	};
 
 	const handleResetToDefaults = () => {
-		const defaults = calculateDefaultAmounts();
-		onAmountsChange(defaults);
+		// Reset all amounts to automatic (not manually edited)
+		const resetAmounts = currentAmounts.map((ma) => ({
+			...ma,
+			isManuallyEdited: false,
+		}));
+		redistribute(selectedMembers, resetAmounts);
 	};
 
 	const isMemberActive = (member: Member) => {
@@ -423,13 +195,15 @@ export function MemberEditor({
 						onCheckedChange={handleSplitAllToggle}
 					/>
 					<Label htmlFor={splitAllId} className="text-sm font-medium">
-						Split between all active members
+						{t("splitBetween")}
 					</Label>
 				</div>
 				{activeMembersAtDate.length > 0 && (
 					<p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-						This expense will include all {activeMembersAtDate.length} active
-						members on {expenseDate.toLocaleDateString()}
+						{t("includesActiveMembers", {
+							count: activeMembersAtDate.length,
+							date: expenseDate.toLocaleDateString(),
+						})}
 					</p>
 				)}
 			</div>
@@ -437,11 +211,11 @@ export function MemberEditor({
 			{/* Individual Member Selection with Amount Editing */}
 			{!splitAll && (
 				<div className="space-y-3">
-					<div className="flex items-center justify-between">
+					<div className="flex items-center justify-between h-8">
 						<div className="flex items-center gap-2">
 							<Users className="w-4 h-4" />
 							<Label className="text-sm font-medium">
-								Select Members & Amounts
+								{t("selectMembersAndAmounts")}
 							</Label>
 						</div>
 						{selectedMembers.length > 0 && (
@@ -452,7 +226,7 @@ export function MemberEditor({
 								onClick={handleResetToDefaults}
 								className="text-xs"
 							>
-								Reset to Defaults
+								{t("resetToDefaults")}
 							</Button>
 						)}
 					</div>
@@ -474,13 +248,13 @@ export function MemberEditor({
 								<div
 									key={member.id}
 									className={cn(
-										"p-3 rounded-lg border bg-gray-50 dark:bg-gray-800",
+										"px-3 py-1 rounded-lg border bg-gray-50 dark:bg-gray-800",
 										!isActive && "opacity-50",
 										isSelected &&
 											"bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800",
 									)}
 								>
-									<div className="flex items-center gap-3">
+									<div className="flex items-center gap-3 h-8">
 										<Checkbox
 											id={member.id}
 											checked={isSelected}
@@ -497,7 +271,7 @@ export function MemberEditor({
 												</span>
 												{weightsEnabled && (
 													<span className="text-xs text-gray-500">
-														(weight: {member.weight})
+														({t("weight")}: {member.weight})
 													</span>
 												)}
 												{isManuallyEdited && (
@@ -505,7 +279,7 @@ export function MemberEditor({
 												)}
 												{!isActive && (
 													<Badge variant="outline" className="text-xs">
-														Inactive
+														{t("inactive")}
 													</Badge>
 												)}
 											</div>
@@ -526,12 +300,13 @@ export function MemberEditor({
 																	parseFloat(e.target.value) || 0,
 																)
 															}
-															className="w-24 text-sm"
 															onKeyDown={(e) => {
 																if (e.key === "Enter") {
 																	setEditingMemberId(null);
 																}
 															}}
+															onBlur={() => setEditingMemberId(null)}
+															className="w-24 text-sm h-8 no-spinner text-right"
 															autoFocus
 														/>
 														<Button
@@ -539,22 +314,26 @@ export function MemberEditor({
 															variant="ghost"
 															size="sm"
 															onClick={() => setEditingMemberId(null)}
-															className="text-xs"
+															className="text-xs h-8"
 														>
-															Done
+															<Check className="w-3 h-3" />
 														</Button>
 													</div>
 												) : (
 													<div className="flex items-center gap-2">
-														<span className="text-sm font-mono">
+														<button
+															className="text-sm font-mono"
+															type="button"
+															onClick={() => setEditingMemberId(member.id)}
+														>
 															{formatCurrency(memberAmount.amount, currency)}
-														</span>
+														</button>
 														<Button
 															type="button"
 															variant="ghost"
 															size="sm"
 															onClick={() => setEditingMemberId(member.id)}
-															className="text-xs"
+															className="text-xs h-8"
 														>
 															<Edit3 className="w-3 h-3" />
 														</Button>
@@ -566,15 +345,15 @@ export function MemberEditor({
 													variant="ghost"
 													size="sm"
 													onClick={() => handleToggleManualEdit(member.id)}
-													className={`text-xs ${
+													className={`text-xs h-8 ${
 														isManuallyEdited
 															? "text-blue-600 hover:text-blue-700"
 															: "text-gray-400 hover:text-gray-600"
 													}`}
 													title={
 														isManuallyEdited
-															? "Allow automatic recalculation"
-															: "Protect from automatic recalculation"
+															? t("allowAutomaticRecalculation")
+															: t("protectFromAutomaticRecalculation")
 													}
 												>
 													{isManuallyEdited ? (
@@ -595,13 +374,13 @@ export function MemberEditor({
 					{selectedMembers.length > 0 && (
 						<div className="pt-3 border-t space-y-2">
 							<div className="flex justify-between text-sm">
-								<span>Total Amount:</span>
+								<span>{t("totalAmount")}:</span>
 								<span className="font-mono">
 									{formatCurrency(totalAmount, currency)}
 								</span>
 							</div>
 							<div className="flex justify-between text-sm">
-								<span>Current Split:</span>
+								<span>{t("currentSplit")}:</span>
 								<span className="font-mono">
 									{formatCurrency(totalCurrentAmount, currency)}
 								</span>
@@ -612,7 +391,7 @@ export function MemberEditor({
 										difference > 0 ? "text-red-600" : "text-green-600"
 									}`}
 								>
-									<span>Difference:</span>
+									<span>{t("difference")}:</span>
 									<span className="font-mono">
 										{difference > 0 ? "+" : ""}
 										{formatCurrency(difference, currency)}

@@ -53,10 +53,7 @@ export function ConsumptionDialog({
 	const [loading, setLoading] = useState(false);
 	const [activeMembersAtDate, setActiveMembersAtDate] =
 		useState<Awaited<ReturnType<typeof getGroup>>["members"]>(members);
-	const [memberAmounts, setMemberAmounts] = useState<
-		Array<{ memberId: string; amount: number; isManuallyEdited: boolean }>
-	>([]);
-	const t = useTranslations("forms.createConsumption");
+	const t = useTranslations("forms.consumption");
 
 	const { executeAsync: createConsumption } = useAction(
 		createConsumptionAction,
@@ -91,7 +88,7 @@ export function ConsumptionDialog({
 				resourceId: "",
 				description: "",
 				amount: 0,
-				isUnitAmount: false,
+				isUnitAmount: true,
 				date: new Date(),
 				selectedMembers: [],
 			});
@@ -125,7 +122,9 @@ export function ConsumptionDialog({
 			// Include member amounts in the data
 			const consumptionData = {
 				...data,
-				memberAmounts: memberAmounts.length > 0 ? memberAmounts : undefined,
+				memberAmounts: data.memberAmounts?.length
+					? data.memberAmounts
+					: undefined,
 			};
 
 			if (consumption) {
@@ -226,7 +225,7 @@ export function ConsumptionDialog({
 												control={form.control}
 												name="amount"
 												type="number"
-												step="0.01"
+												step="1"
 												min={0}
 												placeholder="0.00"
 												required
@@ -265,20 +264,6 @@ export function ConsumptionDialog({
 											)
 										);
 									})()}
-
-									{(form.watch("amount") as number) && (
-										<div className="space-y-1">
-											<p className="text-sm text-gray-600 dark:text-gray-300">
-												{t("totalCost")}: €{calculateTotalCost().toFixed(2)}
-											</p>
-											{form.watch("selectedMembers").length > 0 && (
-												<p className="text-sm text-gray-600 dark:text-gray-300">
-													{t("amountPerPerson")}: €
-													{calculateAmountPerMember().toFixed(2)}
-												</p>
-											)}
-										</div>
-									)}
 								</div>
 							)}
 
@@ -287,22 +272,13 @@ export function ConsumptionDialog({
 									...member,
 									weight: Number(member.weight),
 								}))}
-								selectedMembers={form.watch("selectedMembers")}
-								onSelectionChange={(members) =>
-									form.setValue("selectedMembers", members)
-								}
-								splitAll={false}
-								onSplitAllChange={() => {}} // Not used in consumption
 								activeMembersAtDate={activeMembersAtDate.map((member) => ({
 									...member,
 									weight: Number(member.weight),
 								}))}
 								expenseDate={form.watch("date") as Date}
-								memberAmounts={memberAmounts}
-								totalAmount={calculateTotalCost()}
 								currency="€" // TODO: Get from group
 								weightsEnabled={false} // TODO: Get from group
-								onAmountsChange={setMemberAmounts}
 							/>
 						</form>
 					</Form>

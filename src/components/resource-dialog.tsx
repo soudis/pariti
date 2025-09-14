@@ -33,7 +33,7 @@ export function ResourceDialog({
 }: ResourceDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const t = useTranslations("forms.createResource");
+	const t = useTranslations("forms.resource");
 
 	const { executeAsync: createResource } = useAction(createResourceAction);
 	const { executeAsync: editResource } = useAction(editResourceAction);

@@ -45,7 +45,7 @@ export function SettlementDialog({
 }: SettlementDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const t = useTranslations("forms.createSettlement");
+	const t = useTranslations("forms.settlement");
 
 	const { executeAsync: createSettlement } = useAction(createSettlementAction);
 

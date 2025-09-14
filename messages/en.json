@@ -134,7 +134,7 @@
 		"qrCode": "QR Code"
 	},
 	"forms": {
-		"createGroup": {
+		"group": {
 			"title": "Create New Group",
 			"description": "Create a new expense sharing group. You can add members and start tracking expenses.",
 			"name": "Group Name",
@@ -182,10 +182,14 @@
 			"update": "Update Member",
 			"updating": "Updating...",
 			"add": "Add Member",
-			"adding": "Adding..."
+			"adding": "Adding...",
+			"create": "Create Member",
+			"creating": "Creating..."
 		},
-		"addExpense": {
+		"expense": {
 			"title": "Add Expense",
+			"editTitle": "Edit Expense",
+			"editDescription": "Update the expense details and member selection.",
 			"titleField": "Title",
 			"titlePlaceholder": "e.g., Dinner at restaurant",
 			"description": "Description (optional)",
@@ -199,22 +203,36 @@
 			"recurring": {
 				"title": "Make this a recurring expense",
 				"frequency": "Frequency",
+				"weekly": "Weekly",
+				"monthly": "Monthly",
+				"yearly": "Yearly",
 				"startDate": "Start Date",
 				"startDatePlaceholder": "Select start date",
 				"description": "This expense will be automatically generated for each {type} period from the start date."
 			},
-			"splitBetween": "Split between",
+			"splitBetween": "Split between all active members",
 			"allMembers": "All Members (including future members)",
 			"noActiveMembers": "No active members on this date",
 			"amountPerPerson": "Amount per person: ${amount}",
 			"includesActiveMembers": "This expense will include all {count} active members on {date}",
+			"selectMembersAndAmounts": "Select Members & Amounts",
+			"resetToDefaults": "Reset to Defaults",
+			"weight": "weight",
+			"inactive": "Inactive",
+			"allowAutomaticRecalculation": "Allow automatic recalculation",
+			"protectFromAutomaticRecalculation": "Protect from automatic recalculation",
+			"totalAmount": "Total Amount",
+			"currentSplit": "Current Split",
+			"difference": "Difference",
 			"cancel": "Cancel",
 			"add": "Add Expense",
+			"update": "Update Expense",
 			"adding": "Adding...",
+			"updating": "Updating...",
 			"selectMembers": "Please select at least one member for this expense",
 			"selectStartDate": "Please select a start date for recurring expenses"
 		},
-		"createResource": {
+		"resource": {
 			"title": "Add Resource",
 			"description": "Add a new resource to track shared consumption.",
 			"name": "Resource Name",
@@ -230,7 +248,7 @@
 			"create": "Add Resource",
 			"creating": "Adding..."
 		},
-		"createConsumption": {
+		"consumption": {
 			"title": "Log Consumption",
 			"description": "Log consumption of a resource by group members.",
 			"resourceLabel": "Resource",
@@ -254,7 +272,7 @@
 				"noUnitPrice": "This resource has no unit price set"
 			}
 		},
-		"createSettlement": {
+		"settlement": {
 			"title": "Generate Settlement",
 			"description": "Generate settlement records to balance payments between members and resources.",
 			"titleLabel": "Settlement Title",

@@ -173,7 +173,7 @@ export function ExpensesSection({
 					<div className="space-y-4">
 						{displayExpenses.map((expense) => (
 							<div
-								key={expense.id}
+								key={`${expense.id}-${expense.date}`}
 								className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border"
 							>
 								<div className="flex items-start justify-between mb-3">
@@ -186,7 +186,7 @@ export function ExpensesSection({
 													className="text-xs bg-green-50 text-green-700 dark:bg-green-900 dark:text-green-300"
 												>
 													<Repeat className="w-3 h-3 mr-1" />
-													{expense.recurringType}
+													{t(`recurring.${expense.recurringType}`)}
 												</Badge>
 											)}
 										</div>
