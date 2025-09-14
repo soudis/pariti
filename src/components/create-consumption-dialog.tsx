@@ -5,6 +5,12 @@ import { Decimal } from "decimal.js";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import {
+	createConsumption,
+	editConsumption,
+	getActiveMembersForDate,
+	type getGroup,
+} from "@/actions";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -23,12 +29,7 @@ import {
 } from "@/components/ui/form-field";
 import { Label } from "@/components/ui/label";
 import { MemberSelection } from "@/components/ui/member-selection";
-import {
-	createConsumption,
-	editConsumption,
-	getActiveMembersForDate,
-	type getGroup,
-} from "@/lib/actions";
+
 import { type ConsumptionFormData, consumptionSchema } from "@/lib/schemas";
 import { convertToPlainObject } from "@/lib/utils";
 
@@ -110,51 +111,15 @@ export function CreateConsumptionDialog({
 		}
 	}, [open, form, updateActiveMembersForDate]);
 
-	const onSubmit = async (data: any) => {
+	const onSubmit = async (data: ConsumptionFormData) => {
 		setLoading(true);
-
-		const selectedResource = resources.find((r) => r.id === data.resourceId);
-		if (!selectedResource) {
-			alert(t("validation.selectResource"));
-			setLoading(false);
-			return;
-		}
-
-		if (data.isUnitAmount && !selectedResource.unitPrice) {
-			alert(t("validation.noUnitPrice"));
-			setLoading(false);
-			return;
-		}
 
 		try {
 			if (consumption) {
-				// Edit existing consumption
-				const consumptionMembers = data.selectedMembers.map(
-					(memberId: string) => ({
-						memberId,
-						amount: data.amount / data.selectedMembers.length,
-					}),
-				);
-
-				await editConsumption(consumption.id, {
-					amount: data.amount,
-					isUnitAmount: data.isUnitAmount,
-					date: data.date,
-					description: data.description || undefined,
-					consumptionMembers,
-				});
+				await editConsumption(consumption.id, data);
 			} else {
 				// Create new consumption
-				await createConsumption(
-					convertToPlainObject({
-						resourceId: data.resourceId,
-						amount: new Decimal(data.amount),
-						isUnitAmount: data.isUnitAmount,
-						memberIds: data.selectedMembers,
-						description: data.description || null,
-						date: data.date,
-					}),
-				);
+				await createConsumption(data);
 			}
 
 			setOpen(false);

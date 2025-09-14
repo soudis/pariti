@@ -5,6 +5,7 @@ import { Settings } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { updateGroup } from "@/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
@@ -13,7 +14,7 @@ import {
 	SelectField,
 	TextField,
 } from "@/components/ui/form-field";
-import { updateGroup } from "@/lib/actions";
+
 import { groupSchema } from "@/lib/schemas";
 
 interface SettingsSectionProps {

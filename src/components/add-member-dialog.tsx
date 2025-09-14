@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { addMember } from "@/actions";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -20,7 +21,7 @@ import {
 	NumberField,
 	TextField,
 } from "@/components/ui/form-field";
-import { addMember } from "@/lib/actions";
+
 import { type MemberFormData, memberSchema } from "@/lib/schemas";
 
 interface AddMemberDialogProps {

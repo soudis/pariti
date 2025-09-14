@@ -14,17 +14,18 @@ import {
 import { useTranslations } from "next-intl";
 import { useQueryState } from "nuqs";
 import { useId, useState } from "react";
+import {
+	type generateRecurringExpenseInstances,
+	type getGroup,
+	removeExpense,
+} from "@/actions";
 import { AddExpenseDialog } from "@/components/add-expense-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-	type generateRecurringExpenseInstances,
-	type getGroup,
-	removeExpense,
-} from "@/lib/actions";
+
 import { formatCurrency } from "@/lib/currency";
 
 interface ExpensesSectionProps {

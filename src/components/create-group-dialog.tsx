@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { createGroup } from "@/actions";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -20,7 +21,7 @@ import {
 	SelectField,
 	TextField,
 } from "@/components/ui/form-field";
-import { createGroup } from "@/lib/actions";
+
 import { type GroupFormData, groupSchema } from "@/lib/schemas";
 
 interface CreateGroupDialogProps {
@@ -44,16 +45,11 @@ export function CreateGroupDialog({ children }: CreateGroupDialogProps) {
 		},
 	});
 
-	const onSubmit = async (data: any) => {
+	const onSubmit = async (data: GroupFormData) => {
 		setLoading(true);
 
 		try {
-			const group = await createGroup({
-				name: data.name,
-				description: data.description || undefined,
-				currency: data.currency,
-				weightsEnabled: data.weightsEnabled,
-			});
+			const group = await createGroup(data);
 
 			setOpen(false);
 			form.reset();

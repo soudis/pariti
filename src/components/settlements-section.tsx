@@ -12,16 +12,17 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import {
+	type getGroup,
+	removeSettlement,
+	updateSettlementMemberStatus,
+} from "@/actions";
 import { CreateSettlementDialog } from "@/components/create-settlement-dialog";
 import { QRCodeDialog } from "@/components/qr-code-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-	type getGroup,
-	removeSettlement,
-	updateSettlementMemberStatus,
-} from "@/lib/actions";
+
 import { formatCurrency } from "@/lib/currency";
 
 interface SettlementsSectionProps {

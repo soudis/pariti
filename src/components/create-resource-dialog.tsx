@@ -5,6 +5,7 @@ import { Decimal } from "decimal.js";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { createResource, editResource } from "@/actions";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -16,9 +17,8 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { CheckboxField, TextField } from "@/components/ui/form-field";
-import { createResource, editResource } from "@/lib/actions";
+
 import { type ResourceFormData, resourceSchema } from "@/lib/schemas";
-import { convertToPlainObject } from "@/lib/utils";
 
 interface CreateResourceDialogProps {
 	groupId: string;
@@ -75,27 +75,10 @@ export function CreateResourceDialog({
 		try {
 			if (resource) {
 				// Edit existing resource
-				await editResource(resource.id, {
-					name: data.name,
-					description: data.description || undefined,
-					unit: data.hasUnit ? data.unit || undefined : undefined,
-					unitPrice:
-						data.hasUnit && data.unitPrice ? data.unitPrice : undefined,
-				});
+				await editResource(resource.id, data);
 			} else {
 				// Create new resource
-				await createResource(
-					convertToPlainObject({
-						name: data.name,
-						description: data.description || null,
-						unit: data.hasUnit ? data.unit || null : null,
-						unitPrice:
-							data.hasUnit && data.unitPrice
-								? new Decimal(data.unitPrice)
-								: null,
-						groupId,
-					}),
-				);
+				await createResource(groupId, data);
 			}
 
 			setOpen(false);

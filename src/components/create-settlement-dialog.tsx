@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { createSettlement } from "@/actions";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -15,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { SelectField, TextField } from "@/components/ui/form-field";
-import { createSettlement } from "@/lib/actions";
+
 import { type SettlementFormData, settlementSchema } from "@/lib/schemas";
 
 interface Member {
@@ -55,18 +56,11 @@ export function CreateSettlementDialog({
 		},
 	});
 
-	const onSubmit = async (data: any) => {
+	const onSubmit = async (data: SettlementFormData) => {
 		setLoading(true);
 
 		try {
-			await createSettlement({
-				groupId,
-				title: data.title,
-				description: data.description || undefined,
-				settlementType: data.settlementType,
-				centerId:
-					data.settlementType !== "optimized" ? data.centerId : undefined,
-			});
+			await createSettlement(groupId, data);
 
 			setOpen(false);
 			form.reset();

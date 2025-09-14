@@ -68,18 +68,11 @@ export function EditMemberDialog({
 		}
 	}, [open, member, form]);
 
-	const onSubmit = async (data: any) => {
+	const onSubmit = async (data: MemberFormData) => {
 		setLoading(true);
 
 		try {
-			await onUpdate(member.id, {
-				name: data.name,
-				email: data.email || null,
-				iban: data.iban || null,
-				weight: data.weight || 1,
-				activeFrom: data.activeFrom || new Date(),
-				activeTo: data.hasEndDate ? (data.activeTo ?? null) : null,
-			});
+			await onUpdate(member.id, data);
 
 			setOpen(false);
 		} catch (error) {

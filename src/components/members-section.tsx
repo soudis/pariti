@@ -1,20 +1,20 @@
 "use client";
 
 import type { Member } from "@prisma/client";
-import { DollarSign, Edit, Plus, Trash2, User } from "lucide-react";
+import { Edit, Plus, Trash2, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { AddMemberDialog } from "@/components/add-member-dialog";
-import { EditMemberDialog } from "@/components/edit-member-dialog";
-
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	calculateMemberBalances,
 	type getGroup,
 	removeMember,
 	updateMember,
-} from "@/lib/actions";
+} from "@/actions";
+import { AddMemberDialog } from "@/components/add-member-dialog";
+import { EditMemberDialog } from "@/components/edit-member-dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { formatCurrency } from "@/lib/currency";
 import type { MemberFormData } from "@/lib/schemas";
 
@@ -25,7 +25,7 @@ interface MembersSectionProps {
 export function MembersSection({ group }: MembersSectionProps) {
 	const [deletingId, setDeletingId] = useState<string | null>(null);
 	const [memberBalances, setMemberBalances] = useState<
-		Array<{ memberId: string; memberName: string; balance: number }>
+		Array<{ memberId: string; balance: number }>
 	>([]);
 	const [loadingBalances, setLoadingBalances] = useState(false);
 	const t = useTranslations("members");
