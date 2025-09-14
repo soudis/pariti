@@ -3,11 +3,11 @@
 		"server": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
 	},
 	"app": {
-		"title": "Parity - Teilen leicht gemacht",
+		"title": "Pariti - Teilen leicht gemacht",
 		"description": "Eine App zum Teilen von Ausgaben mit Freund*innen"
 	},
 	"home": {
-		"title": "Parity",
+		"title": "Pariti",
 		"subtitle": "Teile Ausgaben und Ressourcen mit Freund*innen.",
 		"createGroup": {
 			"title": "Neue Gruppe erstellen",
@@ -148,26 +148,6 @@
 			"create": "Gruppe erstellen",
 			"creating": "Erstelle..."
 		},
-		"addMember": {
-			"title": "Mitglied hinzufügen",
-			"description": "Füge ein neues Mitglied zu deiner Ausgaben-Gruppe hinzu.",
-			"name": "Name",
-			"namePlaceholder": "z.B. Max Mustermann",
-			"email": "E-Mail (optional)",
-			"emailPlaceholder": "z.B. max@beispiel.de",
-			"iban": "IBAN (optional)",
-			"ibanPlaceholder": "z.B. DE89 3704 0044 0532 0130 00",
-			"weight": "Gewichtung",
-			"weightPlaceholder": "z.B. 1,5",
-			"weightDescription": "Gewichtung bestimmt den Anteil des Mitglieds an Ausgaben (Standard: 1,0)",
-			"activeFrom": "Aktiv ab",
-			"activeFromPlaceholder": "Startdatum auswählen",
-			"setEndDate": "Enddatum festlegen (optional)",
-			"activeToPlaceholder": "Enddatum auswählen",
-			"cancel": "Abbrechen",
-			"add": "Mitglied hinzufügen",
-			"adding": "Füge hinzu..."
-		},
 		"settings": {
 			"title": "Gruppeneinstellungen",
 			"groupName": "Gruppenname",
@@ -182,7 +162,7 @@
 			"settingsUpdated": "Einstellungen erfolgreich aktualisiert!",
 			"updateFailed": "Fehler beim Aktualisieren der Einstellungen. Bitte versuche es erneut."
 		},
-		"editMember": {
+		"member": {
 			"title": "Mitglied bearbeiten",
 			"description": "Bearbeite die Details dieses Mitglieds.",
 			"name": "Name",
@@ -196,11 +176,16 @@
 			"weightDescription": "Gewichtung bestimmt den Anteil des Mitglieds an Ausgaben (Standard: 1,0)",
 			"activeFrom": "Aktiv ab",
 			"activeFromPlaceholder": "Startdatum auswählen",
-			"setEndDate": "Enddatum festlegen (optional)",
+			"hasEndDate": "Enddatum festlegen (optional)",
+			"activeTo": "Aktiv bis",
 			"activeToPlaceholder": "Enddatum auswählen",
 			"cancel": "Abbrechen",
 			"update": "Mitglied aktualisieren",
-			"updating": "Aktualisiere..."
+			"updating": "Aktualisiere...",
+			"add": "Mitglied hinzufügen",
+			"adding": "Füge hinzu...",
+			"create": "Mitglied erstellen",
+			"creating": "Erstelle..."
 		},
 		"addExpense": {
 			"title": "Ausgabe hinzufügen",

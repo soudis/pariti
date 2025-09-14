@@ -22,7 +22,7 @@ import {
 	type getGroup,
 	removeExpenseAction,
 } from "@/actions";
-import { AddExpenseDialog } from "@/components/add-expense-dialog";
+import { ExpenseDialog } from "@/components/expense-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -140,12 +140,12 @@ export function ExpensesSection({
 								</span>
 							</div>
 						)}
-						<AddExpenseDialog group={group}>
+						<ExpenseDialog group={group}>
 							<Button size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
 								<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
 								<span className="truncate">{t("addExpense")}</span>
 							</Button>
-						</AddExpenseDialog>
+						</ExpenseDialog>
 					</div>
 				</div>
 				{/* Search Filter */}
@@ -200,7 +200,7 @@ export function ExpensesSection({
 										<Badge variant="secondary" className="text-sm">
 											{formatCurrency(Number(expense.amount), group.currency)}
 										</Badge>
-										<AddExpenseDialog
+										<ExpenseDialog
 											group={group}
 											expense={{
 												...expense,
@@ -216,7 +216,6 @@ export function ExpensesSection({
 													? []
 													: expense.expenseMembers.map((em) => em.memberId),
 											}}
-											onExpenseUpdated={() => window.location.reload()}
 										>
 											<Button
 												variant="ghost"
@@ -225,7 +224,7 @@ export function ExpensesSection({
 											>
 												<Edit className="w-4 h-4" />
 											</Button>
-										</AddExpenseDialog>
+										</ExpenseDialog>
 										<Button
 											variant="ghost"
 											size="sm"

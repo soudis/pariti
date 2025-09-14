@@ -26,26 +26,23 @@ import {
 	SelectField,
 	TextField,
 } from "@/components/ui/form-field";
-import { MemberAmountEditor } from "@/components/ui/member-amount-editor";
-import { MemberSelection } from "@/components/ui/member-selection";
+import { MemberEditor } from "@/components/ui/member-editor";
 import { type ExpenseFormData, expenseSchema } from "@/lib/schemas";
 import { handleActionErrors } from "@/lib/utils";
 
-interface AddExpenseDialogProps {
+interface ExpenseDialogProps {
 	group: Group & {
 		members: Member[];
 	};
 	children: React.ReactNode;
 	expense?: ExpenseFormData & { id: string }; // For editing existing expense
-	onExpenseUpdated?: () => void;
 }
 
-export function AddExpenseDialog({
+export function ExpenseDialog({
 	group,
 	children,
 	expense,
-	onExpenseUpdated,
-}: AddExpenseDialogProps) {
+}: ExpenseDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [activeMembersAtDate, setActiveMembersAtDate] = useState<Member[]>(
@@ -132,6 +129,8 @@ export function AddExpenseDialog({
 		if (open) {
 			const currentDate = form.getValues("date") as Date;
 			updateActiveMembersForDate(currentDate);
+			form.reset();
+			setMemberAmounts([]);
 		}
 	}, [open, form, updateActiveMembersForDate]);
 
@@ -157,9 +156,6 @@ export function AddExpenseDialog({
 			}
 
 			setOpen(false);
-			if (onExpenseUpdated) {
-				onExpenseUpdated();
-			}
 		} catch (error) {
 			console.error(
 				`Failed to ${expense ? "update" : "create"} expense:`,
@@ -270,8 +266,11 @@ export function AddExpenseDialog({
 								)}
 							</div>
 
-							<MemberSelection
-								members={group.members}
+							<MemberEditor
+								members={activeMembersAtDate.map((member) => ({
+									...member,
+									weight: Number(member.weight),
+								}))}
 								selectedMembers={form.watch("selectedMembers")}
 								onSelectionChange={(members) =>
 									form.setValue("selectedMembers", members)
@@ -280,29 +279,17 @@ export function AddExpenseDialog({
 								onSplitAllChange={(splitAll) =>
 									form.setValue("splitAll", splitAll)
 								}
-								activeMembersAtDate={activeMembersAtDate}
+								activeMembersAtDate={activeMembersAtDate.map((member) => ({
+									...member,
+									weight: Number(member.weight),
+								}))}
 								expenseDate={form.watch("date") as Date}
+								memberAmounts={memberAmounts}
+								totalAmount={form.watch("amount") as number}
+								currency={group.currency}
+								weightsEnabled={group.weightsEnabled}
+								onAmountsChange={setMemberAmounts}
 							/>
-
-							{/* Member Amount Editor - only show if not splitAll and members are selected */}
-							{!form.watch("splitAll") &&
-								form.watch("selectedMembers").length > 0 && (
-									<MemberAmountEditor
-										members={activeMembersAtDate
-											.filter((member) =>
-												form.watch("selectedMembers").includes(member.id),
-											)
-											.map((member) => ({
-												...member,
-												weight: Number(member.weight),
-											}))}
-										memberAmounts={memberAmounts}
-										totalAmount={form.watch("amount") as number}
-										currency={group.currency}
-										weightsEnabled={group.weightsEnabled}
-										onAmountsChange={setMemberAmounts}
-									/>
-								)}
 						</form>
 					</Form>
 				</div>

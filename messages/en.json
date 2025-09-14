@@ -3,11 +3,11 @@
 		"server": "An error occurred. Please try again."
 	},
 	"app": {
-		"title": "Parity - Money Sharing Made Simple",
+		"title": "Pariti - Money Sharing Made Simple",
 		"description": "A modern money sharing app for groups and friends"
 	},
 	"home": {
-		"title": "Parity",
+		"title": "Pariti",
 		"subtitle": "Money sharing made simple. Split expenses with friends and family.",
 		"createGroup": {
 			"title": "Create New Group",
@@ -148,26 +148,6 @@
 			"create": "Create Group",
 			"creating": "Creating..."
 		},
-		"addMember": {
-			"title": "Add Member",
-			"description": "Add a new member to your expense sharing group.",
-			"name": "Name",
-			"namePlaceholder": "e.g., John Doe",
-			"email": "Email (optional)",
-			"emailPlaceholder": "e.g., john@example.com",
-			"iban": "IBAN (optional)",
-			"ibanPlaceholder": "e.g., DE89 3704 0044 0532 0130 00",
-			"weight": "Weight",
-			"weightPlaceholder": "e.g., 1.5",
-			"weightDescription": "Weight determines the member's share of expenses (default: 1.0)",
-			"activeFrom": "Active from",
-			"activeFromPlaceholder": "Select start date",
-			"setEndDate": "Set end date (optional)",
-			"activeToPlaceholder": "Select end date",
-			"cancel": "Cancel",
-			"add": "Add Member",
-			"adding": "Adding..."
-		},
 		"settings": {
 			"title": "Group Settings",
 			"groupName": "Group Name",
@@ -182,7 +162,7 @@
 			"settingsUpdated": "Settings updated successfully!",
 			"updateFailed": "Failed to update settings. Please try again."
 		},
-		"editMember": {
+		"member": {
 			"title": "Edit Member",
 			"description": "Update member information and active period.",
 			"name": "Name",
@@ -196,11 +176,13 @@
 			"weightDescription": "Weight determines the member's share of expenses (default: 1.0)",
 			"activeFrom": "Active from",
 			"activeFromPlaceholder": "Select start date",
-			"setEndDate": "Set end date (optional)",
+			"hasEndDate": "Set end date (optional)",
 			"activeToPlaceholder": "Select end date",
 			"cancel": "Cancel",
 			"update": "Update Member",
-			"updating": "Updating..."
+			"updating": "Updating...",
+			"add": "Add Member",
+			"adding": "Adding..."
 		},
 		"addExpense": {
 			"title": "Add Expense",

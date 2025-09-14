@@ -28,12 +28,11 @@ import {
 	TextField,
 } from "@/components/ui/form-field";
 import { Label } from "@/components/ui/label";
-import { MemberAmountEditor } from "@/components/ui/member-amount-editor";
-import { MemberSelection } from "@/components/ui/member-selection";
+import { MemberEditor } from "@/components/ui/member-editor";
 import { type ConsumptionFormData, consumptionSchema } from "@/lib/schemas";
 import { handleActionErrors } from "@/lib/utils";
 
-interface CreateConsumptionDialogProps {
+interface ConsumptionDialogProps {
 	groupId: string;
 	resources: Awaited<ReturnType<typeof getGroup>>["resources"];
 	members: Awaited<ReturnType<typeof getGroup>>["members"];
@@ -42,14 +41,14 @@ interface CreateConsumptionDialogProps {
 	onConsumptionUpdated?: () => void;
 }
 
-export function CreateConsumptionDialog({
+export function ConsumptionDialog({
 	groupId,
 	resources,
 	members,
 	children,
 	consumption,
 	onConsumptionUpdated,
-}: CreateConsumptionDialogProps) {
+}: ConsumptionDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [activeMembersAtDate, setActiveMembersAtDate] =
@@ -283,36 +282,28 @@ export function CreateConsumptionDialog({
 								</div>
 							)}
 
-							<MemberSelection
-								members={members}
+							<MemberEditor
+								members={activeMembersAtDate.map((member) => ({
+									...member,
+									weight: Number(member.weight),
+								}))}
 								selectedMembers={form.watch("selectedMembers")}
 								onSelectionChange={(members) =>
 									form.setValue("selectedMembers", members)
 								}
 								splitAll={false}
 								onSplitAllChange={() => {}} // Not used in consumption
-								activeMembersAtDate={activeMembersAtDate}
+								activeMembersAtDate={activeMembersAtDate.map((member) => ({
+									...member,
+									weight: Number(member.weight),
+								}))}
 								expenseDate={form.watch("date") as Date}
+								memberAmounts={memberAmounts}
+								totalAmount={calculateTotalCost()}
+								currency="€" // TODO: Get from group
+								weightsEnabled={false} // TODO: Get from group
+								onAmountsChange={setMemberAmounts}
 							/>
-
-							{/* Member Amount Editor - only show if members are selected */}
-							{form.watch("selectedMembers").length > 0 && (
-								<MemberAmountEditor
-									members={activeMembersAtDate
-										.filter((member) =>
-											form.watch("selectedMembers").includes(member.id),
-										)
-										.map((member) => ({
-											...member,
-											weight: Number(member.weight),
-										}))}
-									memberAmounts={memberAmounts}
-									totalAmount={calculateTotalCost()}
-									currency="€" // TODO: Get from group
-									weightsEnabled={false} // TODO: Get from group
-									onAmountsChange={setMemberAmounts}
-								/>
-							)}
 						</form>
 					</Form>
 				</div>

@@ -20,19 +20,17 @@ import { CheckboxField, TextField } from "@/components/ui/form-field";
 import { type ResourceFormData, resourceSchema } from "@/lib/schemas";
 import { handleActionErrors } from "@/lib/utils";
 
-interface CreateResourceDialogProps {
+interface ResourceDialogProps {
 	groupId: string;
 	children: React.ReactNode;
 	resource?: ResourceFormData & { id: string }; // For editing existing resource
-	onResourceUpdated?: () => void;
 }
 
-export function CreateResourceDialog({
+export function ResourceDialog({
 	groupId,
 	children,
 	resource,
-	onResourceUpdated,
-}: CreateResourceDialogProps) {
+}: ResourceDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const t = useTranslations("forms.createResource");
@@ -75,29 +73,18 @@ export function CreateResourceDialog({
 	const onSubmit = async (data: ResourceFormData) => {
 		setLoading(true);
 
-		try {
-			if (resource) {
-				// Edit existing resource
-				handleActionErrors(
-					await editResource({ resourceId: resource.id, resource: data }),
-				);
-			} else {
-				// Create new resource
-				handleActionErrors(await createResource({ groupId, resource: data }));
-			}
-
-			setOpen(false);
-			if (onResourceUpdated) {
-				onResourceUpdated();
-			}
-		} catch (error) {
-			console.error(
-				`Failed to ${resource ? "update" : "create"} resource:`,
-				error,
+		if (resource) {
+			// Edit existing resource
+			handleActionErrors(
+				await editResource({ resourceId: resource.id, resource: data }),
 			);
-		} finally {
-			setLoading(false);
+		} else {
+			// Create new resource
+			handleActionErrors(await createResource({ groupId, resource: data }));
 		}
+
+		setOpen(false);
+		setLoading(false);
 	};
 
 	return (

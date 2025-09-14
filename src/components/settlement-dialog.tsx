@@ -30,19 +30,19 @@ interface Resource {
 	name: string;
 }
 
-interface CreateSettlementDialogProps {
+interface SettlementDialogProps {
 	groupId: string;
 	members: Member[];
 	resources: Resource[];
 	children: React.ReactNode;
 }
 
-export function CreateSettlementDialog({
+export function SettlementDialog({
 	groupId,
 	members,
 	resources,
 	children,
-}: CreateSettlementDialogProps) {
+}: SettlementDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const t = useTranslations("forms.createSettlement");
@@ -62,16 +62,11 @@ export function CreateSettlementDialog({
 	const onSubmit = async (data: SettlementFormData) => {
 		setLoading(true);
 
-		try {
-			handleActionErrors(await createSettlement({ groupId, settlement: data }));
+		handleActionErrors(await createSettlement({ groupId, settlement: data }));
 
-			setOpen(false);
-			form.reset();
-		} catch (error) {
-			console.error("Failed to create settlement:", error);
-		} finally {
-			setLoading(false);
-		}
+		setOpen(false);
+		form.reset();
+		setLoading(false);
 	};
 
 	return (

@@ -3,7 +3,7 @@
 import { Plus } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { CreateGroupDialog } from "@/components/create-group-dialog";
+import { GroupDialog } from "@/components/group-dialog";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -25,7 +25,7 @@ export default function Home() {
 						<div className="flex justify-center mb-4 sm:mb-6">
 							<Image
 								src="/logo.png"
-								alt="Parity Logo"
+								alt="Pariti Logo"
 								width={80}
 								height={80}
 								className="rounded-2xl shadow-lg bg-primary sm:w-[120px] sm:h-[120px]"
@@ -56,14 +56,14 @@ export default function Home() {
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="text-center">
-								<CreateGroupDialog>
+								<GroupDialog>
 									<Button size="lg" className="w-full text-sm sm:text-base">
 										<Plus className="w-4 h-4 mr-2" />
 										<span className="truncate">
 											{t("home.createGroup.button")}
 										</span>
 									</Button>
-								</CreateGroupDialog>
+								</GroupDialog>
 							</CardContent>
 						</Card>
 

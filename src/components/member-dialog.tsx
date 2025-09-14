@@ -1,10 +1,12 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { Member } from "@prisma/client";
 import { useTranslations } from "next-intl";
+import { useAction } from "next-safe-action/hooks";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { createMemberAction } from "@/actions/create-member";
+import { updateMemberAction } from "@/actions/update-member";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -22,48 +24,52 @@ import {
 	TextField,
 } from "@/components/ui/form-field";
 import { type MemberFormData, memberSchema } from "@/lib/schemas";
+import { handleActionErrors } from "@/lib/utils";
 
-interface EditMemberDialogProps {
-	member: MemberFormData & { id: string };
+interface MemberDialogProps {
+	groupId: string;
 	weightsEnabled: boolean;
-	onUpdate: (memberId: Member["id"], data: MemberFormData) => Promise<void>;
+	member?: MemberFormData & { id: string }; // For editing existing member
 	children: React.ReactNode;
 }
 
-export function EditMemberDialog({
-	member,
+export function MemberDialog({
+	groupId,
 	weightsEnabled,
-	onUpdate,
+	member,
 	children,
-}: EditMemberDialogProps) {
+}: MemberDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const t = useTranslations("forms.editMember");
+	const t = useTranslations("forms.member");
+
+	const { executeAsync: createMember } = useAction(createMemberAction);
+	const { executeAsync: updateMember } = useAction(updateMemberAction);
 
 	const form = useForm({
 		resolver: zodResolver(memberSchema),
 		defaultValues: {
-			name: member.name,
-			email: member.email || "",
-			iban: member.iban || "",
-			weight: member.weight || 1,
-			activeFrom: member.activeFrom,
-			activeTo: member.activeTo ? new Date(member.activeTo) : undefined,
-			hasEndDate: !!member.activeTo,
+			name: member?.name || "",
+			email: member?.email || "",
+			iban: member?.iban || "",
+			weight: member?.weight || 1,
+			activeFrom: member?.activeFrom || new Date(),
+			activeTo: member?.activeTo ? new Date(member.activeTo) : undefined,
+			hasEndDate: !!member?.activeTo,
 		},
 	});
 
-	// Reset form when dialog opens
+	// Reset form when dialog opens or member changes
 	useEffect(() => {
 		if (open) {
 			form.reset({
-				name: member.name,
-				email: member.email || "",
-				iban: member.iban || "",
-				weight: member.weight || 1,
-				activeFrom: member.activeFrom,
-				activeTo: member.activeTo ? new Date(member.activeTo) : undefined,
-				hasEndDate: !!member.activeTo,
+				name: member?.name || "",
+				email: member?.email || "",
+				iban: member?.iban || "",
+				weight: member?.weight || 1,
+				activeFrom: member?.activeFrom || new Date(),
+				activeTo: member?.activeTo ? new Date(member.activeTo) : undefined,
+				hasEndDate: !!member?.activeTo,
 			});
 		}
 	}, [open, member, form]);
@@ -72,11 +78,19 @@ export function EditMemberDialog({
 		setLoading(true);
 
 		try {
-			await onUpdate(member.id, data);
-
+			if (member) {
+				// Update existing member
+				handleActionErrors(
+					await updateMember({ memberId: member.id, member: data }),
+				);
+			} else {
+				// Create new member
+				handleActionErrors(await createMember({ groupId, member: data }));
+				form.reset();
+			}
 			setOpen(false);
 		} catch (error) {
-			console.error("Failed to update member:", error);
+			console.error(`Failed to ${member ? "update" : "create"} member:`, error);
 		} finally {
 			setLoading(false);
 		}
@@ -87,8 +101,10 @@ export function EditMemberDialog({
 			<DialogTrigger asChild>{children}</DialogTrigger>
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>
-					<DialogTitle>{t("title")}</DialogTitle>
-					<DialogDescription>{t("description")}</DialogDescription>
+					<DialogTitle>{member ? t("title") : t("title")}</DialogTitle>
+					<DialogDescription>
+						{member ? t("description") : t("description")}
+					</DialogDescription>
 				</DialogHeader>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -104,8 +120,8 @@ export function EditMemberDialog({
 							control={form.control}
 							name="email"
 							label={t("email")}
-							type="email"
 							placeholder={t("emailPlaceholder")}
+							type="email"
 						/>
 
 						<TextField
@@ -121,9 +137,9 @@ export function EditMemberDialog({
 								name="weight"
 								label={t("weight")}
 								placeholder={t("weightPlaceholder")}
-								description={t("weightDescription")}
-								step="0.1"
-								min={0.1}
+								min={0.01}
+								step="0.01"
+								required
 							/>
 						)}
 
@@ -132,24 +148,26 @@ export function EditMemberDialog({
 							name="activeFrom"
 							label={t("activeFrom")}
 							placeholder={t("activeFromPlaceholder")}
+							required
 						/>
 
-						<div className="space-y-2">
-							<div className="flex items-center space-x-2">
-								<CheckboxField
-									control={form.control}
-									name="hasEndDate"
-									text={t("setEndDate")}
-								/>
-							</div>
+						<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+							<CheckboxField
+								control={form.control}
+								name="hasEndDate"
+								label={t("hasEndDate")}
+							/>
 
-							{(form.watch("hasEndDate") as Date) && (
-								<DateField
-									control={form.control}
-									name="activeTo"
-									label={t("activeTo")}
-									placeholder={t("activeToPlaceholder")}
-								/>
+							{(form.watch("hasEndDate") as boolean) && (
+								<div className="space-y-4 pl-6">
+									<DateField
+										control={form.control}
+										name="activeTo"
+										label={t("activeTo")}
+										placeholder={t("activeToPlaceholder")}
+										required
+									/>
+								</div>
 							)}
 						</div>
 
@@ -163,7 +181,13 @@ export function EditMemberDialog({
 								{t("cancel")}
 							</Button>
 							<Button type="submit" disabled={loading}>
-								{loading ? t("updating") : t("update")}
+								{loading
+									? member
+										? t("updating")
+										: t("creating")
+									: member
+										? t("update")
+										: t("create")}
 							</Button>
 						</div>
 					</form>

@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-	title: "Parity - Money Sharing Made Simple",
+	title: "Pariti - Money Sharing Made Simple",
 	description: "A money sharing app for groups and friends",
 	icons: {
 		icon: "/logo-192.png",

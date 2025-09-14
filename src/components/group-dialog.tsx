@@ -25,11 +25,11 @@ import {
 import { type GroupFormData, groupSchema } from "@/lib/schemas";
 import { handleActionErrors } from "@/lib/utils";
 
-interface CreateGroupDialogProps {
+interface GroupDialogProps {
 	children: React.ReactNode;
 }
 
-export function CreateGroupDialog({ children }: CreateGroupDialogProps) {
+export function GroupDialog({ children }: GroupDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
@@ -50,18 +50,13 @@ export function CreateGroupDialog({ children }: CreateGroupDialogProps) {
 	const onSubmit = async (data: GroupFormData) => {
 		setLoading(true);
 
-		try {
-			const group = handleActionErrors(await createGroup({ group: data }));
+		const group = handleActionErrors(await createGroup({ group: data }));
 
-			setOpen(false);
-			form.reset();
+		setOpen(false);
+		form.reset();
 
-			router.push(`/${locale}/group/${group.id}`);
-		} catch (error) {
-			console.error("Failed to create group:", error);
-		} finally {
-			setLoading(false);
-		}
+		router.push(`/${locale}/group/${group.id}`);
+		setLoading(false);
 	};
 
 	return (

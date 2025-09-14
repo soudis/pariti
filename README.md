@@ -1,4 +1,4 @@
-# Parity - Money Sharing App
+# Pariti - Money Sharing App
 
 A modern money sharing app for groups and friends, built with Next.js, TypeScript, and Prisma.
 

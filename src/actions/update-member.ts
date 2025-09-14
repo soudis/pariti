@@ -68,8 +68,8 @@ async function updateMember(memberId: Member["id"], data: MemberFormData) {
 							),
 							lte: new Date(
 								Math.max(
-									member.activeTo?.getTime() ?? 999999999999999,
-									updatedMember.activeTo?.getTime() ?? 999999999999999,
+									member.activeTo?.getTime() ?? 9999999999999,
+									updatedMember.activeTo?.getTime() ?? 9999999999999,
 								),
 							),
 						},

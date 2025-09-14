@@ -20,8 +20,8 @@ import {
 	removeConsumptionAction,
 	removeResourceAction,
 } from "@/actions";
-import { CreateConsumptionDialog } from "@/components/create-consumption-dialog";
-import { CreateResourceDialog } from "@/components/create-resource-dialog";
+import { ConsumptionDialog } from "@/components/consumption-dialog";
+import { ResourceDialog } from "@/components/resource-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -160,7 +160,7 @@ export function ResourcesSection({
 							</div>
 						)}
 						<div className="grid grid-cols-1 sm:flex sm:gap-2 gap-2">
-							<CreateConsumptionDialog
+							<ConsumptionDialog
 								groupId={groupId}
 								resources={resources}
 								members={members}
@@ -172,8 +172,8 @@ export function ResourcesSection({
 									<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
 									<span className="truncate">{t("logConsumption")}</span>
 								</Button>
-							</CreateConsumptionDialog>
-							<CreateResourceDialog groupId={groupId}>
+							</ConsumptionDialog>
+							<ResourceDialog groupId={groupId}>
 								<Button
 									size="sm"
 									variant="outline"
@@ -182,7 +182,7 @@ export function ResourcesSection({
 									<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
 									<span className="truncate">{t("addResource")}</span>
 								</Button>
-							</CreateResourceDialog>
+							</ResourceDialog>
 						</div>
 					</div>
 				</div>
@@ -232,13 +232,12 @@ export function ResourcesSection({
 											)}
 										</div>
 										<div className="flex items-center gap-2 flex-shrink-0">
-											<CreateResourceDialog
+											<ResourceDialog
 												groupId={groupId}
 												resource={{
 													...resource,
 													unitPrice: Number(resource.unitPrice),
 												}}
-												onResourceUpdated={() => window.location.reload()}
 											>
 												<Button
 													variant="ghost"
@@ -247,7 +246,7 @@ export function ResourcesSection({
 												>
 													<Edit className="w-4 h-4" />
 												</Button>
-											</CreateResourceDialog>
+											</ResourceDialog>
 											<Button
 												variant="ghost"
 												size="sm"
@@ -348,7 +347,7 @@ export function ResourcesSection({
 																	)}
 																</div>
 																<div className="flex items-center gap-2">
-																	<CreateConsumptionDialog
+																	<ConsumptionDialog
 																		groupId={groupId}
 																		resources={resources}
 																		members={members}
@@ -371,7 +370,7 @@ export function ResourcesSection({
 																		>
 																			<Edit className="w-4 h-4" />
 																		</Button>
-																	</CreateConsumptionDialog>
+																	</ConsumptionDialog>
 																	<Button
 																		variant="ghost"
 																		size="sm"

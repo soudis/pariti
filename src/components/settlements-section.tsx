@@ -19,8 +19,8 @@ import {
 	removeSettlementAction,
 	updateSettlementMemberStatusAction,
 } from "@/actions";
-import { CreateSettlementDialog } from "@/components/create-settlement-dialog";
 import { QRCodeDialog } from "@/components/qr-code-dialog";
+import { SettlementDialog } from "@/components/settlement-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -92,7 +92,7 @@ export function SettlementsSection({
 						<Scale className="w-5 h-5" />
 						{t("title")}
 					</CardTitle>
-					<CreateSettlementDialog
+					<SettlementDialog
 						groupId={groupId}
 						members={members}
 						resources={resources}
@@ -101,7 +101,7 @@ export function SettlementsSection({
 							<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
 							<span className="truncate">{t("generateSettlement")}</span>
 						</Button>
-					</CreateSettlementDialog>
+					</SettlementDialog>
 				</div>
 			</CardHeader>
 			<CardContent>

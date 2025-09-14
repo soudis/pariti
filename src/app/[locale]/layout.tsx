@@ -8,7 +8,7 @@ import { QueryProvider } from "@/components/query-provider";
 const locales = ["en", "de"];
 
 export const metadata: Metadata = {
-	title: "Parity - Money Sharing Made Simple",
+	title: "Pariti - Money Sharing Made Simple",
 	description: "A  money sharing app for groups and friends",
 	icons: {
 		icon: "/logo-192.png",
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 		apple: "/logo-192.png",
 	},
 	openGraph: {
-		title: "Parity - Money Sharing Made Simple",
+		title: "Pariti - Money Sharing Made Simple",
 		description: "A money sharing app for groups and friends",
 		images: ["/logo-512.png"],
 	},

@@ -1,6 +1,5 @@
 "use client";
 
-import type { Member } from "@prisma/client";
 import { Edit, Plus, Trash2, User, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
@@ -9,14 +8,11 @@ import {
 	calculateMemberBalances,
 	type getGroup,
 	removeMemberAction,
-	updateMemberAction,
 } from "@/actions";
-import { AddMemberDialog } from "@/components/add-member-dialog";
-import { EditMemberDialog } from "@/components/edit-member-dialog";
+import { MemberDialog } from "@/components/member-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/currency";
-import type { MemberFormData } from "@/lib/schemas";
 import { handleActionErrors } from "@/lib/utils";
 
 interface MembersSectionProps {
@@ -32,7 +28,6 @@ export function MembersSection({ group }: MembersSectionProps) {
 	const t = useTranslations("members");
 
 	const { executeAsync: removeMember } = useAction(removeMemberAction);
-	const { executeAsync: updateMember } = useAction(updateMemberAction);
 
 	// Load member balances
 	useEffect(() => {
@@ -74,13 +69,6 @@ export function MembersSection({ group }: MembersSectionProps) {
 		setDeletingId(null);
 	};
 
-	const handleUpdateMember = async (
-		memberId: Member["id"],
-		data: MemberFormData,
-	) => {
-		handleActionErrors(await updateMember({ memberId, member: data }));
-	};
-
 	return (
 		<Card>
 			<CardHeader>
@@ -89,7 +77,7 @@ export function MembersSection({ group }: MembersSectionProps) {
 						<Users className="w-5 h-5" />
 						{t("title")}
 					</CardTitle>
-					<AddMemberDialog
+					<MemberDialog
 						groupId={group.id}
 						weightsEnabled={group.weightsEnabled}
 					>
@@ -97,7 +85,7 @@ export function MembersSection({ group }: MembersSectionProps) {
 							<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
 							<span className="truncate">{t("addMember")}</span>
 						</Button>
-					</AddMemberDialog>
+					</MemberDialog>
 				</div>
 			</CardHeader>
 			<CardContent>
@@ -178,10 +166,10 @@ export function MembersSection({ group }: MembersSectionProps) {
 
 								{/* Actions column */}
 								<div className="flex items-center gap-2 w-24 justify-end">
-									<EditMemberDialog
+									<MemberDialog
+										groupId={group.id}
 										member={{ ...member, weight: Number(member.weight) }}
 										weightsEnabled={group.weightsEnabled}
-										onUpdate={handleUpdateMember}
 									>
 										<Button
 											variant="ghost"
@@ -190,7 +178,7 @@ export function MembersSection({ group }: MembersSectionProps) {
 										>
 											<Edit className="w-4 h-4" />
 										</Button>
-									</EditMemberDialog>
+									</MemberDialog>
 									<Button
 										variant="ghost"
 										size="sm"

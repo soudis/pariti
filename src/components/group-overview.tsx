@@ -12,11 +12,11 @@ import {
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import type { getGroup } from "@/actions";
-import { AddExpenseDialog } from "@/components/add-expense-dialog";
-import { AddMemberDialog } from "@/components/add-member-dialog";
-import { CreateConsumptionDialog } from "@/components/create-consumption-dialog";
-import { CreateResourceDialog } from "@/components/create-resource-dialog";
-import { CreateSettlementDialog } from "@/components/create-settlement-dialog";
+import { ConsumptionDialog } from "@/components/consumption-dialog";
+import { ExpenseDialog } from "@/components/expense-dialog";
+import { MemberDialog } from "@/components/member-dialog";
+import { ResourceDialog } from "@/components/resource-dialog";
+import { SettlementDialog } from "@/components/settlement-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/currency";
@@ -159,7 +159,7 @@ export function GroupOverview({
 
 					{/* Primary Actions - Most Used */}
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-						<AddExpenseDialog group={group}>
+						<ExpenseDialog group={group}>
 							<Button
 								variant="default"
 								size="sm"
@@ -168,9 +168,9 @@ export function GroupOverview({
 								<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
 								<span className="truncate">{t("addExpense")}</span>
 							</Button>
-						</AddExpenseDialog>
+						</ExpenseDialog>
 
-						<CreateConsumptionDialog
+						<ConsumptionDialog
 							groupId={group.id}
 							resources={resources}
 							members={group.members}
@@ -183,12 +183,12 @@ export function GroupOverview({
 								<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
 								<span className="truncate">{t("addConsumption")}</span>
 							</Button>
-						</CreateConsumptionDialog>
+						</ConsumptionDialog>
 					</div>
 
 					{/* Secondary Actions */}
 					<div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-						<AddMemberDialog
+						<MemberDialog
 							groupId={group.id}
 							weightsEnabled={group.weightsEnabled}
 						>
@@ -200,9 +200,9 @@ export function GroupOverview({
 								<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
 								<span className="truncate">{t("addMember")}</span>
 							</Button>
-						</AddMemberDialog>
+						</MemberDialog>
 
-						<CreateResourceDialog groupId={group.id}>
+						<ResourceDialog groupId={group.id}>
 							<Button
 								variant="outline"
 								size="sm"
@@ -211,9 +211,9 @@ export function GroupOverview({
 								<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
 								<span className="truncate">{t("addResource")}</span>
 							</Button>
-						</CreateResourceDialog>
+						</ResourceDialog>
 
-						<CreateSettlementDialog
+						<SettlementDialog
 							groupId={group.id}
 							members={group.members}
 							resources={resources}
@@ -226,7 +226,7 @@ export function GroupOverview({
 								<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
 								<span className="truncate">{t("generateSettlement")}</span>
 							</Button>
-						</CreateSettlementDialog>
+						</SettlementDialog>
 					</div>
 				</div>
 			</CardContent>

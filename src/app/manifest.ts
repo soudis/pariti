@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
 	return {
-		name: "Parity - Sharing stuff made simple",
-		short_name: "Parity",
+		name: "Pariti - Sharing stuff made simple",
+		short_name: "Pariti",
 		description: "A money sharing app for groups and friends",
 		start_url: "/",
 		display: "standalone",
