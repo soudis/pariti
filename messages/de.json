@@ -1,14 +1,14 @@
 {
 	"app": {
-		"title": "Shary - Geld teilen leicht gemacht",
-		"description": "Eine moderne App zum Teilen von Ausgaben mit Freunden und Familie"
+		"title": "Parity - Teilen leicht gemacht",
+		"description": "Eine App zum Teilen von Ausgaben mit Freund*innen"
 	},
 	"home": {
-		"title": "Shary",
-		"subtitle": "Geld teilen leicht gemacht. Teile Ausgaben mit Freunden und Familie.",
+		"title": "Parity",
+		"subtitle": "Teile Ausgaben und Ressourcen mit Freund*innen.",
 		"createGroup": {
 			"title": "Neue Gruppe erstellen",
-			"description": "Erstelle eine neue Ausgaben-Gruppe mit Freunden oder Familie",
+			"description": "Erstelle eine neue Ausgaben-Gruppe mit Freund*innen",
 			"button": "Gruppe erstellen"
 		},
 		"joinGroup": {
@@ -24,11 +24,19 @@
 			},
 			"step2": {
 				"title": "Mitglieder hinzufügen",
-				"description": "Füge Freunde und Familienmitglieder zu deiner Ausgaben-Gruppe hinzu"
+				"description": "Füge Mitglieder zu deiner Ausgaben-Gruppe hinzu"
 			},
 			"step3": {
 				"title": "Ausgaben verfolgen",
 				"description": "Füge Ausgaben hinzu und sieh automatisch berechnet, wer wem wie viel schuldet"
+			},
+			"step4": {
+				"title": "Ressourcen verwalten",
+				"description": "Erstelle geteilte Ressourcen wie Lebensmittel oder Nebenkosten und verfolge den Verbrauch"
+			},
+			"step5": {
+				"title": "Abrechnung",
+				"description": "Generiere optimierte Abrechnungen, um alle Schulden und Zahlungen auszugleichen"
 			}
 		}
 	},

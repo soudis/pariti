@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { addMemberAction } from "@/actions/add-member";
+import { createMemberAction } from "@/actions/create-member";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -40,7 +40,7 @@ export function AddMemberDialog({
 	const [loading, setLoading] = useState(false);
 	const t = useTranslations("forms.addMember");
 
-	const { executeAsync: addMember } = useAction(addMemberAction);
+	const { executeAsync: addMember } = useAction(createMemberAction);
 	const form = useForm({
 		resolver: zodResolver(memberSchema),
 		defaultValues: {

@@ -9,9 +9,10 @@ import {
 	addMemberReturnSchema,
 	type MemberFormData,
 } from "@/lib/schemas";
+import { getActiveMembersForDate } from "./get-active-members-for-date";
 import { calculateWeightedAmounts } from "./utils";
 
-async function addMember(groupId: string, data: MemberFormData) {
+async function createMember(groupId: string, data: MemberFormData) {
 	const member = await db.member.create({
 		data: {
 			name: data.name,
@@ -46,42 +47,35 @@ async function addMember(groupId: string, data: MemberFormData) {
 		});
 
 		for (const expense of splitAllExpenses) {
-			// Get all current members including the new one
-			const allMembers = [
-				...expense.expenseMembers.map((em) => ({
-					id: em.member.id,
-					weight: Number(em.member.weight),
-				})),
-				{ id: member.id, weight: Number(member.weight) },
-			];
+			// Get all active members for this expense date (including the new member)
+			const activeMembers = await getActiveMembersForDate(
+				groupId,
+				expense.date,
+			);
 
 			// Recalculate amounts with weights
 			const weightedAmounts = calculateWeightedAmounts(
 				Number(expense.amount),
-				allMembers.map((member) => ({
+				activeMembers.map((member) => ({
 					id: member.id,
 					weight: new Decimal(member.weight),
 				})),
 				group.weightsEnabled,
 			);
 
-			// Update all expense members with new amounts
-			for (const weightedAmount of weightedAmounts) {
-				await db.expenseMember.upsert({
-					where: {
-						expenseId_memberId: {
-							expenseId: expense.id,
-							memberId: weightedAmount.memberId,
-						},
-					},
-					update: { amount: weightedAmount.amount },
-					create: {
-						expenseId: expense.id,
-						memberId: weightedAmount.memberId,
-						amount: weightedAmount.amount,
-					},
-				});
-			}
+			// Delete all existing expense members for this expense
+			await db.expenseMember.deleteMany({
+				where: { expenseId: expense.id },
+			});
+
+			// Create new expense members with correct amounts
+			await db.expenseMember.createMany({
+				data: weightedAmounts.map((weightedAmount) => ({
+					expenseId: expense.id,
+					memberId: weightedAmount.memberId,
+					amount: weightedAmount.amount,
+				})),
+			});
 		}
 	}
 
@@ -89,9 +83,9 @@ async function addMember(groupId: string, data: MemberFormData) {
 	return { member: { ...member, weight: Number(member.weight) } };
 }
 
-export const addMemberAction = actionClient
+export const createMemberAction = actionClient
 	.inputSchema(addMemberInputSchema)
 	.outputSchema(addMemberReturnSchema)
 	.action(async ({ parsedInput }) =>
-		addMember(parsedInput.groupId, parsedInput.member),
+		createMember(parsedInput.groupId, parsedInput.member),
 	);

@@ -8,8 +8,18 @@ import { QueryProvider } from "@/components/query-provider";
 const locales = ["en", "de"];
 
 export const metadata: Metadata = {
-	title: "Shary - Money Sharing Made Simple",
-	description: "A modern money sharing app for groups and friends",
+	title: "Parity - Money Sharing Made Simple",
+	description: "A  money sharing app for groups and friends",
+	icons: {
+		icon: "/logo-192.png",
+		shortcut: "/logo-192.png",
+		apple: "/logo-192.png",
+	},
+	openGraph: {
+		title: "Parity - Money Sharing Made Simple",
+		description: "A money sharing app for groups and friends",
+		images: ["/logo-512.png"],
+	},
 };
 
 export default async function LocaleLayout({

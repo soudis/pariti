@@ -1,7 +1,5 @@
 // Group actions
 
-// Member actions
-export { addMemberAction } from "./add-member";
 // Utility actions (these are used by other server actions, so keep the original functions)
 export { calculateMemberBalances } from "./calculate-member-balances";
 // Consumption actions
@@ -9,6 +7,8 @@ export { createConsumptionAction } from "./create-consumption";
 // Expense actions
 export { createExpenseAction } from "./create-expense";
 export { createGroupAction } from "./create-group";
+// Member actions
+export { createMemberAction as addMemberAction } from "./create-member";
 // Resource actions
 export { createResourceAction } from "./create-resource";
 // Settlement actions

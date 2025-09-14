@@ -13,7 +13,7 @@ import {
 async function createGroup(data: GroupFormData) {
 	const group = await db.group.create({
 		data: {
-			id: randomBytes(64).toString("base64url"), // make sure its long and hard to guess
+			id: randomBytes(32).toString("base64url"), // make sure its long and hard to guess
 			name: data.name,
 			description: data.description,
 			currency: data.currency,

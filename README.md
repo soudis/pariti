@@ -1,4 +1,4 @@
-# Shary - Money Sharing App
+# Parity - Money Sharing App
 
 A modern money sharing app for groups and friends, built with Next.js, TypeScript, and Prisma.
 

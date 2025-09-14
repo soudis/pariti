@@ -1,10 +1,10 @@
 {
 	"app": {
-		"title": "Shary - Money Sharing Made Simple",
+		"title": "Parity - Money Sharing Made Simple",
 		"description": "A modern money sharing app for groups and friends"
 	},
 	"home": {
-		"title": "Shary",
+		"title": "Parity",
 		"subtitle": "Money sharing made simple. Split expenses with friends and family.",
 		"createGroup": {
 			"title": "Create New Group",
@@ -29,6 +29,14 @@
 			"step3": {
 				"title": "Track Expenses",
 				"description": "Add expenses and see who owes what automatically calculated"
+			},
+			"step4": {
+				"title": "Manage Resources",
+				"description": "Create shared resources like groceries or utilities and track consumption"
+			},
+			"step5": {
+				"title": "Settle Up",
+				"description": "Generate optimized settlements to balance all debts and payments"
 			}
 		}
 	},

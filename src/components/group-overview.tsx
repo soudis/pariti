@@ -61,8 +61,8 @@ export function GroupOverview({
 	);
 	const shareUrl =
 		typeof window !== "undefined"
-			? `${window.location.origin}/${locale}/group/${group.id}`
-			: `/${locale}/group/${group.id}`;
+			? `${window.location.origin}/group/${group.id}`
+			: `/group/${group.id}`;
 
 	const copyToClipboard = async () => {
 		try {
