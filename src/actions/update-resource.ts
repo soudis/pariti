@@ -4,9 +4,9 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { actionClient } from "@/lib/safe-action";
 import {
+	editResourceInputSchema,
+	editResourceReturnSchema,
 	type ResourceFormData,
-	updateResourceInputSchema,
-	updateResourceReturnSchema,
 } from "@/lib/schemas";
 
 async function updateResource(resourceId: string, data: ResourceFormData) {
@@ -36,8 +36,8 @@ async function updateResource(resourceId: string, data: ResourceFormData) {
 }
 
 export const updateResourceAction = actionClient
-	.inputSchema(updateResourceInputSchema)
-	.outputSchema(updateResourceReturnSchema)
+	.inputSchema(editResourceInputSchema)
+	.outputSchema(editResourceReturnSchema)
 	.action(async ({ parsedInput }) =>
 		updateResource(parsedInput.resourceId, parsedInput.resource),
 	);

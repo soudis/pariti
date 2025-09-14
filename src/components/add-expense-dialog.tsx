@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Group, Member } from "@prisma/client";
-import { Decimal } from "decimal.js";
 import { useAction } from "next-safe-action/hooks";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -29,7 +28,7 @@ import {
 } from "@/components/ui/form-field";
 import { MemberSelection } from "@/components/ui/member-selection";
 import { type ExpenseFormData, expenseSchema } from "@/lib/schemas";
-import { convertToPlainObject, handleActionErrors } from "@/lib/utils";
+import { handleActionErrors } from "@/lib/utils";
 
 interface AddExpenseDialogProps {
 	group: Group & {

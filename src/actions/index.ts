@@ -13,9 +13,6 @@ export { createGroupAction } from "./create-group";
 export { createResourceAction } from "./create-resource";
 // Settlement actions
 export { createSettlementAction } from "./create-settlement";
-export { editConsumptionAction } from "./edit-consumption";
-export { editExpenseAction } from "./edit-expense";
-export { editResourceAction } from "./edit-resource";
 export { generateRecurringExpenseInstances } from "./generate-recurring-expense-instances";
 export { getActiveMembersForDate } from "./get-active-members-for-date";
 export { getGroup } from "./get-group";
@@ -25,9 +22,11 @@ export { removeExpenseAction } from "./remove-expense";
 export { removeMemberAction } from "./remove-member";
 export { removeResourceAction } from "./remove-resource";
 export { removeSettlementAction } from "./remove-settlement";
+export { updateConsumptionAction as editConsumptionAction } from "./update-consumption";
+export { updateExpenseAction as editExpenseAction } from "./update-expense";
 export { updateGroupAction } from "./update-group";
 export { updateMemberAction } from "./update-member";
-export { updateResourceAction } from "./update-resource";
+export { updateResourceAction as editResourceAction } from "./update-resource";
 export { updateSettlementMemberStatusAction } from "./update-settlement-member-status";
 
 // Utility functions

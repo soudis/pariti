@@ -9,7 +9,7 @@ import {
 	editConsumptionReturnSchema,
 } from "@/lib/schemas";
 
-async function editConsumption(
+async function updateConsumption(
 	consumptionId: string,
 	data: ConsumptionFormData,
 ) {
@@ -62,9 +62,9 @@ async function editConsumption(
 	return { consumption: updatedConsumption };
 }
 
-export const editConsumptionAction = actionClient
+export const updateConsumptionAction = actionClient
 	.inputSchema(editConsumptionInputSchema)
 	.outputSchema(editConsumptionReturnSchema)
 	.action(async ({ parsedInput }) =>
-		editConsumption(parsedInput.consumptionId, parsedInput.consumption),
+		updateConsumption(parsedInput.consumptionId, parsedInput.consumption),
 	);

@@ -10,7 +10,7 @@ import {
 } from "@/lib/schemas";
 import { calculateWeightedAmounts } from "./utils";
 
-async function editExpense(expenseId: string, data: ExpenseFormData) {
+async function updateExpense(expenseId: string, data: ExpenseFormData) {
 	const expense = await db.expense.update({
 		where: { id: expenseId },
 		data: {
@@ -64,9 +64,9 @@ async function editExpense(expenseId: string, data: ExpenseFormData) {
 	return { expense };
 }
 
-export const editExpenseAction = actionClient
+export const updateExpenseAction = actionClient
 	.inputSchema(editExpenseInputSchema)
 	.outputSchema(editExpenseReturnSchema)
 	.action(async ({ parsedInput }) =>
-		editExpense(parsedInput.expenseId, parsedInput.expense),
+		updateExpense(parsedInput.expenseId, parsedInput.expense),
 	);
