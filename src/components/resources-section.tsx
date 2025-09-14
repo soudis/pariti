@@ -1,6 +1,8 @@
 "use client";
 import {
 	Calendar,
+	ChevronDown,
+	ChevronRight,
 	Edit,
 	Eye,
 	EyeOff,
@@ -46,6 +48,9 @@ export function ResourcesSection({
 	const [deletingConsumptionId, setDeletingConsumptionId] = useState<
 		string | null
 	>(null);
+	const [expandedResources, setExpandedResources] = useState<Set<string>>(
+		new Set(),
+	);
 	const [showHiddenConsumptions, setShowHiddenConsumptions] = useQueryState(
 		"showHiddenConsumptions",
 		{
@@ -87,6 +92,41 @@ export function ResourcesSection({
 	};
 
 	const formatDate = (date: Date) => new Date(date).toLocaleDateString();
+
+	// Helper function to calculate total consumption amount for a resource
+	const calculateTotalConsumption = (
+		consumptions: Awaited<
+			ReturnType<typeof getGroup>
+		>["resources"][number]["consumptions"],
+	) => {
+		return consumptions.reduce((total, consumption) => {
+			if (consumption.isUnitAmount) {
+				// Find the resource to get unit price
+				const resource = resources.find((r) =>
+					r.consumptions.some((c) => c.id === consumption.id),
+				);
+				if (resource?.unitPrice) {
+					return (
+						total + Number(consumption.amount) * Number(resource.unitPrice)
+					);
+				}
+			}
+			return total + Number(consumption.amount);
+		}, 0);
+	};
+
+	// Helper function to toggle resource expansion
+	const toggleResourceExpansion = (resourceId: string) => {
+		setExpandedResources((prev) => {
+			const newSet = new Set(prev);
+			if (newSet.has(resourceId)) {
+				newSet.delete(resourceId);
+			} else {
+				newSet.add(resourceId);
+			}
+			return newSet;
+		});
+	};
 
 	return (
 		<Card>
@@ -149,191 +189,235 @@ export function ResourcesSection({
 					</div>
 				) : (
 					<div className="space-y-6">
-						{resources.map((resource) => (
-							<div key={resource.id} className="border rounded-lg p-4">
-								<div className="flex items-start justify-between mb-4">
-									<div className="flex-1">
-										<div className="flex items-center gap-2 mb-2">
-											<h3 className="font-medium text-lg">{resource.name}</h3>
-											{resource.unit && resource.unitPrice && (
-												<Badge variant="outline" className="text-xs">
-													{formatCurrency(
-														Number(resource.unitPrice),
-														group.currency,
-													)}
-													/{resource.unit}
-												</Badge>
+						{resources.map((resource) => {
+							const filteredConsumptions = filterConsumptions(
+								resource.consumptions,
+							);
+							const isExpanded = expandedResources.has(resource.id);
+							const totalConsumption =
+								calculateTotalConsumption(filteredConsumptions);
+
+							return (
+								<div key={resource.id} className="border rounded-lg p-4">
+									<div className="flex items-start justify-between mb-4">
+										<div className="flex-1">
+											<div className="flex items-center gap-2 mb-2">
+												<h3 className="font-medium text-lg">{resource.name}</h3>
+												{resource.unit && resource.unitPrice && (
+													<Badge variant="outline" className="text-xs">
+														{formatCurrency(
+															Number(resource.unitPrice),
+															group.currency,
+														)}
+														/{resource.unit}
+													</Badge>
+												)}
+											</div>
+											{resource.description && (
+												<p className="text-sm text-gray-600 dark:text-gray-300">
+													{resource.description}
+												</p>
 											)}
 										</div>
-										{resource.description && (
-											<p className="text-sm text-gray-600 dark:text-gray-300">
-												{resource.description}
-											</p>
-										)}
-									</div>
-									<div className="flex items-center gap-2">
-										<CreateResourceDialog
-											groupId={groupId}
-											resource={{
-												...resource,
-												unitPrice: Number(resource.unitPrice),
-											}}
-											onResourceUpdated={() => window.location.reload()}
-										>
+										<div className="flex items-center gap-2">
+											<CreateResourceDialog
+												groupId={groupId}
+												resource={{
+													...resource,
+													unitPrice: Number(resource.unitPrice),
+												}}
+												onResourceUpdated={() => window.location.reload()}
+											>
+												<Button
+													variant="ghost"
+													size="sm"
+													className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+												>
+													<Edit className="w-4 h-4" />
+												</Button>
+											</CreateResourceDialog>
 											<Button
 												variant="ghost"
 												size="sm"
-												className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+												onClick={() => handleDeleteResource(resource.id)}
+												disabled={deletingResourceId === resource.id}
+												className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
 											>
-												<Edit className="w-4 h-4" />
+												<Trash2 className="w-4 h-4" />
 											</Button>
-										</CreateResourceDialog>
-										<Button
-											variant="ghost"
-											size="sm"
-											onClick={() => handleDeleteResource(resource.id)}
-											disabled={deletingResourceId === resource.id}
-											className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
-										>
-											<Trash2 className="w-4 h-4" />
-										</Button>
+										</div>
 									</div>
-								</div>
 
-								{filterConsumptions(resource.consumptions).length === 0 ? (
-									<div className="text-center py-4 text-gray-500 dark:text-gray-400">
-										<p className="text-sm">{t("noConsumptions")}</p>
-									</div>
-								) : (
-									<div className="space-y-3">
-										<h4 className="font-medium text-sm text-gray-700 dark:text-gray-200">
-											{t("consumptions")}:
-										</h4>
-										{filterConsumptions(resource.consumptions).map(
-											(consumption) => (
-												<div
-													key={consumption.id}
-													className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-												>
-													<div className="flex items-start justify-between mb-2">
-														<div className="flex-1">
-															<div className="flex items-center gap-2">
-																<Badge variant="secondary" className="text-sm">
-																	{consumption.isUnitAmount
-																		? `${consumption.amount} ${resource.unit}`
-																		: formatCurrency(
-																				Number(consumption.amount),
-																				group.currency,
-																			)}
-																</Badge>
-																{consumption.isUnitAmount &&
-																	resource.unitPrice && (
-																		<Badge
-																			variant="outline"
-																			className="text-xs"
-																		>
-																			{formatCurrency(
-																				Number(consumption.amount) *
-																					Number(resource.unitPrice),
-																				group.currency,
-																			)}{" "}
-																			{t("total")}
-																		</Badge>
-																	)}
-															</div>
-															{consumption.description && (
-																<p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-																	{consumption.description}
-																</p>
-															)}
-														</div>
-														<div className="flex items-center gap-2">
-															<CreateConsumptionDialog
-																groupId={groupId}
-																resources={resources}
-																members={members}
-																consumption={{
-																	...consumption,
-																	amount: Number(consumption.amount),
-																	selectedMembers:
-																		consumption.consumptionMembers.map(
-																			(cm) => cm.memberId,
-																		),
-																}}
-																onConsumptionUpdated={() =>
-																	window.location.reload()
-																}
-															>
-																<Button
-																	variant="ghost"
-																	size="sm"
-																	className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
-																>
-																	<Edit className="w-4 h-4" />
-																</Button>
-															</CreateConsumptionDialog>
-															<Button
-																variant="ghost"
-																size="sm"
-																onClick={() =>
-																	handleDeleteConsumption(consumption.id)
-																}
-																disabled={
-																	deletingConsumptionId === consumption.id
-																}
-																className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
-															>
-																<Trash2 className="w-4 h-4" />
-															</Button>
-														</div>
-													</div>
-
-													<div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-300 mb-2">
-														<div className="flex items-center gap-1">
-															<Calendar className="w-4 h-4" />
-															<span>{formatDate(consumption.date)}</span>
-														</div>
-														<div className="flex items-center gap-1">
-															<Users className="w-4 h-4" />
-															<span>
-																{consumption.consumptionMembers.length}{" "}
-																{t("members")}
-															</span>
-														</div>
-													</div>
-
-													<div className="space-y-1">
-														<p className="text-sm font-medium text-gray-700 dark:text-gray-200">
-															{t("splitBetween")}:
-														</p>
-														<div className="flex flex-wrap gap-2">
-															{consumption.consumptionMembers.map(
-																(
-																	consumptionMember: Awaited<
-																		ReturnType<typeof getGroup>
-																	>["resources"][number]["consumptions"][number]["consumptionMembers"][number],
-																) => (
-																	<Badge
-																		key={consumptionMember.member.id}
-																		variant="outline"
-																		className="text-xs"
-																	>
-																		{consumptionMember.member.name}: €
-																		{Number(consumptionMember.amount).toFixed(
-																			2,
-																		)}
-																	</Badge>
-																),
-															)}
-														</div>
-													</div>
+									{/* Consumption Summary */}
+									{filteredConsumptions.length === 0 ? (
+										<div className="text-center py-4 text-gray-500 dark:text-gray-400">
+											<p className="text-sm">{t("noConsumptions")}</p>
+										</div>
+									) : (
+										<div className="space-y-3">
+											{/* Summary Row */}
+											<div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+												<div className="flex items-center gap-4">
+													<Badge variant="secondary" className="text-sm">
+														{filteredConsumptions.length} {t("consumptions")}
+													</Badge>
+													<Badge variant="outline" className="text-sm">
+														{formatCurrency(totalConsumption, group.currency)}{" "}
+														{t("total")}
+													</Badge>
 												</div>
-											),
-										)}
-									</div>
-								)}
-							</div>
-						))}
+												<Button
+													variant="ghost"
+													size="sm"
+													onClick={() => toggleResourceExpansion(resource.id)}
+													className="text-gray-600 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-200"
+												>
+													{isExpanded ? (
+														<ChevronDown className="w-4 h-4" />
+													) : (
+														<ChevronRight className="w-4 h-4" />
+													)}
+													<span className="ml-1 text-sm">
+														{isExpanded ? t("hideDetails") : t("showDetails")}
+													</span>
+												</Button>
+											</div>
+
+											{/* Detailed Consumptions (only when expanded) */}
+											{isExpanded && (
+												<div className="space-y-3">
+													<h4 className="font-medium text-sm text-gray-700 dark:text-gray-200">
+														{t("consumptions")}:
+													</h4>
+													{filteredConsumptions.map((consumption) => (
+														<div
+															key={consumption.id}
+															className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+														>
+															<div className="flex items-start justify-between mb-2">
+																<div className="flex-1">
+																	<div className="flex items-center gap-2">
+																		<Badge
+																			variant="secondary"
+																			className="text-sm"
+																		>
+																			{consumption.isUnitAmount
+																				? `${consumption.amount} ${resource.unit}`
+																				: formatCurrency(
+																						Number(consumption.amount),
+																						group.currency,
+																					)}
+																		</Badge>
+																		{consumption.isUnitAmount &&
+																			resource.unitPrice && (
+																				<Badge
+																					variant="outline"
+																					className="text-xs"
+																				>
+																					{formatCurrency(
+																						Number(consumption.amount) *
+																							Number(resource.unitPrice),
+																						group.currency,
+																					)}{" "}
+																					{t("total")}
+																				</Badge>
+																			)}
+																	</div>
+																	{consumption.description && (
+																		<p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+																			{consumption.description}
+																		</p>
+																	)}
+																</div>
+																<div className="flex items-center gap-2">
+																	<CreateConsumptionDialog
+																		groupId={groupId}
+																		resources={resources}
+																		members={members}
+																		consumption={{
+																			...consumption,
+																			amount: Number(consumption.amount),
+																			selectedMembers:
+																				consumption.consumptionMembers.map(
+																					(cm) => cm.memberId,
+																				),
+																		}}
+																		onConsumptionUpdated={() =>
+																			window.location.reload()
+																		}
+																	>
+																		<Button
+																			variant="ghost"
+																			size="sm"
+																			className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+																		>
+																			<Edit className="w-4 h-4" />
+																		</Button>
+																	</CreateConsumptionDialog>
+																	<Button
+																		variant="ghost"
+																		size="sm"
+																		onClick={() =>
+																			handleDeleteConsumption(consumption.id)
+																		}
+																		disabled={
+																			deletingConsumptionId === consumption.id
+																		}
+																		className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+																	>
+																		<Trash2 className="w-4 h-4" />
+																	</Button>
+																</div>
+															</div>
+
+															<div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-300 mb-2">
+																<div className="flex items-center gap-1">
+																	<Calendar className="w-4 h-4" />
+																	<span>{formatDate(consumption.date)}</span>
+																</div>
+																<div className="flex items-center gap-1">
+																	<Users className="w-4 h-4" />
+																	<span>
+																		{consumption.consumptionMembers.length}{" "}
+																		{t("members")}
+																	</span>
+																</div>
+															</div>
+
+															<div className="space-y-1">
+																<p className="text-sm font-medium text-gray-700 dark:text-gray-200">
+																	{t("splitBetween")}:
+																</p>
+																<div className="flex flex-wrap gap-2">
+																	{consumption.consumptionMembers.map(
+																		(
+																			consumptionMember: Awaited<
+																				ReturnType<typeof getGroup>
+																			>["resources"][number]["consumptions"][number]["consumptionMembers"][number],
+																		) => (
+																			<Badge
+																				key={consumptionMember.member.id}
+																				variant="outline"
+																				className="text-xs"
+																			>
+																				{consumptionMember.member.name}: €
+																				{Number(
+																					consumptionMember.amount,
+																				).toFixed(2)}
+																			</Badge>
+																		),
+																	)}
+																</div>
+															</div>
+														</div>
+													))}
+												</div>
+											)}
+										</div>
+									)}
+								</div>
+							);
+						})}
 					</div>
 				)}
 			</CardContent>

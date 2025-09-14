@@ -104,7 +104,9 @@
 		"splitBetween": "Aufgeteilt zwischen",
 		"members": "Mitglieder",
 		"total": "gesamt",
-		"showHidden": "Abgerechnete anzeigen"
+		"showHidden": "Abgerechnete anzeigen",
+		"showDetails": "Details anzeigen",
+		"hideDetails": "Details ausblenden"
 	},
 	"settlements": {
 		"title": "Abrechnungen",

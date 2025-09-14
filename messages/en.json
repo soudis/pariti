@@ -104,7 +104,9 @@
 		"splitBetween": "Split between",
 		"members": "members",
 		"total": "total",
-		"showHidden": "Show settled"
+		"showHidden": "Show settled",
+		"showDetails": "Show details",
+		"hideDetails": "Hide details"
 	},
 	"settlements": {
 		"title": "Settlements",
