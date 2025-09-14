@@ -1,4 +1,7 @@
 {
+	"error": {
+		"server": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
+	},
 	"app": {
 		"title": "Parity - Teilen leicht gemacht",
 		"description": "Eine App zum Teilen von Ausgaben mit Freund*innen"
@@ -38,6 +41,14 @@
 				"title": "Abrechnung",
 				"description": "Generiere optimierte Abrechnungen, um alle Schulden und Zahlungen auszugleichen"
 			}
+		},
+		"visitedGroups": {
+			"title": "Zuletzt besuchte Gruppen",
+			"groupId": "Gruppen-ID",
+			"justNow": "Gerade eben",
+			"hoursAgo": "vor {hours}h",
+			"yesterday": "Gestern",
+			"daysAgo": "vor {days}d"
 		}
 	},
 	"group": {
@@ -87,6 +98,7 @@
 		"includesActiveMembers": "Beinhaltet alle {count} aktiven Mitglieder vom {date}",
 		"automaticallyIncludes": "Diese Ausgabe wird automatisch alle neuen Mitglieder der Gruppe einbeziehen",
 		"showHidden": "Abgerechnete anzeigen",
+		"searchPlaceholder": "Suchen...",
 		"recurring": {
 			"weekly": "wöchentlich",
 			"monthly": "monatlich",

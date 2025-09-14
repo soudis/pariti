@@ -20,7 +20,7 @@ async function updateGroup(groupId: string, data: GroupFormData) {
 		},
 	});
 	revalidatePath(`/group/${groupId}`);
-	return { group };
+	return group;
 }
 
 export const updateGroupAction = actionClient

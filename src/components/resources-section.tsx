@@ -131,12 +131,12 @@ export function ResourcesSection({
 	return (
 		<Card>
 			<CardHeader>
-				<div className="flex items-center justify-between">
+				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 					<CardTitle className="flex items-center gap-2">
 						<Package className="w-5 h-5" />
 						{t("title")}
 					</CardTitle>
-					<div className="flex items-center gap-8">
+					<div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
 						{cutoffDate && (
 							<div className="flex items-center gap-2">
 								<Label htmlFor={showHiddenId} className="text-sm">
@@ -159,21 +159,28 @@ export function ResourcesSection({
 								</span>
 							</div>
 						)}
-						<div className="flex gap-2">
+						<div className="grid grid-cols-1 sm:flex sm:gap-2 gap-2">
 							<CreateConsumptionDialog
 								groupId={groupId}
 								resources={resources}
 								members={members}
 							>
-								<Button size="sm">
-									<Plus className="w-4 h-4 mr-2" />
-									{t("logConsumption")}
+								<Button
+									size="sm"
+									className="w-full sm:w-auto text-xs sm:text-sm"
+								>
+									<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
+									<span className="truncate">{t("logConsumption")}</span>
 								</Button>
 							</CreateConsumptionDialog>
 							<CreateResourceDialog groupId={groupId}>
-								<Button size="sm" variant="outline">
-									<Plus className="w-4 h-4 mr-2" />
-									{t("addResource")}
+								<Button
+									size="sm"
+									variant="outline"
+									className="w-full sm:w-auto text-xs sm:text-sm"
+								>
+									<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
+									<span className="truncate">{t("addResource")}</span>
 								</Button>
 							</CreateResourceDialog>
 						</div>
@@ -199,12 +206,17 @@ export function ResourcesSection({
 
 							return (
 								<div key={resource.id} className="border rounded-lg p-4">
-									<div className="flex items-start justify-between mb-4">
-										<div className="flex-1">
-											<div className="flex items-center gap-2 mb-2">
-												<h3 className="font-medium text-lg">{resource.name}</h3>
+									<div className="flex  sm:items-start sm:justify-between gap-3 mb-4">
+										<div className="flex-1 min-w-0">
+											<div className="flex flex-col sm:flex-row items-center gap-2 mb-2">
+												<h3 className="font-medium text-base sm:text-lg truncate">
+													{resource.name}
+												</h3>
 												{resource.unit && resource.unitPrice && (
-													<Badge variant="outline" className="text-xs">
+													<Badge
+														variant="outline"
+														className="text-xs flex-shrink-0"
+													>
 														{formatCurrency(
 															Number(resource.unitPrice),
 															group.currency,
@@ -214,12 +226,12 @@ export function ResourcesSection({
 												)}
 											</div>
 											{resource.description && (
-												<p className="text-sm text-gray-600 dark:text-gray-300">
+												<p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
 													{resource.description}
 												</p>
 											)}
 										</div>
-										<div className="flex items-center gap-2">
+										<div className="flex items-center gap-2 flex-shrink-0">
 											<CreateResourceDialog
 												groupId={groupId}
 												resource={{
@@ -256,12 +268,18 @@ export function ResourcesSection({
 									) : (
 										<div className="space-y-3">
 											{/* Summary Row */}
-											<div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-												<div className="flex items-center gap-4">
-													<Badge variant="secondary" className="text-sm">
+											<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+												<div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+													<Badge
+														variant="secondary"
+														className="text-xs sm:text-sm"
+													>
 														{filteredConsumptions.length} {t("consumptions")}
 													</Badge>
-													<Badge variant="outline" className="text-sm">
+													<Badge
+														variant="outline"
+														className="text-xs sm:text-sm"
+													>
 														{formatCurrency(totalConsumption, group.currency)}{" "}
 														{t("total")}
 													</Badge>
@@ -270,14 +288,14 @@ export function ResourcesSection({
 													variant="ghost"
 													size="sm"
 													onClick={() => toggleResourceExpansion(resource.id)}
-													className="text-gray-600 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-200"
+													className="text-gray-600 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-200 self-start sm:self-auto"
 												>
 													{isExpanded ? (
 														<ChevronDown className="w-4 h-4" />
 													) : (
 														<ChevronRight className="w-4 h-4" />
 													)}
-													<span className="ml-1 text-sm">
+													<span className="ml-1 text-xs sm:text-sm">
 														{isExpanded ? t("hideDetails") : t("showDetails")}
 													</span>
 												</Button>
@@ -292,7 +310,7 @@ export function ResourcesSection({
 													{filteredConsumptions.map((consumption) => (
 														<div
 															key={consumption.id}
-															className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+															className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border"
 														>
 															<div className="flex items-start justify-between mb-2">
 																<div className="flex-1">

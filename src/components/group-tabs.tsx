@@ -1,6 +1,13 @@
 "use client";
 
-import { Package, Receipt, Scale, Settings, Users } from "lucide-react";
+import {
+	Package,
+	Receipt,
+	ReceiptEuro,
+	Scale,
+	Settings,
+	Users,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useQueryState } from "nuqs";
 import type { generateRecurringExpenseInstances, getGroup } from "@/actions";
@@ -37,7 +44,7 @@ export function GroupTabs({
 					<span className="hidden sm:inline">{t("members")}</span>
 				</TabsTrigger>
 				<TabsTrigger value="expenses" className="flex items-center gap-2">
-					<Receipt className="w-4 h-4" />
+					<ReceiptEuro className="w-4 h-4" />
 					<span className="hidden sm:inline">{t("expenses")}</span>
 				</TabsTrigger>
 				<TabsTrigger value="resources" className="flex items-center gap-2">

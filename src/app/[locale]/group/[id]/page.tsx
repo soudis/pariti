@@ -6,6 +6,7 @@ import {
 } from "@/actions";
 import { GroupOverview } from "@/components/group-overview";
 import { GroupTabs } from "@/components/group-tabs";
+import { GroupVisitTracker } from "@/components/group-visit-tracker";
 
 interface GroupPageProps {
 	params: {
@@ -14,7 +15,8 @@ interface GroupPageProps {
 }
 
 export default async function GroupPage({ params }: GroupPageProps) {
-	const group = await getGroup(params.id);
+	const { id } = await params;
+	const group = await getGroup(id);
 
 	if (!group) {
 		notFound();
@@ -44,6 +46,7 @@ export default async function GroupPage({ params }: GroupPageProps) {
 
 	return (
 		<div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+			<GroupVisitTracker groupId={group.id} groupName={group.name} />
 			<div className="container mx-auto px-4 py-8">
 				<div className="max-w-6xl mx-auto space-y-8">
 					<GroupOverview

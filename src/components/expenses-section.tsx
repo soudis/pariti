@@ -7,7 +7,9 @@ import {
 	Eye,
 	EyeOff,
 	Plus,
+	ReceiptEuro,
 	Repeat,
+	Search,
 	Trash2,
 	User,
 } from "lucide-react";
@@ -24,6 +26,7 @@ import { AddExpenseDialog } from "@/components/add-expense-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { formatCurrency } from "@/lib/currency";
@@ -41,6 +44,7 @@ export function ExpensesSection({
 	cutoffDate,
 }: ExpensesSectionProps) {
 	const [deletingId, setDeletingId] = useState<string | null>(null);
+	const [filterText, setFilterText] = useState("");
 	const [showHiddenExpenses, setShowHiddenExpenses] = useQueryState(
 		"showHiddenExpenses",
 		{
@@ -64,11 +68,32 @@ export function ExpensesSection({
 			effectiveMembers: [],
 		}));
 
-	// Filter expenses based on cutoff date and toggle
-	const displayExpenses =
-		cutoffDate && showHiddenExpenses !== "true"
-			? allExpenses.filter((expense) => new Date(expense.date) >= cutoffDate)
-			: allExpenses;
+	// Filter expenses based on cutoff date, toggle, and search text
+	const filteredExpenses = allExpenses.filter((expense) => {
+		// Apply cutoff date filter
+		if (cutoffDate && showHiddenExpenses !== "true") {
+			if (new Date(expense.date) < cutoffDate) {
+				return false;
+			}
+		}
+
+		// Apply text filter
+		if (filterText.trim()) {
+			const searchText = filterText.toLowerCase();
+			const matchesTitle = expense.title.toLowerCase().includes(searchText);
+			const matchesDescription =
+				expense.description?.toLowerCase().includes(searchText) || false;
+			const matchesPayer = expense.paidBy.name
+				.toLowerCase()
+				.includes(searchText);
+
+			return matchesTitle || matchesDescription || matchesPayer;
+		}
+
+		return true;
+	});
+
+	const displayExpenses = filteredExpenses;
 
 	const handleDeleteExpense = async (expenseId: string) => {
 		setDeletingId(expenseId);
@@ -87,12 +112,12 @@ export function ExpensesSection({
 	return (
 		<Card>
 			<CardHeader>
-				<div className="flex items-center justify-between">
+				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 					<CardTitle className="flex items-center gap-2">
-						<DollarSign className="w-5 h-5" />
+						<ReceiptEuro className="w-5 h-5" />
 						{t("title")}
 					</CardTitle>
-					<div className="flex items-center gap-8">
+					<div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
 						{cutoffDate && (
 							<div className="flex items-center gap-2">
 								<Label htmlFor={showHiddenId} className="text-sm">
@@ -116,11 +141,24 @@ export function ExpensesSection({
 							</div>
 						)}
 						<AddExpenseDialog group={group}>
-							<Button size="sm">
-								<Plus className="w-4 h-4 mr-2" />
-								{t("addExpense")}
+							<Button size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
+								<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
+								<span className="truncate">{t("addExpense")}</span>
 							</Button>
 						</AddExpenseDialog>
+					</div>
+				</div>
+				{/* Search Filter */}
+				<div className="mt-4">
+					<div className="relative">
+						<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+						<Input
+							type="text"
+							placeholder={t("searchPlaceholder")}
+							value={filterText}
+							onChange={(e) => setFilterText(e.target.value)}
+							className="pl-10"
+						/>
 					</div>
 				</div>
 			</CardHeader>
@@ -136,7 +174,7 @@ export function ExpensesSection({
 						{displayExpenses.map((expense) => (
 							<div
 								key={expense.id}
-								className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
+								className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border"
 							>
 								<div className="flex items-start justify-between mb-3">
 									<div className="flex-1">

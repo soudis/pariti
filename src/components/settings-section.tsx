@@ -52,16 +52,9 @@ export function SettingsSection({ group }: SettingsSectionProps) {
 		setLoading(true);
 		setMessage(null);
 
-		try {
-			handleActionErrors(await updateGroup({ groupId: group.id, group: data }));
-
-			setMessage({ type: "success", text: t("settingsUpdated") });
-		} catch (error) {
-			console.error("Failed to update group settings:", error);
-			setMessage({ type: "error", text: t("updateFailed") });
-		} finally {
-			setLoading(false);
-		}
+		handleActionErrors(await updateGroup({ groupId: group.id, group: data }));
+		setLoading(false);
+		setMessage({ type: "success", text: t("settingsUpdated") });
 	};
 
 	return (
@@ -122,8 +115,8 @@ export function SettingsSection({ group }: SettingsSectionProps) {
 							<div
 								className={`p-3 rounded-md text-sm ${
 									message.type === "success"
-										? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-										: "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400"
+										? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 border"
+										: "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400 border"
 								}`}
 							>
 								{message.text}

@@ -1,7 +1,7 @@
 "use client";
 
 import type { Member } from "@prisma/client";
-import { Edit, Plus, Trash2, User } from "lucide-react";
+import { Edit, Plus, Trash2, User, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
 import { useEffect, useState } from "react";
@@ -84,18 +84,18 @@ export function MembersSection({ group }: MembersSectionProps) {
 	return (
 		<Card>
 			<CardHeader>
-				<div className="flex items-center justify-between">
+				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 					<CardTitle className="flex items-center gap-2">
-						<User className="w-5 h-5" />
+						<Users className="w-5 h-5" />
 						{t("title")}
 					</CardTitle>
 					<AddMemberDialog
 						groupId={group.id}
 						weightsEnabled={group.weightsEnabled}
 					>
-						<Button size="sm">
-							<Plus className="w-4 h-4 mr-2" />
-							{t("addMember")}
+						<Button size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
+							<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
+							<span className="truncate">{t("addMember")}</span>
 						</Button>
 					</AddMemberDialog>
 				</div>

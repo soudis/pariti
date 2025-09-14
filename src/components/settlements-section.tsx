@@ -8,6 +8,7 @@ import {
 	Circle,
 	Plus,
 	QrCode,
+	Scale,
 	Trash2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -86,9 +87,9 @@ export function SettlementsSection({
 	return (
 		<Card>
 			<CardHeader>
-				<div className="flex items-center justify-between">
+				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 					<CardTitle className="flex items-center gap-2">
-						<Calculator className="w-5 h-5" />
+						<Scale className="w-5 h-5" />
 						{t("title")}
 					</CardTitle>
 					<CreateSettlementDialog
@@ -96,9 +97,9 @@ export function SettlementsSection({
 						members={members}
 						resources={resources}
 					>
-						<Button size="sm">
-							<Plus className="w-4 h-4 mr-2" />
-							{t("generateSettlement")}
+						<Button size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
+							<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
+							<span className="truncate">{t("generateSettlement")}</span>
 						</Button>
 					</CreateSettlementDialog>
 				</div>

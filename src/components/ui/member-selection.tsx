@@ -69,7 +69,7 @@ export function MemberSelection({
 		<div className={cn("space-y-4", className)}>
 			{/* Split All Option */}
 			<div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-				<div className="flex items-center space-x-2">
+				<div className="flex items-center space-x-4">
 					<Checkbox
 						id={splitAllId}
 						checked={splitAll}

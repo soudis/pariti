@@ -12,53 +12,56 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { VisitedGroupsSection } from "@/components/visited-groups-section";
 
 export default function Home() {
 	const t = useTranslations();
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-			<div className="container mx-auto px-4 py-8">
+			<div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
 				<div className="max-w-4xl mx-auto">
 					{/* Header */}
-					<div className="text-center mb-12">
-						<div className="flex justify-center mb-6 ">
+					<div className="text-center mb-8 sm:mb-12">
+						<div className="flex justify-center mb-4 sm:mb-6">
 							<Image
 								src="/logo.png"
 								alt="Parity Logo"
-								width={120}
-								height={120}
-								className="rounded-2xl shadow-lg bg-primary"
+								width={80}
+								height={80}
+								className="rounded-2xl shadow-lg bg-primary sm:w-[120px] sm:h-[120px]"
 								priority
 							/>
 						</div>
-						<h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+						<h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
 							{t("home.title")}
 						</h1>
-						<p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
+						<p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-6 sm:mb-8 px-4 sm:px-0">
 							{t("home.subtitle")}
 						</p>
 					</div>
 
 					{/* Main Content */}
-					<div className="grid gap-8 md:grid-cols-2">
+					<div className="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-2">
 						{/* Create New Group */}
 						<Card className="border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 transition-colors">
 							<CardHeader className="text-center">
 								<div className="mx-auto w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-4">
 									<Plus className="w-6 h-6 text-blue-600 dark:text-blue-400" />
 								</div>
-								<CardTitle className="text-xl">
+								<CardTitle className="text-lg sm:text-xl">
 									{t("home.createGroup.title")}
 								</CardTitle>
-								<CardDescription>
+								<CardDescription className="text-sm sm:text-base">
 									{t("home.createGroup.description")}
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="text-center">
 								<CreateGroupDialog>
-									<Button size="lg" className="w-full">
+									<Button size="lg" className="w-full text-sm sm:text-base">
 										<Plus className="w-4 h-4 mr-2" />
-										{t("home.createGroup.button")}
+										<span className="truncate">
+											{t("home.createGroup.button")}
+										</span>
 									</Button>
 								</CreateGroupDialog>
 							</CardContent>
@@ -83,17 +86,21 @@ export default function Home() {
 										/>
 									</svg>
 								</div>
-								<CardTitle className="text-xl">
+								<CardTitle className="text-lg sm:text-xl">
 									{t("home.joinGroup.title")}
 								</CardTitle>
-								<CardDescription>
+								<CardDescription className="text-sm sm:text-base">
 									{t("home.joinGroup.description")}
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="text-center">
-								<Button variant="outline" size="lg" className="w-full">
+								<Button
+									variant="outline"
+									size="lg"
+									className="w-full text-sm sm:text-base"
+								>
 									<svg
-										className="w-4 h-4 mr-2"
+										className="w-4 h-4 mr-2 flex-shrink-0"
 										fill="none"
 										stroke="currentColor"
 										viewBox="0 0 24 24"
@@ -106,20 +113,25 @@ export default function Home() {
 											d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
 										/>
 									</svg>
-									{t("home.joinGroup.button")}
+									<span className="truncate">{t("home.joinGroup.button")}</span>
 								</Button>
 							</CardContent>
 						</Card>
 					</div>
 
+					{/* Visited Groups Section */}
+					<div className="mt-8 sm:mt-12">
+						<VisitedGroupsSection />
+					</div>
+
 					{/* Features */}
-					<div className="mt-16">
-						<h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-8">
+					<div className="mt-12 sm:mt-16">
+						<h2 className="text-xl sm:text-2xl font-bold text-center text-gray-900 dark:text-white mb-6 sm:mb-8">
 							{t("home.howItWorks.title")}
 						</h2>
-						<div className="space-y-8">
+						<div className="space-y-6 sm:space-y-8">
 							{/* Steps 1-2 */}
-							<div className="grid gap-6 md:grid-cols-2">
+							<div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
 								<Card>
 									<CardHeader>
 										<div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-2">
@@ -158,7 +170,7 @@ export default function Home() {
 							</div>
 
 							{/* Steps 3-4 */}
-							<div className="grid gap-6 md:grid-cols-2">
+							<div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
 								<Card>
 									<CardHeader>
 										<div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mb-2">

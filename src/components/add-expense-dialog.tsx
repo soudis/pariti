@@ -222,7 +222,7 @@ export function AddExpenseDialog({
 						/>
 
 						{/* Recurring Options */}
-						<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+						<div className="space-y-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
 							<CheckboxField
 								control={form.control}
 								name="isRecurring"

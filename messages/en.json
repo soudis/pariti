@@ -1,4 +1,7 @@
 {
+	"error": {
+		"server": "An error occurred. Please try again."
+	},
 	"app": {
 		"title": "Parity - Money Sharing Made Simple",
 		"description": "A modern money sharing app for groups and friends"
@@ -38,6 +41,14 @@
 				"title": "Settle Up",
 				"description": "Generate optimized settlements to balance all debts and payments"
 			}
+		},
+		"visitedGroups": {
+			"title": "Recent Groups",
+			"groupId": "Group ID",
+			"justNow": "Just now",
+			"hoursAgo": "{hours}h ago",
+			"yesterday": "Yesterday",
+			"daysAgo": "{days}d ago"
 		}
 	},
 	"group": {
@@ -87,6 +98,7 @@
 		"includesActiveMembers": "Includes all {count} active members on {date}",
 		"automaticallyIncludes": "This expense will automatically include any new members added to the group",
 		"showHidden": "Show settled",
+		"searchPlaceholder": "Search...",
 		"recurring": {
 			"weekly": "weekly",
 			"monthly": "monthly",
