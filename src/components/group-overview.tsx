@@ -17,6 +17,7 @@ import { ExpenseDialog } from "@/components/expense-dialog";
 import { MemberDialog } from "@/components/member-dialog";
 import { ResourceDialog } from "@/components/resource-dialog";
 import { SettlementDialog } from "@/components/settlement-dialog";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/currency";
@@ -87,18 +88,23 @@ export function GroupOverview({
 							</p>
 						)}
 					</div>
-					<Button
-						onClick={copyToClipboard}
-						variant="outline"
-						size="sm"
-						className="flex-shrink-0"
-					>
-						<Share2 className="w-4 h-4 mr-2" />
-						<span className="hidden sm:inline">
-							{copied ? t("copied") : t("shareGroup")}
-						</span>
-						<span className="sm:hidden">{copied ? t("copied") : "Share"}</span>
-					</Button>
+					<div className="flex items-center gap-2">
+						<ThemeToggle />
+						<Button
+							onClick={copyToClipboard}
+							variant="outline"
+							size="sm"
+							className="flex-shrink-0"
+						>
+							<Share2 className="w-4 h-4 mr-2" />
+							<span className="hidden sm:inline">
+								{copied ? t("copied") : t("shareGroup")}
+							</span>
+							<span className="sm:hidden">
+								{copied ? t("copied") : "Share"}
+							</span>
+						</Button>
+					</div>
 				</div>
 			</CardHeader>
 			<CardContent>

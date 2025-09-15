@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { GroupDialog } from "@/components/group-dialog";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -20,6 +21,11 @@ export default function Home() {
 		<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
 			<div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
 				<div className="max-w-4xl mx-auto">
+					{/* Theme Toggle */}
+					<div className="flex justify-end mb-4">
+						<ThemeToggle />
+					</div>
+
 					{/* Header */}
 					<div className="text-center mb-8 sm:mb-12">
 						<div className="flex justify-center mb-4 sm:mb-6">
