@@ -28,6 +28,10 @@ interface MemberEditorProps {
 	currency: string;
 	weightsEnabled: boolean;
 	className?: string;
+	// For unit-based consumptions
+	isUnitBased?: boolean;
+	unitPrice?: number;
+	unitName?: string;
 }
 
 export function MemberEditor({
@@ -37,6 +41,9 @@ export function MemberEditor({
 	currency,
 	weightsEnabled,
 	className,
+	isUnitBased = false,
+	unitPrice = 1,
+	unitName = "",
 }: MemberEditorProps) {
 	const splitAllId = useId();
 	const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
@@ -67,7 +74,8 @@ export function MemberEditor({
 		(sum, ma) => sum + ma.amount,
 		0,
 	);
-	const difference = totalAmount - totalCurrentAmount;
+	const difference =
+		(isUnitBased ? totalAmount * unitPrice : totalAmount) - totalCurrentAmount;
 
 	const redistribute = useCallback(
 		(
@@ -82,13 +90,28 @@ export function MemberEditor({
 					selectedMembersLocal.includes(ma.memberId) &&
 					activeMembersAtDate.find((member) => member.id === ma.memberId),
 			);
+
+			// For unit-based consumptions, we redistribute units, not money
+			const amountToRedistribute = isUnitBased
+				? totalAmount * unitPrice
+				: totalAmount;
 			const redistributedAmounts = redistributeAmounts(
 				selectedMembersList,
 				selectedAmounts,
-				totalAmount,
+				amountToRedistribute,
 				weightsEnabled,
 			);
-			setMemberAmounts(redistributedAmounts);
+
+			// For unit-based consumptions, convert units to monetary amounts
+			if (isUnitBased && unitPrice > 0) {
+				const monetaryAmounts = redistributedAmounts.map((ma) => ({
+					...ma,
+					amount: ma.amount * unitPrice, // Convert units to money
+				}));
+				setMemberAmounts(monetaryAmounts);
+			} else {
+				setMemberAmounts(redistributedAmounts);
+			}
 		},
 		[
 			activeMembersAtDate,
@@ -96,6 +119,8 @@ export function MemberEditor({
 			currentAmounts,
 			totalAmount,
 			weightsEnabled,
+			isUnitBased,
+			unitPrice,
 		],
 	);
 
@@ -134,6 +159,13 @@ export function MemberEditor({
 	};
 
 	const handleAmountChange = (memberId: string, newAmount: number) => {
+		// For unit-based consumptions, convert the input back to units for redistribution
+		// For regular expenses, use the amount directly
+		const amountForRedistribution =
+			isUnitBased && unitPrice > 0
+				? newAmount / unitPrice // Convert money back to units
+				: newAmount;
+
 		// Update the amount and mark as manually edited
 		const hasChanged =
 			newAmount !==
@@ -144,7 +176,18 @@ export function MemberEditor({
 					? { ...ma, amount: newAmount, isManuallyEdited: true }
 					: ma,
 			);
-			redistribute(selectedMembers, updatedAmounts);
+
+			// For redistribution, we need to work with units for unit-based consumptions
+			if (isUnitBased && unitPrice > 0) {
+				const updatedAmountsForRedistribution = updatedAmounts.map((ma) =>
+					ma.memberId === memberId
+						? { ...ma, amount: amountForRedistribution }
+						: { ...ma, amount: ma.amount / unitPrice },
+				);
+				redistribute(selectedMembers, updatedAmountsForRedistribution);
+			} else {
+				redistribute(selectedMembers, updatedAmounts);
+			}
 		}
 	};
 
@@ -376,7 +419,10 @@ export function MemberEditor({
 							<div className="flex justify-between text-sm">
 								<span>{t("totalAmount")}:</span>
 								<span className="font-mono">
-									{formatCurrency(totalAmount, currency)}
+									{formatCurrency(
+										isUnitBased ? totalAmount * unitPrice : totalAmount,
+										currency,
+									)}
 								</span>
 							</div>
 							<div className="flex justify-between text-sm">

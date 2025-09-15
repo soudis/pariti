@@ -170,12 +170,6 @@ export function ConsumptionDialog({
 		return amount;
 	};
 
-	const calculateAmountPerMember = () => {
-		const totalCost = calculateTotalCost();
-		const selectedMembers = form.getValues("selectedMembers") as string[];
-		return selectedMembers.length > 0 ? totalCost / selectedMembers.length : 0;
-	};
-
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
@@ -283,6 +277,21 @@ export function ConsumptionDialog({
 								expenseDate={form.watch("date") as Date}
 								currency="€" // TODO: Get from group
 								weightsEnabled={false} // TODO: Get from group
+								isUnitBased={form.watch("isUnitAmount") as boolean}
+								unitPrice={(() => {
+									const selectedResource = resources.find(
+										(r) => r.id === form.getValues("resourceId"),
+									);
+									return selectedResource?.unitPrice
+										? Number(selectedResource.unitPrice)
+										: 0;
+								})()}
+								unitName={(() => {
+									const selectedResource = resources.find(
+										(r) => r.id === form.getValues("resourceId"),
+									);
+									return selectedResource?.unit || "";
+								})()}
 							/>
 						</form>
 					</Form>
