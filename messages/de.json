@@ -217,7 +217,7 @@
 			"noActiveMembers": "Keine aktiven Mitglieder an diesem Datum",
 			"amountPerPerson": "Betrag pro Person: {amount}€",
 			"includesActiveMembers": "Diese Ausgabe wird alle {count} aktiven Mitglieder vom {date} einbeziehen",
-			"selectMembersAndAmounts": "Mitglieder & Beträge auswählen",
+			"selectMembersAndAmounts": "Aufteilung",
 			"resetToDefaults": "Auf Standard zurücksetzen",
 			"weight": "Gewicht",
 			"inactive": "Inaktiv",

@@ -216,7 +216,7 @@
 			"noActiveMembers": "No active members on this date",
 			"amountPerPerson": "Amount per person: ${amount}",
 			"includesActiveMembers": "This expense will include all {count} active members on {date}",
-			"selectMembersAndAmounts": "Select Members & Amounts",
+			"selectMembersAndAmounts": "Shares",
 			"resetToDefaults": "Reset to Defaults",
 			"weight": "weight",
 			"inactive": "Inactive",
