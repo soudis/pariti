@@ -4,7 +4,7 @@ import {
 	getGroup,
 	getSettlementCutoffDate,
 } from "@/actions";
-import { GroupOverview } from "@/components/group-overview";
+import { GroupHeader } from "@/components/group-header";
 import { GroupTabs } from "@/components/group-tabs";
 import { GroupVisitTracker } from "@/components/group-visit-tracker";
 
@@ -45,21 +45,17 @@ export default async function GroupPage({ params }: GroupPageProps) {
 	const cutoffDate = await getSettlementCutoffDate(group.id);
 
 	return (
-		<div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+		<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
 			<GroupVisitTracker groupId={group.id} groupName={group.name} />
 			<div className="container mx-auto px-4 py-8">
-				<div className="max-w-6xl mx-auto space-y-8">
-					<GroupOverview
-						group={group}
-						resources={group.resources}
-						consumptions={allConsumptions}
-						cutoffDate={cutoffDate}
-					/>
+				<div className="max-w-6xl mx-auto space-y-4">
+					<GroupHeader group={group} />
 
 					<GroupTabs
 						group={group}
 						expenses={allExpenses}
 						cutoffDate={cutoffDate}
+						consumptions={allConsumptions}
 					/>
 				</div>
 			</div>

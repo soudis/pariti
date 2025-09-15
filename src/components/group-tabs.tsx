@@ -1,11 +1,19 @@
 "use client";
 
-import { Package, ReceiptEuro, Scale, Settings, Users } from "lucide-react";
+import {
+	BarChart3,
+	Package,
+	ReceiptEuro,
+	Scale,
+	Settings,
+	Users,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useQueryState } from "nuqs";
 import type { generateRecurringExpenseInstances, getGroup } from "@/actions";
 import { ExpensesSection } from "@/components/expenses-section";
 import { MembersSection } from "@/components/members-section";
+import { OverviewSection } from "@/components/overview-section";
 import { ResourcesSection } from "@/components/resources-section";
 import { SettingsSection } from "@/components/settings-section";
 import { SettlementsSection } from "@/components/settlements-section";
@@ -15,6 +23,9 @@ interface GroupTabsProps {
 	group: Awaited<ReturnType<typeof getGroup>>;
 	expenses?: Awaited<ReturnType<typeof generateRecurringExpenseInstances>>;
 	cutoffDate: Date | null;
+	consumptions: Awaited<
+		ReturnType<typeof getGroup>
+	>["resources"][number]["consumptions"];
 }
 
 export function GroupTabs({
@@ -22,16 +33,21 @@ export function GroupTabs({
 	expenses,
 	group: { resources, settlements },
 	cutoffDate,
+	consumptions,
 }: GroupTabsProps) {
 	const t = useTranslations("group");
 	const [activeTab, setActiveTab] = useQueryState("tab", {
-		defaultValue: "members",
+		defaultValue: "overview",
 		shallow: false,
 	});
 
 	return (
 		<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-			<TabsList className="grid w-full grid-cols-5 min-h-12">
+			<TabsList className="grid w-full grid-cols-6 min-h-12">
+				<TabsTrigger value="overview" className="flex items-center gap-2">
+					<BarChart3 className="w-4 h-4" />
+					<span className="hidden sm:inline">{t("overview")}</span>
+				</TabsTrigger>
 				<TabsTrigger value="members" className="flex items-center gap-2">
 					<Users className="w-4 h-4" />
 					<span className="hidden sm:inline">{t("members")}</span>
@@ -54,11 +70,20 @@ export function GroupTabs({
 				</TabsTrigger>
 			</TabsList>
 
-			<TabsContent value="members" className="mt-6">
+			<TabsContent value="overview" className="mt-4">
+				<OverviewSection
+					group={group}
+					resources={resources}
+					consumptions={consumptions}
+					cutoffDate={cutoffDate}
+				/>
+			</TabsContent>
+
+			<TabsContent value="members" className="mt-4">
 				<MembersSection group={group} />
 			</TabsContent>
 
-			<TabsContent value="expenses" className="mt-6">
+			<TabsContent value="expenses" className="mt-4">
 				<ExpensesSection
 					group={group}
 					expenses={expenses}
@@ -66,7 +91,7 @@ export function GroupTabs({
 				/>
 			</TabsContent>
 
-			<TabsContent value="resources" className="mt-6">
+			<TabsContent value="resources" className="mt-4">
 				<ResourcesSection
 					groupId={group.id}
 					group={group}
@@ -74,7 +99,7 @@ export function GroupTabs({
 				/>
 			</TabsContent>
 
-			<TabsContent value="settlements" className="mt-6">
+			<TabsContent value="settlements" className="mt-4">
 				<SettlementsSection
 					groupId={group.id}
 					settlements={settlements}
@@ -84,7 +109,7 @@ export function GroupTabs({
 				/>
 			</TabsContent>
 
-			<TabsContent value="settings" className="mt-6">
+			<TabsContent value="settings" className="mt-4">
 				<SettingsSection group={group} />
 			</TabsContent>
 		</Tabs>
