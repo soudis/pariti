@@ -140,8 +140,10 @@ export function ExpenseDialog({
 	}, [open, form]);
 
 	useEffect(() => {
-		updateActiveMembersForDate(currentDate);
-	}, [currentDate, updateActiveMembersForDate]);
+		if (open) {
+			updateActiveMembersForDate(currentDate);
+		}
+	}, [currentDate, updateActiveMembersForDate, open]);
 
 	const onSubmit = async (data: ExpenseFormData) => {
 		setLoading(true);
