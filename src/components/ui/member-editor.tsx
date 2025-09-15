@@ -95,6 +95,7 @@ export function MemberEditor({
 		(
 			selectedMembersLocal: string[] = selectedMembers,
 			amountsLocal: MemberAmount[] = currentAmounts,
+			sharingMethodLocal: "equal" | "weights" = sharingMethod,
 		) => {
 			const selectedMembersList = activeMembersAtDate.filter((member) =>
 				selectedMembersLocal.includes(member.id),
@@ -114,7 +115,7 @@ export function MemberEditor({
 				selectedAmounts,
 				amountToRedistribute,
 				weightsEnabled,
-				sharingMethod,
+				sharingMethodLocal,
 			);
 
 			// For unit-based consumptions, convert units to monetary amounts
@@ -332,9 +333,10 @@ export function MemberEditor({
 						<div className="flex items-center gap-2">
 							<Select
 								value={sharingMethod}
-								onValueChange={(value: "equal" | "weights") =>
-									setValue("sharingMethod", value)
-								}
+								onValueChange={(value: "equal" | "weights") => {
+									setValue("sharingMethod", value);
+									redistribute(selectedMembers, currentAmounts, value);
+								}}
 							>
 								<SelectTrigger className="w-32 h-8 text-xs">
 									<SelectValue />
@@ -402,7 +404,7 @@ export function MemberEditor({
 														({t("weight")}: {member.weight})
 													</span>
 												)}
-												{sharingMethod === "weights" && (
+												{sharingMethod === "weights" && !isManuallyEdited && (
 													<div className="flex items-center gap-1">
 														<span className="text-xs text-gray-500">
 															({t("weight")}:
