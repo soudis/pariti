@@ -12,6 +12,7 @@ import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
@@ -99,99 +100,103 @@ export function MemberDialog({
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent className="sm:max-w-[425px]">
-				<DialogHeader>
+			<DialogContent className="sm:max-w-[425px] h-full sm:h-[60vh] flex flex-col">
+				<DialogHeader className="flex-shrink-0">
 					<DialogTitle>{member ? t("title") : t("title")}</DialogTitle>
 					<DialogDescription>
 						{member ? t("description") : t("description")}
 					</DialogDescription>
 				</DialogHeader>
-				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-						<TextField
-							control={form.control}
-							name="name"
-							label={t("name")}
-							placeholder={t("namePlaceholder")}
-							required
-						/>
-
-						<TextField
-							control={form.control}
-							name="email"
-							label={t("email")}
-							placeholder={t("emailPlaceholder")}
-							type="email"
-						/>
-
-						<TextField
-							control={form.control}
-							name="iban"
-							label={t("iban")}
-							placeholder={t("ibanPlaceholder")}
-						/>
-
-						{weightsEnabled && (
-							<NumberField
+				<div className="flex-1 overflow-y-auto">
+					<Form {...form}>
+						<form
+							onSubmit={form.handleSubmit(onSubmit)}
+							className="space-y-4 px-4 sm:px-6 pb-4"
+						>
+							<TextField
 								control={form.control}
-								name="weight"
-								label={t("weight")}
-								placeholder={t("weightPlaceholder")}
-								min={0.01}
-								step="0.01"
+								name="name"
+								label={t("name")}
+								placeholder={t("namePlaceholder")}
 								required
 							/>
-						)}
 
-						<DateField
-							control={form.control}
-							name="activeFrom"
-							label={t("activeFrom")}
-							placeholder={t("activeFromPlaceholder")}
-							required
-						/>
-
-						<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-							<CheckboxField
+							<TextField
 								control={form.control}
-								name="hasEndDate"
-								label={t("hasEndDate")}
+								name="email"
+								label={t("email")}
+								placeholder={t("emailPlaceholder")}
+								type="email"
 							/>
 
-							{(form.watch("hasEndDate") as boolean) && (
-								<div className="space-y-4 pl-6">
-									<DateField
-										control={form.control}
-										name="activeTo"
-										label={t("activeTo")}
-										placeholder={t("activeToPlaceholder")}
-										required
-									/>
-								</div>
-							)}
-						</div>
+							<TextField
+								control={form.control}
+								name="iban"
+								label={t("iban")}
+								placeholder={t("ibanPlaceholder")}
+							/>
 
-						<div className="flex justify-end space-x-2">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => setOpen(false)}
-								disabled={loading}
-							>
-								{t("cancel")}
-							</Button>
-							<Button type="submit" disabled={loading}>
-								{loading
-									? member
-										? t("updating")
-										: t("creating")
-									: member
-										? t("update")
-										: t("create")}
-							</Button>
-						</div>
-					</form>
-				</Form>
+							{weightsEnabled && (
+								<NumberField
+									control={form.control}
+									name="weight"
+									label={t("weight")}
+									placeholder={t("weightPlaceholder")}
+									min={0.01}
+									step="0.01"
+									required
+								/>
+							)}
+
+							<DateField
+								control={form.control}
+								name="activeFrom"
+								label={t("activeFrom")}
+								placeholder={t("activeFromPlaceholder")}
+								required
+							/>
+
+							<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+								<CheckboxField
+									control={form.control}
+									name="hasEndDate"
+									label={t("hasEndDate")}
+								/>
+
+								{(form.watch("hasEndDate") as boolean) && (
+									<div className="space-y-4 pl-6">
+										<DateField
+											control={form.control}
+											name="activeTo"
+											label={t("activeTo")}
+											placeholder={t("activeToPlaceholder")}
+											required
+										/>
+									</div>
+								)}
+							</div>
+						</form>
+					</Form>
+				</div>
+				<DialogFooter>
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => setOpen(false)}
+						disabled={loading}
+					>
+						{t("cancel")}
+					</Button>
+					<Button type="submit" disabled={loading}>
+						{loading
+							? member
+								? t("updating")
+								: t("creating")
+							: member
+								? t("update")
+								: t("create")}
+					</Button>
+				</DialogFooter>
 			</DialogContent>
 		</Dialog>
 	);

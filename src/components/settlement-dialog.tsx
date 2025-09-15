@@ -11,6 +11,7 @@ import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
@@ -72,96 +73,100 @@ export function SettlementDialog({
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent className="sm:max-w-[500px]">
-				<DialogHeader>
+			<DialogContent className="sm:max-w-[500px] h-full sm:h-[90vh] flex flex-col">
+				<DialogHeader className="flex-shrink-0">
 					<DialogTitle>{t("title")}</DialogTitle>
 					<DialogDescription>{t("description")}</DialogDescription>
 				</DialogHeader>
-				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-						<TextField
-							control={form.control}
-							name="title"
-							label={t("titleLabel")}
-							placeholder={t("titlePlaceholder")}
-							required
-						/>
+				<div className="flex-1 overflow-y-auto">
+					<Form {...form}>
+						<form
+							onSubmit={form.handleSubmit(onSubmit)}
+							className="space-y-4 px-4 sm:px-6 pb-4"
+						>
+							<TextField
+								control={form.control}
+								name="title"
+								label={t("titleLabel")}
+								placeholder={t("titlePlaceholder")}
+								required
+							/>
 
-						<TextField
-							control={form.control}
-							name="description"
-							label={t("descriptionLabel")}
-							placeholder={t("descriptionPlaceholder")}
-						/>
+							<TextField
+								control={form.control}
+								name="description"
+								label={t("descriptionLabel")}
+								placeholder={t("descriptionPlaceholder")}
+							/>
 
-						<SelectField
-							control={form.control}
-							name="settlementType"
-							label={t("settlementTypeLabel")}
-							options={[
-								{ value: "optimized", label: t("optimized") },
-								{ value: "around_member", label: t("aroundMember") },
-								{ value: "around_resource", label: t("aroundResource") },
-							]}
-						/>
-
-						{form.watch("settlementType") !== "optimized" && (
 							<SelectField
 								control={form.control}
-								name="centerId"
-								label={
-									form.watch("settlementType") === "around_member"
-										? t("centerMemberLabel")
-										: t("centerResourceLabel")
-								}
-								placeholder={t("selectCenter")}
-								required
-								options={
-									form.watch("settlementType") === "around_member"
-										? members.map((member) => ({
-												value: member.id,
-												label: member.name,
-											}))
-										: resources.map((resource) => ({
-												value: resource.id,
-												label: resource.name,
-											}))
-								}
+								name="settlementType"
+								label={t("settlementTypeLabel")}
+								options={[
+									{ value: "optimized", label: t("optimized") },
+									{ value: "around_member", label: t("aroundMember") },
+									{ value: "around_resource", label: t("aroundResource") },
+								]}
 							/>
-						)}
 
-						<div className="space-y-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-							<h4 className="font-medium text-sm">
-								{t("settlementTypeInfo.title")}
-							</h4>
-							<div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-								{form.watch("settlementType") === "optimized" && (
-									<p>{t("settlementTypeInfo.optimized")}</p>
-								)}
-								{form.watch("settlementType") === "around_member" && (
-									<p>{t("settlementTypeInfo.aroundMember")}</p>
-								)}
-								{form.watch("settlementType") === "around_resource" && (
-									<p>{t("settlementTypeInfo.aroundResource")}</p>
-								)}
+							{form.watch("settlementType") !== "optimized" && (
+								<SelectField
+									control={form.control}
+									name="centerId"
+									label={
+										form.watch("settlementType") === "around_member"
+											? t("centerMemberLabel")
+											: t("centerResourceLabel")
+									}
+									placeholder={t("selectCenter")}
+									required
+									options={
+										form.watch("settlementType") === "around_member"
+											? members.map((member) => ({
+													value: member.id,
+													label: member.name,
+												}))
+											: resources.map((resource) => ({
+													value: resource.id,
+													label: resource.name,
+												}))
+									}
+								/>
+							)}
+
+							<div className="space-y-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+								<h4 className="font-medium text-sm">
+									{t("settlementTypeInfo.title")}
+								</h4>
+								<div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+									{form.watch("settlementType") === "optimized" && (
+										<p>{t("settlementTypeInfo.optimized")}</p>
+									)}
+									{form.watch("settlementType") === "around_member" && (
+										<p>{t("settlementTypeInfo.aroundMember")}</p>
+									)}
+									{form.watch("settlementType") === "around_resource" && (
+										<p>{t("settlementTypeInfo.aroundResource")}</p>
+									)}
+								</div>
 							</div>
-						</div>
-
-						<div className="flex justify-end space-x-2">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => setOpen(false)}
-								disabled={loading}
-							>
-								{t("cancel")}
-							</Button>
-							<Button type="submit" disabled={loading}>
-								{loading ? t("generating") : t("generate")}
-							</Button>
-						</div>
-					</form>
-				</Form>
+						</form>
+					</Form>
+				</div>
+				<DialogFooter>
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => setOpen(false)}
+						disabled={loading}
+					>
+						{t("cancel")}
+					</Button>
+					<Button type="submit" disabled={loading}>
+						{loading ? t("generating") : t("generate")}
+					</Button>
+				</DialogFooter>
 			</DialogContent>
 		</Dialog>
 	);

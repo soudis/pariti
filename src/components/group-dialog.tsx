@@ -12,6 +12,7 @@ import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
@@ -62,69 +63,73 @@ export function GroupDialog({ children }: GroupDialogProps) {
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent className="sm:max-w-[425px]">
-				<DialogHeader>
+			<DialogContent className="sm:max-w-[425px] h-full sm:h-[60vh] flex flex-col">
+				<DialogHeader className="flex-shrink-0">
 					<DialogTitle>{t("title")}</DialogTitle>
 					<DialogDescription>{t("description")}</DialogDescription>
 				</DialogHeader>
-				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-						<TextField
-							control={form.control}
-							name="name"
-							label={t("name")}
-							placeholder={t("namePlaceholder")}
-							required
-						/>
+				<div className="flex-1 overflow-y-auto">
+					<Form {...form}>
+						<form
+							onSubmit={form.handleSubmit(onSubmit)}
+							className="space-y-4 px-4 sm:px-6 pb-4"
+						>
+							<TextField
+								control={form.control}
+								name="name"
+								label={t("name")}
+								placeholder={t("namePlaceholder")}
+								required
+							/>
 
-						<TextField
-							control={form.control}
-							name="description"
-							label={t("descriptionLabel")}
-							placeholder={t("descriptionPlaceholder")}
-						/>
+							<TextField
+								control={form.control}
+								name="description"
+								label={t("descriptionLabel")}
+								placeholder={t("descriptionPlaceholder")}
+							/>
 
-						<SelectField
-							control={form.control}
-							name="currency"
-							label={t("currency")}
-							options={[
-								{ value: "USD", label: "USD - US Dollar" },
-								{ value: "EUR", label: "EUR - Euro" },
-								{ value: "GBP", label: "GBP - British Pound" },
-								{ value: "CHF", label: "CHF - Swiss Franc" },
-								{ value: "CAD", label: "CAD - Canadian Dollar" },
-								{ value: "AUD", label: "AUD - Australian Dollar" },
-								{ value: "JPY", label: "JPY - Japanese Yen" },
-								{ value: "CNY", label: "CNY - Chinese Yuan" },
-								{ value: "INR", label: "INR - Indian Rupee" },
-								{ value: "BRL", label: "BRL - Brazilian Real" },
-							]}
-							required
-						/>
+							<SelectField
+								control={form.control}
+								name="currency"
+								label={t("currency")}
+								options={[
+									{ value: "USD", label: "USD - US Dollar" },
+									{ value: "EUR", label: "EUR - Euro" },
+									{ value: "GBP", label: "GBP - British Pound" },
+									{ value: "CHF", label: "CHF - Swiss Franc" },
+									{ value: "CAD", label: "CAD - Canadian Dollar" },
+									{ value: "AUD", label: "AUD - Australian Dollar" },
+									{ value: "JPY", label: "JPY - Japanese Yen" },
+									{ value: "CNY", label: "CNY - Chinese Yuan" },
+									{ value: "INR", label: "INR - Indian Rupee" },
+									{ value: "BRL", label: "BRL - Brazilian Real" },
+								]}
+								required
+							/>
 
-						<CheckboxField
-							control={form.control}
-							name="weightsEnabled"
-							label={t("weightsEnabled")}
-							description={t("weightsEnabledDescription")}
-						/>
-
-						<div className="flex justify-end space-x-2">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => setOpen(false)}
-								disabled={loading}
-							>
-								{t("cancel")}
-							</Button>
-							<Button type="submit" disabled={loading}>
-								{loading ? t("creating") : t("create")}
-							</Button>
-						</div>
-					</form>
-				</Form>
+							<CheckboxField
+								control={form.control}
+								name="weightsEnabled"
+								label={t("weightsEnabled")}
+								description={t("weightsEnabledDescription")}
+							/>
+						</form>
+					</Form>
+				</div>
+				<DialogFooter>
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => setOpen(false)}
+						disabled={loading}
+					>
+						{t("cancel")}
+					</Button>
+					<Button type="submit" disabled={loading}>
+						{loading ? t("creating") : t("create")}
+					</Button>
+				</DialogFooter>
 			</DialogContent>
 		</Dialog>
 	);
