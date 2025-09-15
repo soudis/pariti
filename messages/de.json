@@ -214,6 +214,8 @@
 			},
 			"splitBetween": "Aufteilen zwischen allen aktiven Mitgliedern",
 			"allMembers": "Alle Mitglieder (einschließlich zukünftiger Mitglieder)",
+			"shareEqually": "Gleichmäßig",
+			"shareByWeights": "Nach Gewichtung",
 			"noActiveMembers": "Keine aktiven Mitglieder an diesem Datum",
 			"amountPerPerson": "Betrag pro Person: {amount}€",
 			"includesActiveMembers": "Diese Ausgabe wird alle {count} aktiven Mitglieder vom {date} einbeziehen",

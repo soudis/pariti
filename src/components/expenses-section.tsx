@@ -205,6 +205,9 @@ export function ExpensesSection({
 											expense={{
 												...expense,
 												amount: Number(expense.amount),
+												sharingMethod:
+													(expense.sharingMethod as "equal" | "weights") ||
+													"equal",
 												recurringType: expense.recurringType as
 													| "weekly"
 													| "monthly"
@@ -215,6 +218,12 @@ export function ExpensesSection({
 												selectedMembers: expense.splitAll
 													? []
 													: expense.expenseMembers.map((em) => em.memberId),
+												memberAmounts: expense.expenseMembers.map((em) => ({
+													memberId: em.memberId,
+													amount: Number(em.amount),
+													weight: Number(em.weight),
+													isManuallyEdited: em.isManuallyEdited,
+												})),
 											}}
 										>
 											<Button

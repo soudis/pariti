@@ -3,11 +3,17 @@ import { Decimal } from "decimal.js";
 export interface MemberAmount {
 	memberId: string;
 	amount: number;
+	weight: number;
 	isManuallyEdited: boolean;
 }
 
 export interface Member {
 	id: string;
+	weight: number;
+}
+
+export interface MemberWeight {
+	memberId: string;
 	weight: number;
 }
 
@@ -20,6 +26,7 @@ export function redistributeAmounts(
 	memberAmounts: MemberAmount[],
 	totalAmount: number,
 	weightsEnabled: boolean,
+	sharingMethod: "equal" | "weights" = "equal",
 ): MemberAmount[] {
 	// Separate manually edited and automatic members
 	const manuallyEditedAmounts = memberAmounts.filter(
@@ -44,8 +51,26 @@ export function redistributeAmounts(
 	// Redistribute remaining amount among automatic members
 	let redistributedAmounts: MemberAmount[];
 
-	if (weightsEnabled) {
-		// Redistribute based on weights
+	if (sharingMethod === "weights") {
+		// Redistribute based on custom weights from MemberAmount objects
+		const totalWeight = automaticAmounts.reduce(
+			(sum, ma) => sum + ma.weight,
+			0,
+		);
+
+		redistributedAmounts = automaticAmounts.map((ma) => {
+			const redistributedAmount =
+				totalWeight > 0
+					? (remainingAmount * ma.weight) / totalWeight
+					: remainingAmount / automaticAmounts.length;
+
+			return {
+				...ma,
+				amount: redistributedAmount,
+			};
+		});
+	} else if (weightsEnabled && sharingMethod === "equal") {
+		// Redistribute based on member weights (legacy behavior)
 		const automaticMembers = automaticAmounts.map((ma) => {
 			const member = members.find((m) => m.id === ma.memberId);
 			return {
@@ -95,12 +120,14 @@ export function convertDecimalAmounts(
 	memberAmounts: Array<{
 		memberId: string;
 		amount: Decimal;
+		weight: Decimal;
 		isManuallyEdited: boolean;
 	}>,
 ): MemberAmount[] {
 	return memberAmounts.map((ma) => ({
 		memberId: ma.memberId,
 		amount: Number(ma.amount),
+		weight: Number(ma.weight),
 		isManuallyEdited: ma.isManuallyEdited,
 	}));
 }
@@ -111,11 +138,13 @@ export function convertDecimalAmounts(
 export function convertToDecimalAmounts(memberAmounts: MemberAmount[]): Array<{
 	memberId: string;
 	amount: Decimal;
+	weight: Decimal;
 	isManuallyEdited: boolean;
 }> {
 	return memberAmounts.map((ma) => ({
 		memberId: ma.memberId,
 		amount: new Decimal(ma.amount),
+		weight: new Decimal(ma.weight),
 		isManuallyEdited: ma.isManuallyEdited,
 	}));
 }

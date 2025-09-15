@@ -70,6 +70,8 @@ export function ConsumptionDialog({
 			isUnitAmount: false,
 			date: new Date(),
 			selectedMembers: [],
+			sharingMethod: "equal" as const,
+			memberAmounts: [],
 		},
 	});
 
@@ -83,6 +85,8 @@ export function ConsumptionDialog({
 				isUnitAmount: consumption.isUnitAmount,
 				date: new Date(consumption.date),
 				selectedMembers: consumption.selectedMembers,
+				sharingMethod: consumption.sharingMethod || "equal",
+				memberAmounts: consumption.memberAmounts || [],
 			});
 		} else {
 			form.reset({
@@ -92,6 +96,8 @@ export function ConsumptionDialog({
 				isUnitAmount: true,
 				date: new Date(),
 				selectedMembers: [],
+				sharingMethod: "equal",
+				memberAmounts: [],
 			});
 		}
 	}, [consumption, form]);
@@ -120,12 +126,13 @@ export function ConsumptionDialog({
 		setLoading(true);
 
 		try {
+			// Get member amounts from the member editor
+			const memberAmounts = form.getValues("memberAmounts") || [];
+
 			// Include member amounts in the data
 			const consumptionData = {
 				...data,
-				memberAmounts: data.memberAmounts?.length
-					? data.memberAmounts
-					: undefined,
+				memberAmounts: memberAmounts.length ? memberAmounts : undefined,
 			};
 
 			if (consumption) {
@@ -285,12 +292,6 @@ export function ConsumptionDialog({
 									return selectedResource?.unitPrice
 										? Number(selectedResource.unitPrice)
 										: 0;
-								})()}
-								unitName={(() => {
-									const selectedResource = resources.find(
-										(r) => r.id === form.getValues("resourceId"),
-									);
-									return selectedResource?.unit || "";
 								})()}
 							/>
 						</form>

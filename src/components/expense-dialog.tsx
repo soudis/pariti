@@ -64,6 +64,7 @@ export function ExpenseDialog({
 			date: new Date(),
 			splitAll: false,
 			selectedMembers: [],
+			sharingMethod: "equal" as const,
 			isRecurring: false,
 			recurringType: "monthly",
 			recurringStartDate: undefined,
@@ -84,11 +85,13 @@ export function ExpenseDialog({
 				date: new Date(expense.date),
 				splitAll: expense.splitAll,
 				selectedMembers: expense.splitAll ? [] : expense.selectedMembers,
+				sharingMethod: expense.sharingMethod || "equal",
 				isRecurring: expense.isRecurring,
 				recurringType: expense.recurringType || "monthly",
 				recurringStartDate: expense.recurringStartDate
 					? new Date(expense.recurringStartDate)
 					: undefined,
+				memberAmounts: expense.memberAmounts || [],
 			});
 		} else {
 			form.reset({
@@ -99,6 +102,7 @@ export function ExpenseDialog({
 				date: new Date(),
 				splitAll: false,
 				selectedMembers: [],
+				sharingMethod: "equal",
 				isRecurring: false,
 				recurringType: "monthly",
 				recurringStartDate: undefined,
@@ -143,12 +147,13 @@ export function ExpenseDialog({
 		setLoading(true);
 
 		try {
+			// Get member amounts from the member editor
+			const memberAmounts = form.getValues("memberAmounts") || [];
+
 			// Include member amounts in the data
 			const expenseData = {
 				...data,
-				memberAmounts: data.memberAmounts?.length
-					? data.memberAmounts
-					: undefined,
+				memberAmounts: memberAmounts.length ? memberAmounts : undefined,
 			};
 
 			if (expense) {

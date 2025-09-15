@@ -63,6 +63,7 @@ model Expense {
   groupId            String
   paidById           String
   splitAll           Boolean   @default(false) // If true, split between all members (including future ones)
+  sharingMethod      String    @default("equal") // 'equal' or 'weights'
   isRecurring        Boolean   @default(false)
   recurringType      String? // 'weekly', 'monthly', 'yearly'
   recurringStartDate DateTime?
@@ -82,6 +83,7 @@ model ExpenseMember {
   expenseId        String
   memberId         String
   amount           Decimal  @db.Decimal(10, 2) // How much this member owes for this expense
+  weight           Decimal  @default(1) @db.Decimal(5, 2) // Custom weight for this member in this expense
   isManuallyEdited Boolean  @default(false) // Whether this amount was manually edited by user
   createdAt        DateTime @default(now())
 
@@ -119,6 +121,7 @@ model Consumption {
   isUnitAmount Boolean  @default(false) // true if amount is in units, false if in money
   date         DateTime @default(now())
   description  String?
+  sharingMethod String  @default("equal") // 'equal' or 'weights'
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -135,6 +138,7 @@ model ConsumptionMember {
   consumptionId    String
   memberId         String
   amount           Decimal  @db.Decimal(10, 2) // amount this member owes
+  weight           Decimal  @default(1) @db.Decimal(5, 2) // Custom weight for this member in this consumption
   isManuallyEdited Boolean  @default(false) // Whether this amount was manually edited by user
 
   // Relations

@@ -9,6 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { formatCurrency } from "@/lib/currency";
 import { type MemberAmount, redistributeAmounts } from "@/lib/redistribution";
 import { cn } from "@/lib/utils";
@@ -31,7 +38,6 @@ interface MemberEditorProps {
 	// For unit-based consumptions
 	isUnitBased?: boolean;
 	unitPrice?: number;
-	unitName?: string;
 }
 
 export function MemberEditor({
@@ -43,26 +49,34 @@ export function MemberEditor({
 	className,
 	isUnitBased = false,
 	unitPrice = 1,
-	unitName = "",
 }: MemberEditorProps) {
 	const splitAllId = useId();
 	const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
-	const [memberAmounts, setMemberAmounts] = useState<MemberAmount[]>([]);
+	const [editingWeightMemberId, setEditingWeightMemberId] = useState<
+		string | null
+	>(null);
+	const [tempWeightValue, setTempWeightValue] = useState<string>("");
+	const [tempAmountValue, setTempAmountValue] = useState<string>("");
 	const t = useTranslations("forms.expense");
 
 	const { watch, setValue } = useFormContext();
 	const selectedMembers = watch("selectedMembers") || [];
 	const splitAll = watch("splitAll") || false;
 	const totalAmount = watch("amount") || 0;
+	const sharingMethod = watch("sharingMethod") || "equal";
+	const memberAmounts = watch("memberAmounts") || [];
 
 	// Get current amounts for selected members only
 	const getCurrentAmounts = (): MemberAmount[] => {
 		return members.map((member) => {
-			const existing = memberAmounts.find((ma) => ma.memberId === member.id);
+			const existing = memberAmounts.find(
+				(ma: MemberAmount) => ma.memberId === member.id,
+			);
 			return (
 				existing || {
 					memberId: member.id,
 					amount: 0,
+					weight: 1,
 					isManuallyEdited: false,
 				}
 			);
@@ -100,6 +114,7 @@ export function MemberEditor({
 				selectedAmounts,
 				amountToRedistribute,
 				weightsEnabled,
+				sharingMethod,
 			);
 
 			// For unit-based consumptions, convert units to monetary amounts
@@ -108,9 +123,9 @@ export function MemberEditor({
 					...ma,
 					amount: ma.amount * unitPrice, // Convert units to money
 				}));
-				setMemberAmounts(monetaryAmounts);
+				setValue("memberAmounts", monetaryAmounts);
 			} else {
-				setMemberAmounts(redistributedAmounts);
+				setValue("memberAmounts", redistributedAmounts);
 			}
 		},
 		[
@@ -119,15 +134,17 @@ export function MemberEditor({
 			currentAmounts,
 			totalAmount,
 			weightsEnabled,
+			sharingMethod,
 			isUnitBased,
 			unitPrice,
+			setValue,
 		],
 	);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: always needs to update when totalAmount changes
 	useEffect(() => {
 		redistribute();
-	}, [totalAmount, activeMembersAtDate]);
+	}, [totalAmount]);
 
 	const handleMemberToggle = (memberId: string, checked: boolean) => {
 		let updatedSelectedMembers = selectedMembers;
@@ -191,6 +208,25 @@ export function MemberEditor({
 		}
 	};
 
+	const handleAmountInputChange = (_memberId: string, value: string) => {
+		setTempAmountValue(value);
+	};
+
+	const handleAmountInputBlur = (memberId: string) => {
+		const amount = parseFloat(tempAmountValue);
+		if (!Number.isNaN(amount) && amount >= 0) {
+			handleAmountChange(memberId, amount);
+		}
+		setEditingMemberId(null);
+		setTempAmountValue("");
+	};
+
+	const handleAmountInputFocus = (memberId: string) => {
+		setEditingMemberId(memberId);
+		const memberAmount = currentAmounts.find((ma) => ma.memberId === memberId);
+		setTempAmountValue(memberAmount?.amount.toFixed(2) || "0");
+	};
+
 	const handleToggleManualEdit = (memberId: string) => {
 		const memberToToggle = currentAmounts.find(
 			(ma) => ma.memberId === memberId,
@@ -215,6 +251,38 @@ export function MemberEditor({
 			isManuallyEdited: false,
 		}));
 		redistribute(selectedMembers, resetAmounts);
+	};
+
+	const handleWeightChange = (memberId: string, newWeight: number) => {
+		const updatedAmounts = currentAmounts.map((ma) =>
+			ma.memberId === memberId ? { ...ma, weight: newWeight } : ma,
+		);
+		setValue("memberAmounts", updatedAmounts);
+		// Trigger redistribution with new weights
+		redistribute(selectedMembers, updatedAmounts);
+	};
+
+	const handleWeightInputChange = (_memberId: string, value: string) => {
+		setTempWeightValue(value);
+	};
+
+	const handleWeightInputBlur = (memberId: string) => {
+		const weight = parseFloat(tempWeightValue);
+		if (!Number.isNaN(weight) && weight >= 0) {
+			handleWeightChange(memberId, weight);
+		}
+		setEditingWeightMemberId(null);
+		setTempWeightValue("");
+	};
+
+	const handleWeightInputFocus = (memberId: string) => {
+		setEditingWeightMemberId(memberId);
+		setTempWeightValue(getMemberWeight(memberId).toString());
+	};
+
+	const getMemberWeight = (memberId: string): number => {
+		const memberAmount = currentAmounts.find((ma) => ma.memberId === memberId);
+		return memberAmount?.weight ?? 1;
 	};
 
 	const isMemberActive = (member: Member) => {
@@ -261,17 +329,33 @@ export function MemberEditor({
 								{t("selectMembersAndAmounts")}
 							</Label>
 						</div>
-						{currentAmounts.some((ma) => ma.isManuallyEdited) && (
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={handleResetToDefaults}
-								className="text-xs"
+						<div className="flex items-center gap-2">
+							<Select
+								value={sharingMethod}
+								onValueChange={(value: "equal" | "weights") =>
+									setValue("sharingMethod", value)
+								}
 							>
-								<Undo2 className="w-3 h-3" />
-							</Button>
-						)}
+								<SelectTrigger className="w-32 h-8 text-xs">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="equal">{t("shareEqually")}</SelectItem>
+									<SelectItem value="weights">{t("shareByWeights")}</SelectItem>
+								</SelectContent>
+							</Select>
+							{currentAmounts.some((ma) => ma.isManuallyEdited) && (
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									onClick={handleResetToDefaults}
+									className="text-xs"
+								>
+									<Undo2 className="w-3 h-3" />
+								</Button>
+							)}
+						</div>
 					</div>
 					<div className="space-y-3">
 						{members.map((member) => {
@@ -282,6 +366,7 @@ export function MemberEditor({
 							) || {
 								memberId: member.id,
 								amount: 0,
+								weight: 1,
 								isManuallyEdited: false,
 							};
 							const isEditing = editingMemberId === member.id;
@@ -312,10 +397,42 @@ export function MemberEditor({
 												<span className="font-medium text-sm truncate">
 													{member.name}
 												</span>
-												{weightsEnabled && (
+												{weightsEnabled && sharingMethod === "equal" && (
 													<span className="text-xs text-gray-500">
 														({t("weight")}: {member.weight})
 													</span>
+												)}
+												{sharingMethod === "weights" && (
+													<div className="flex items-center gap-1">
+														<span className="text-xs text-gray-500">
+															({t("weight")}:
+														</span>
+														<Input
+															type="number"
+															step="0.1"
+															min="0"
+															value={
+																editingWeightMemberId === member.id
+																	? tempWeightValue
+																	: getMemberWeight(member.id)
+															}
+															onChange={(e) =>
+																handleWeightInputChange(
+																	member.id,
+																	e.target.value,
+																)
+															}
+															onFocus={() => handleWeightInputFocus(member.id)}
+															onBlur={() => handleWeightInputBlur(member.id)}
+															onKeyDown={(e) => {
+																if (e.key === "Enter") {
+																	handleWeightInputBlur(member.id);
+																}
+															}}
+															className="w-12 h-5 text-xs text-center no-spinner"
+														/>
+														<span className="text-xs text-gray-500">)</span>
+													</div>
 												)}
 												{isManuallyEdited && (
 													<Edit3 className="w-3 h-3 text-blue-500" />
@@ -336,19 +453,24 @@ export function MemberEditor({
 															type="number"
 															step="0.01"
 															min="0"
-															value={memberAmount.amount.toFixed(2)}
+															value={
+																editingMemberId === member.id
+																	? tempAmountValue
+																	: memberAmount.amount.toFixed(2)
+															}
 															onChange={(e) =>
-																handleAmountChange(
+																handleAmountInputChange(
 																	member.id,
-																	parseFloat(e.target.value) || 0,
+																	e.target.value,
 																)
 															}
+															onFocus={() => handleAmountInputFocus(member.id)}
+															onBlur={() => handleAmountInputBlur(member.id)}
 															onKeyDown={(e) => {
 																if (e.key === "Enter") {
-																	setEditingMemberId(null);
+																	handleAmountInputBlur(member.id);
 																}
 															}}
-															onBlur={() => setEditingMemberId(null)}
 															className="w-24 text-sm h-8 no-spinner text-right"
 															autoFocus
 														/>
@@ -356,7 +478,7 @@ export function MemberEditor({
 															type="button"
 															variant="ghost"
 															size="sm"
-															onClick={() => setEditingMemberId(null)}
+															onClick={() => handleAmountInputBlur(member.id)}
 															className="text-xs h-8"
 														>
 															<Check className="w-3 h-3" />

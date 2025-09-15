@@ -219,6 +219,8 @@
 			"selectMembersAndAmounts": "Shares",
 			"resetToDefaults": "Reset to Defaults",
 			"weight": "weight",
+			"shareEqually": "Equally",
+			"shareByWeights": "By Weights",
 			"inactive": "Inactive",
 			"allowAutomaticRecalculation": "Allow automatic recalculation",
 			"protectFromAutomaticRecalculation": "Protect from automatic recalculation",

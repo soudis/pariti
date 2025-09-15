@@ -41,7 +41,10 @@ export function calculateWeightedAmounts(
 // Helper function to calculate balances
 export async function calculateBalances(
 	group: Group & {
-		expenses: (Expense & { expenseMembers: ExpenseMember[] })[];
+		expenses: (Expense & {
+			expenseMembers: (ExpenseMember & { member: Member })[];
+			paidBy: Member;
+		})[];
 		members: Member[];
 		resources: (Resource & {
 			consumptions: (Consumption & {

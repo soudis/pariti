@@ -354,9 +354,23 @@ export function ResourcesSection({
 																		consumption={{
 																			...consumption,
 																			amount: Number(consumption.amount),
+																			sharingMethod:
+																				(consumption.sharingMethod as
+																					| "equal"
+																					| "weights") || "equal",
 																			selectedMembers:
 																				consumption.consumptionMembers.map(
 																					(cm) => cm.memberId,
+																				),
+																			memberAmounts:
+																				consumption.consumptionMembers.map(
+																					(cm) => ({
+																						memberId: cm.memberId,
+																						amount: Number(cm.amount),
+																						weight: Number(cm.weight),
+																						isManuallyEdited:
+																							cm.isManuallyEdited,
+																					}),
 																				),
 																		}}
 																		onConsumptionUpdated={() =>
