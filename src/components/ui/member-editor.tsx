@@ -106,26 +106,37 @@ export function MemberEditor({
 					activeMembersAtDate.find((member) => member.id === ma.memberId),
 			);
 
-			// For unit-based consumptions, we redistribute units, not money
-			const amountToRedistribute = isUnitBased
-				? totalAmount * unitPrice
-				: totalAmount;
-			const redistributedAmounts = redistributeAmounts(
-				selectedMembersList,
-				selectedAmounts,
-				amountToRedistribute,
-				weightsEnabled,
-				sharingMethodLocal,
-			);
-
-			// For unit-based consumptions, convert units to monetary amounts
+			// For unit-based consumptions, we need to work with units internally
 			if (isUnitBased && unitPrice > 0) {
+				// Convert monetary amounts to units for redistribution
+				const amountsInUnits = selectedAmounts.map((ma) => ({
+					...ma,
+					amount: ma.amount / unitPrice,
+				}));
+
+				const redistributedAmounts = redistributeAmounts(
+					selectedMembersList,
+					amountsInUnits,
+					totalAmount, // totalAmount is already in units
+					weightsEnabled,
+					sharingMethodLocal,
+				);
+
+				// Convert back to monetary amounts for storage
 				const monetaryAmounts = redistributedAmounts.map((ma) => ({
 					...ma,
-					amount: ma.amount * unitPrice, // Convert units to money
+					amount: ma.amount * unitPrice,
 				}));
 				setValue("memberAmounts", monetaryAmounts);
 			} else {
+				// For regular expenses, work directly with monetary amounts
+				const redistributedAmounts = redistributeAmounts(
+					selectedMembersList,
+					selectedAmounts,
+					totalAmount,
+					weightsEnabled,
+					sharingMethodLocal,
+				);
 				setValue("memberAmounts", redistributedAmounts);
 			}
 		},
@@ -177,13 +188,6 @@ export function MemberEditor({
 	};
 
 	const handleAmountChange = (memberId: string, newAmount: number) => {
-		// For unit-based consumptions, convert the input back to units for redistribution
-		// For regular expenses, use the amount directly
-		const amountForRedistribution =
-			isUnitBased && unitPrice > 0
-				? newAmount / unitPrice // Convert money back to units
-				: newAmount;
-
 		// Update the amount and mark as manually edited
 		const hasChanged =
 			newAmount !==
@@ -195,17 +199,8 @@ export function MemberEditor({
 					: ma,
 			);
 
-			// For redistribution, we need to work with units for unit-based consumptions
-			if (isUnitBased && unitPrice > 0) {
-				const updatedAmountsForRedistribution = updatedAmounts.map((ma) =>
-					ma.memberId === memberId
-						? { ...ma, amount: amountForRedistribution }
-						: { ...ma, amount: ma.amount / unitPrice },
-				);
-				redistribute(selectedMembers, updatedAmountsForRedistribution);
-			} else {
-				redistribute(selectedMembers, updatedAmounts);
-			}
+			// Trigger redistribution with updated amounts
+			redistribute(selectedMembers, updatedAmounts);
 		}
 	};
 

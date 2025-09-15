@@ -122,6 +122,13 @@ export function ConsumptionDialog({
 		}
 	}, [open, form, updateActiveMembersForDate]);
 
+	// Initialize active members when dialog opens
+	useEffect(() => {
+		if (open) {
+			form.reset();
+		}
+	}, [open, form]);
+
 	const onSubmit = async (data: ConsumptionFormData) => {
 		setLoading(true);
 
@@ -161,20 +168,6 @@ export function ConsumptionDialog({
 		} finally {
 			setLoading(false);
 		}
-	};
-
-	const calculateTotalCost = () => {
-		const selectedResource = resources.find(
-			(r) => r.id === form.getValues("resourceId"),
-		);
-		const amount = Number(form.getValues("amount"));
-		const isUnitAmount = form.getValues("isUnitAmount") as boolean;
-
-		if (!selectedResource || !amount) return 0;
-		if (isUnitAmount && selectedResource.unitPrice) {
-			return amount * Number(selectedResource.unitPrice);
-		}
-		return amount;
 	};
 
 	return (
