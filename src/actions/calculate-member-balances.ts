@@ -1,6 +1,8 @@
 "use server";
 
 import { db } from "@/lib/db";
+import { generateRecurringExpenseInstances } from "./generate-recurring-expense-instances";
+import { getSettlementCutoffDate } from "./get-settlement-cutoff-date";
 
 export async function calculateMemberBalances(groupId: string) {
 	const group = await db.group.findUnique({
@@ -57,27 +59,54 @@ export async function calculateMemberBalances(groupId: string) {
 		balances.set(member.id, 0);
 	});
 
-	// Process expenses
-	group.expenses.forEach((expense) => {
+	// Get the settlement cutoff date for filtering
+	const cutoffDate = await getSettlementCutoffDate(groupId);
+
+	// Generate all recurring expense instances (including virtual ones)
+	const allExpenses = [];
+	for (const expense of group.expenses) {
+		try {
+			const instances = await generateRecurringExpenseInstances(expense);
+			allExpenses.push(...instances);
+		} catch {
+			// If recurring generation fails, use the original expense
+			allExpenses.push(expense);
+		}
+	}
+
+	// Filter expenses based on cutoff date
+	const filteredExpenses = cutoffDate
+		? allExpenses.filter((expense) => new Date(expense.date) >= cutoffDate)
+		: allExpenses;
+
+	// Process all expenses (including virtual/recurring ones)
+	filteredExpenses.forEach((expense: any) => {
 		// Member who paid gets positive balance
 		balances.set(
 			expense.paidById,
 			(balances.get(expense.paidById) || 0) + Number(expense.amount),
 		);
 
-		// Members who owe get negative balance
-		expense.expenseMembers.forEach((expenseMember) => {
-			balances.set(
-				expenseMember.memberId,
-				(balances.get(expenseMember.memberId) || 0) -
-					Number(expenseMember.amount),
-			);
+		// Handle both expenseMembers (from database) and effectiveMembers (from recurring instances)
+		const members = expense.effectiveMembers || expense.expenseMembers || [];
+		members.forEach((member: any) => {
+			const memberId = member.memberId || member.id;
+			const amount = member.amount || 0;
+			if (memberId) {
+				balances.set(memberId, (balances.get(memberId) || 0) - Number(amount));
+			}
 		});
 	});
 
-	// Process consumptions
+	// Process consumptions (filtered by cutoff date)
 	group.resources.forEach((resource) => {
-		resource.consumptions.forEach((consumption) => {
+		const filteredConsumptions = cutoffDate
+			? resource.consumptions.filter(
+					(consumption) => new Date(consumption.date) >= cutoffDate,
+				)
+			: resource.consumptions;
+
+		filteredConsumptions.forEach((consumption) => {
 			// Members who consumed pay (negative balance)
 			consumption.consumptionMembers.forEach((consumptionMember) => {
 				balances.set(

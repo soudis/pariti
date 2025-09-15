@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Edit3, Lock, Unlock, User, Users } from "lucide-react";
+import { Check, Edit3, Lock, Undo2, Unlock, User, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useId, useState } from "react";
 import { useFormContext } from "react-hook-form";
@@ -218,7 +218,7 @@ export function MemberEditor({
 								{t("selectMembersAndAmounts")}
 							</Label>
 						</div>
-						{selectedMembers.length > 0 && (
+						{currentAmounts.some((ma) => ma.isManuallyEdited) && (
 							<Button
 								type="button"
 								variant="outline"
@@ -226,7 +226,7 @@ export function MemberEditor({
 								onClick={handleResetToDefaults}
 								className="text-xs"
 							>
-								{t("resetToDefaults")}
+								<Undo2 className="w-3 h-3" />
 							</Button>
 						)}
 					</div>

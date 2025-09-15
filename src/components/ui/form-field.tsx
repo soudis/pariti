@@ -205,7 +205,7 @@ export function SelectField<TFormValues extends FieldValues = FieldValues>({
 						required={required}
 					>
 						<FormControl>
-							<SelectTrigger>
+							<SelectTrigger className="w-full">
 								<SelectValue placeholder={placeholder} />
 							</SelectTrigger>
 						</FormControl>

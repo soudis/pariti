@@ -9,6 +9,8 @@ import type {
 	Settlement,
 	SettlementMember,
 } from "@prisma/client";
+import { generateRecurringExpenseInstances } from "./generate-recurring-expense-instances";
+import { getSettlementCutoffDate } from "./get-settlement-cutoff-date";
 
 // Helper function to calculate weighted amounts for members
 export function calculateWeightedAmounts(
@@ -37,7 +39,7 @@ export function calculateWeightedAmounts(
 }
 
 // Helper function to calculate balances
-export function calculateBalances(
+export async function calculateBalances(
 	group: Group & {
 		expenses: (Expense & { expenseMembers: ExpenseMember[] })[];
 		members: Member[];
@@ -59,26 +61,44 @@ export function calculateBalances(
 		balances.set(`resource_${resource.id}`, 0);
 	});
 
-	// Process expenses
-	group.expenses.forEach(
-		(expense: Expense & { expenseMembers: ExpenseMember[] }) => {
-			const paidByKey = `member_${expense.paidById}`;
-			balances.set(
-				paidByKey,
-				(balances.get(paidByKey) || 0) + Number(expense.amount),
-			);
+	// Get the settlement cutoff date for filtering
+	const cutoffDate = await getSettlementCutoffDate(group.id);
 
-			expense.expenseMembers.forEach((expenseMember: ExpenseMember) => {
-				const memberKey = `member_${expenseMember.memberId}`;
-				balances.set(
-					memberKey,
-					(balances.get(memberKey) || 0) - Number(expenseMember.amount),
-				);
-			});
-		},
-	);
+	// Generate all recurring expense instances (including virtual ones)
+	const allExpenses = [];
+	for (const expense of group.expenses) {
+		try {
+			const instances = await generateRecurringExpenseInstances(expense);
+			allExpenses.push(...instances);
+		} catch {
+			// If recurring generation fails, use the original expense
+			allExpenses.push(expense);
+		}
+	}
 
-	// Process consumptions
+	// Filter expenses based on cutoff date
+	const filteredExpenses = cutoffDate
+		? allExpenses.filter((expense) => new Date(expense.date) >= cutoffDate)
+		: allExpenses;
+
+	// Process all expenses (including virtual/recurring ones)
+	filteredExpenses.forEach((expense: any) => {
+		const paidByKey = `member_${expense.paidById}`;
+		balances.set(
+			paidByKey,
+			(balances.get(paidByKey) || 0) + Number(expense.amount),
+		);
+
+		// Handle both expenseMembers (from database) and effectiveMembers (from recurring instances)
+		const members = expense.effectiveMembers || expense.expenseMembers || [];
+		members.forEach((member: any) => {
+			const memberKey = `member_${member.memberId || member.id}`;
+			const amount = member.amount || 0;
+			balances.set(memberKey, (balances.get(memberKey) || 0) - Number(amount));
+		});
+	});
+
+	// Process consumptions (filtered by cutoff date)
 	group.resources.forEach(
 		(
 			resource: Resource & {
@@ -87,7 +107,13 @@ export function calculateBalances(
 				})[];
 			},
 		) => {
-			resource.consumptions.forEach(
+			const filteredConsumptions = cutoffDate
+				? resource.consumptions.filter(
+						(consumption) => new Date(consumption.date) >= cutoffDate,
+					)
+				: resource.consumptions;
+
+			filteredConsumptions.forEach(
 				(
 					consumption: Consumption & {
 						consumptionMembers: ConsumptionMember[];

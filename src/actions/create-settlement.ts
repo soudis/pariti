@@ -59,7 +59,7 @@ async function createSettlement(groupId: string, data: SettlementFormData) {
 	if (!group) throw new Error("Group not found");
 
 	// Calculate balances for all members and resources
-	const balances = calculateBalances(group);
+	const balances = await calculateBalances(group);
 
 	// Generate settlement transactions based on type
 	const transactions = generateSettlementTransactions(

@@ -53,7 +53,7 @@ export function MembersSection({ group }: MembersSectionProps) {
 
 	const formatBalance = (balance: number) => {
 		if (balance === 0) return formatCurrency(0, group.currency);
-		const sign = balance > 0 ? "+" : "";
+		const sign = balance > 0 ? "+" : "-";
 		return `${sign}${formatCurrency(Math.abs(balance), group.currency)}`;
 	};
 
