@@ -1,8 +1,8 @@
 "use server";
 
 import { db } from "@/lib/db";
+import { redistributeAmounts } from "@/lib/redistribution";
 import { getActiveMembersForDate } from "./get-active-members-for-date";
-import { calculateWeightedAmounts } from "./utils";
 
 // Helper function to generate recurring expense instances
 export async function generateRecurringExpenseInstances(
@@ -31,23 +31,47 @@ export async function generateRecurringExpenseInstances(
 			select: { weightsEnabled: true },
 		});
 
-		const weightedAmounts = calculateWeightedAmounts(
+		// Convert expenseMembers to MemberAmount format for redistribution
+		const memberAmounts = effectiveMembers.map((member) => {
+			const existingMember = expense.expenseMembers.find(
+				(em) => em.memberId === member.id,
+			);
+			return {
+				memberId: member.id,
+				amount: existingMember ? Number(existingMember.amount) : 0,
+				weight: existingMember ? Number(existingMember.weight) : 1,
+				isManuallyEdited: existingMember
+					? existingMember.isManuallyEdited
+					: false,
+			};
+		});
+
+		// Convert effectiveMembers to the format expected by redistributeAmounts
+		const membersForRedistribution = effectiveMembers.map((member) => ({
+			id: member.id,
+			weight: Number(member.weight),
+		}));
+
+		// Use the proper redistribution function with stored weights
+		const redistributedAmounts = redistributeAmounts(
+			membersForRedistribution,
+			memberAmounts,
 			Number(expense.amount),
-			effectiveMembers,
 			group?.weightsEnabled || false,
+			(expense.sharingMethod as "equal" | "weights") || "equal",
 		);
 
 		return [
 			{
 				...expense,
 				effectiveMembers: effectiveMembers.map((member) => {
-					const weightedAmount = weightedAmounts.find(
-						(wa) => wa.memberId === member.id,
+					const redistributedAmount = redistributedAmounts.find(
+						(ra) => ra.memberId === member.id,
 					);
 					return {
 						id: member.id,
 						name: member.name,
-						amount: weightedAmount?.amount || 0,
+						amount: redistributedAmount?.amount || 0,
 					};
 				}),
 			},
@@ -75,10 +99,34 @@ export async function generateRecurringExpenseInstances(
 				select: { weightsEnabled: true },
 			});
 
-			const weightedAmounts = calculateWeightedAmounts(
+			// Convert expenseMembers to MemberAmount format for redistribution
+			const memberAmounts = effectiveMembers.map((member) => {
+				const existingMember = expense.expenseMembers.find(
+					(em) => em.memberId === member.id,
+				);
+				return {
+					memberId: member.id,
+					amount: existingMember ? Number(existingMember.amount) : 0,
+					weight: existingMember ? Number(existingMember.weight) : 1,
+					isManuallyEdited: existingMember
+						? existingMember.isManuallyEdited
+						: false,
+				};
+			});
+
+			// Convert effectiveMembers to the format expected by redistributeAmounts
+			const membersForRedistribution = effectiveMembers.map((member) => ({
+				id: member.id,
+				weight: Number(member.weight),
+			}));
+
+			// Use the proper redistribution function with stored weights
+			const redistributedAmounts = redistributeAmounts(
+				membersForRedistribution,
+				memberAmounts,
 				Number(expense.amount),
-				effectiveMembers,
 				group?.weightsEnabled || false,
+				(expense.sharingMethod as "equal" | "weights") || "equal",
 			);
 
 			instances.push({
@@ -86,13 +134,13 @@ export async function generateRecurringExpenseInstances(
 				id: expense.id,
 				date: new Date(currentInstanceDate),
 				effectiveMembers: effectiveMembers.map((member) => {
-					const weightedAmount = weightedAmounts.find(
-						(wa) => wa.memberId === member.id,
+					const redistributedAmount = redistributedAmounts.find(
+						(ra) => ra.memberId === member.id,
 					);
 					return {
 						id: member.id,
 						name: member.name,
-						amount: weightedAmount?.amount || 0,
+						amount: redistributedAmount?.amount || 0,
 					};
 				}),
 			});
