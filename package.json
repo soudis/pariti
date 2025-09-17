@@ -16,7 +16,8 @@
 		"docker:build": "./scripts/build.sh latest",
 		"docker:push": "./scripts/push.sh latest",
 		"docker:deploy:nginx": "./scripts/deploy.sh nginx",
-		"docker:deploy:traefik": "./scripts/deploy.sh traefik"
+		"docker:deploy:traefik": "./scripts/deploy.sh traefik",
+		"docker:update": "./scripts/update.sh"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^5.2.1",

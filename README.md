@@ -100,6 +100,7 @@ A comprehensive money sharing application for groups and friends, built with Nex
 - `pnpm docker:push` - Push Docker image to registry
 - `pnpm docker:deploy:nginx` - Deploy with Nginx proxy
 - `pnpm docker:deploy:traefik` - Deploy with Traefik proxy
+- `pnpm docker:update` - Update running containers with new image
 
 ## Database Schema
 
@@ -187,12 +188,31 @@ cd docker
 ./deploy.sh nginx  # or traefik
 ```
 
+#### Updating Existing Deployment
+```bash
+# Update to latest image
+pnpm docker:update
+
+# Update to specific image tag
+./scripts/update.sh nginx v1.2.3
+
+# Interactive update (prompts for options)
+./scripts/update.sh
+```
+
 The deployment script will:
 - Generate secure database credentials
 - Prompt for domain and admin email
 - Create environment configuration
 - Deploy with SSL certificates (Let's Encrypt)
 - Set up reverse proxy configuration
+
+The update script will:
+- Pull the latest Docker image
+- Stop the application container (preserves database)
+- Start the application with the new image
+- Provide rollback capability if update fails
+- Show deployment status and logs
 
 ## Advanced Features
 
