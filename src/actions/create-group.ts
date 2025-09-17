@@ -9,6 +9,7 @@ import {
 	createGroupReturnSchema,
 	type GroupFormData,
 } from "@/lib/schemas";
+import { convertToPlainObject } from "@/lib/utils";
 
 async function createGroup(data: GroupFormData) {
 	const group = await db.group.create({
@@ -21,7 +22,7 @@ async function createGroup(data: GroupFormData) {
 		},
 	});
 	revalidatePath("/");
-	return group;
+	return convertToPlainObject(group);
 }
 
 export const createGroupAction = actionClient

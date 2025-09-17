@@ -8,6 +8,7 @@ import {
 	createSettlementReturnSchema,
 	type SettlementFormData,
 } from "@/lib/schemas";
+import { convertToPlainObject } from "@/lib/utils";
 import { calculateBalances } from "./utils";
 
 async function createSettlement(groupId: string, data: SettlementFormData) {
@@ -50,7 +51,7 @@ async function createSettlement(groupId: string, data: SettlementFormData) {
 					},
 				},
 				where: {
-					status: "completed",
+					status: { not: "completed" },
 				},
 			},
 		},
@@ -104,7 +105,7 @@ async function createSettlement(groupId: string, data: SettlementFormData) {
 	});
 
 	revalidatePath(`/group/${groupId}`);
-	return { settlement };
+	return { settlement: convertToPlainObject(settlement) };
 }
 
 export const createSettlementAction = actionClient

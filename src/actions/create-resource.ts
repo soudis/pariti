@@ -8,6 +8,7 @@ import {
 	createResourceReturnSchema,
 	type ResourceFormData,
 } from "@/lib/schemas";
+import { convertToPlainObject } from "@/lib/utils";
 
 async function createResource(groupId: string, data: ResourceFormData) {
 	const resource = await db.resource.create({
@@ -32,7 +33,7 @@ async function createResource(groupId: string, data: ResourceFormData) {
 	});
 
 	revalidatePath(`/group/${groupId}`);
-	return { resource };
+	return { resource: convertToPlainObject(resource) };
 }
 
 export const createResourceAction = actionClient

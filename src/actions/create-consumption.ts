@@ -8,6 +8,7 @@ import {
 	createConsumptionInputSchema,
 	createConsumptionReturnSchema,
 } from "@/lib/schemas";
+import { convertToPlainObject } from "@/lib/utils";
 
 async function createConsumption(data: ConsumptionFormData) {
 	const resource = await db.resource.findUnique({
@@ -66,7 +67,7 @@ async function createConsumption(data: ConsumptionFormData) {
 	});
 
 	revalidatePath(`/group/${resource.groupId}`);
-	return { consumption };
+	return { consumption: convertToPlainObject(consumption) };
 }
 
 export const createConsumptionAction = actionClient

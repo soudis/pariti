@@ -14,6 +14,7 @@ import {
 	addMemberReturnSchema,
 	type MemberFormData,
 } from "@/lib/schemas";
+import { convertToPlainObject } from "@/lib/utils";
 import { getActiveMembersForDate } from "./get-active-members-for-date";
 
 async function createMember(groupId: string, data: MemberFormData) {
@@ -96,7 +97,7 @@ async function createMember(groupId: string, data: MemberFormData) {
 	}
 
 	revalidatePath(`/group/${groupId}`);
-	return { member: { ...member, weight: Number(member.weight) } };
+	return { member: convertToPlainObject(member) };
 }
 
 export const createMemberAction = actionClient
