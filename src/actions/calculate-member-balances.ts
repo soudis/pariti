@@ -44,7 +44,7 @@ export async function calculateMemberBalances(groupId: string) {
 					},
 				},
 				where: {
-					status: "completed",
+					status: { not: "completed" },
 				},
 			},
 		},
@@ -120,25 +120,31 @@ export async function calculateMemberBalances(groupId: string) {
 
 	// Process completed settlements
 	group.settlements.forEach((settlement) => {
-		settlement.settlementMembers.forEach((settlementMember) => {
-			// From member pays (negative balance)
-			if (settlementMember.fromMemberId) {
-				balances.set(
-					settlementMember.fromMemberId,
-					(balances.get(settlementMember.fromMemberId) || 0) -
-						Number(settlementMember.amount),
-				);
-			}
+		settlement.settlementMembers
+			.filter(
+				(settlementMember) =>
+					settlementMember.status === "completed" &&
+					(!cutoffDate || new Date(settlementMember.createdAt) > cutoffDate),
+			)
+			.forEach((settlementMember) => {
+				// From member pays (negative balance)
+				if (settlementMember.fromMemberId) {
+					balances.set(
+						settlementMember.fromMemberId,
+						(balances.get(settlementMember.fromMemberId) || 0) +
+							Number(settlementMember.amount),
+					);
+				}
 
-			// To member receives (positive balance)
-			if (settlementMember.toMemberId) {
-				balances.set(
-					settlementMember.toMemberId,
-					(balances.get(settlementMember.toMemberId) || 0) +
-						Number(settlementMember.amount),
-				);
-			}
-		});
+				// To member receives (positive balance)
+				if (settlementMember.toMemberId) {
+					balances.set(
+						settlementMember.toMemberId,
+						(balances.get(settlementMember.toMemberId) || 0) -
+							Number(settlementMember.amount),
+					);
+				}
+			});
 	});
 
 	// Convert to array format

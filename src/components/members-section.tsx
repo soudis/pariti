@@ -35,6 +35,7 @@ export function MembersSection({ group }: MembersSectionProps) {
 			setLoadingBalances(true);
 			try {
 				const balances = await calculateMemberBalances(group.id);
+				console.log("balances end", JSON.stringify(balances, null, 2));
 				setMemberBalances(balances);
 			} catch (error) {
 				console.error("Failed to load member balances:", error);
