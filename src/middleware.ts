@@ -5,7 +5,7 @@ export default createMiddleware({
 	locales: ["en", "de"],
 
 	// Used when no locale matches
-	defaultLocale: "en",
+	defaultLocale: "de",
 
 	// Use browser locale detection
 	localeDetection: true,

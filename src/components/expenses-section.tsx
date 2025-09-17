@@ -176,14 +176,15 @@ export function ExpensesSection({
 								key={`${expense.id}-${expense.date}`}
 								className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border"
 							>
+								{/* Header with title, recurring badge, and action buttons */}
 								<div className="flex items-start justify-between mb-3">
-									<div className="flex-1">
-										<div className="flex items-center gap-2">
+									<div className="flex-1 min-w-0">
+										<div className="flex items-center gap-2 flex-wrap">
 											<h3 className="font-medium text-lg">{expense.title}</h3>
 											{expense.isRecurring && (
 												<Badge
 													variant="outline"
-													className="text-xs bg-green-50 text-green-700 dark:bg-green-900 dark:text-green-300"
+													className="text-xs bg-green-50 text-green-700 dark:bg-green-900 dark:text-green-300 flex-shrink-0"
 												>
 													<Repeat className="w-3 h-3 mr-1" />
 													{t(`recurring.${expense.recurringType}`)}
@@ -196,10 +197,8 @@ export function ExpensesSection({
 											</p>
 										)}
 									</div>
-									<div className="flex items-center gap-2">
-										<Badge variant="secondary" className="text-sm">
-											{formatCurrency(Number(expense.amount), group.currency)}
-										</Badge>
+									{/* Action buttons - aligned to top right */}
+									<div className="flex items-start gap-2 flex-shrink-0 ml-2">
 										<ExpenseDialog
 											group={group}
 											expense={{
@@ -244,6 +243,13 @@ export function ExpensesSection({
 											<Trash2 className="w-4 h-4" />
 										</Button>
 									</div>
+								</div>
+
+								{/* Amount badge - separate line on mobile, inline on desktop */}
+								<div className="flex justify-between items-center mb-3">
+									<Badge variant="secondary" className="text-sm">
+										{formatCurrency(Number(expense.amount), group.currency)}
+									</Badge>
 								</div>
 
 								<div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-300 mb-3">

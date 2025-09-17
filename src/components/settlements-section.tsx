@@ -167,32 +167,38 @@ export function SettlementsSection({
 													(settlementMember) => (
 														<div
 															key={settlementMember.id}
-															className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+															className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
 														>
-															<div className="flex items-center gap-3">
-																<div className="flex items-center gap-2">
-																	<span className="font-medium">
+															{/* Payment info */}
+															<div className="flex items-center gap-3 mb-3">
+																<div className="flex items-center gap-2 flex-1 min-w-0">
+																	<span className="font-medium truncate">
 																		{getEntityName(
 																			settlementMember.fromMember,
 																			settlementMember.fromResource,
 																		)}
 																	</span>
-																	<ArrowRight className="w-4 h-4 text-gray-400" />
-																	<span className="font-medium">
+																	<ArrowRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+																	<span className="font-medium truncate">
 																		{getEntityName(
 																			settlementMember.toMember,
 																			settlementMember.toResource,
 																		)}
 																	</span>
 																</div>
-																<Badge variant="secondary" className="text-sm">
+																<Badge
+																	variant="secondary"
+																	className="text-sm flex-shrink-0"
+																>
 																	{formatCurrency(
 																		Number(settlementMember.amount),
 																		currency,
 																	)}
 																</Badge>
 															</div>
-															<div className="flex items-center gap-2">
+
+															{/* Action buttons - separate line */}
+															<div className="flex items-center gap-2 flex-wrap">
 																{/* QR Code button for bank transfer */}
 																{settlementMember.toMember?.iban && (
 																	<QRCodeDialog
