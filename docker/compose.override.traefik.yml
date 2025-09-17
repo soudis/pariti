@@ -1,0 +1,22 @@
+services:
+  traefik:
+    image: traefik:v3.5.2
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - letsencrypt_data:/letsencrypt
+    networks:
+      - proxy_network
+
+volumes:
+  letsencrypt_data:
+
+networks:
+  proxy_network:
+    external: false
+    name: traefik_network
