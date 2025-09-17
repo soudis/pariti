@@ -2,20 +2,20 @@
 
 source .env
 
-major=`echo $DK_VERSION | cut -d. -f1`
-minor=`echo $DK_VERSION | cut -d. -f2`
-revision=`echo $DK_VERSION | cut -d. -f3`
+major=`echo $VERSION | cut -d. -f1`
+minor=`echo $VERSION | cut -d. -f2`
+revision=`echo $VERSION | cut -d. -f3`
 
 docker login
 
-docker push habidat/auth:$major.$minor.$revision
-docker push habidat/auth:$major.$minor
-docker push habidat/auth:$major
+docker push soudis/pariti:$major.$minor.$revision
+docker push soudis/pariti:$major.$minor
+docker push soudis/pariti:$major
 
 if [ "$1" == "latest" ] 
 then
-  docker push habidat/auth
-  docker push habidat/auth:stable
+  docker push soudis/pariti
+  docker push soudis/pariti:stable
 fi
 
 echo "FINISHED"

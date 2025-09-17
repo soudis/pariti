@@ -2,15 +2,15 @@
 
 source .env
 
-major=`echo $DK_VERSION | cut -d. -f1`
-minor=`echo $DK_VERSION | cut -d. -f2`
-revision=`echo $DK_VERSION | cut -d. -f3`
+major=`echo $VERSION | cut -d. -f1`
+minor=`echo $VERSION | cut -d. -f2`
+revision=`echo $VERSION | cut -d. -f3`
 
 if [ "$1" == "latest" ] 
 then
-  docker build . --file docker/production/Dockerfile -t habidat/auth -t habidat/auth:$major.$minor.$revision -t habidat/auth:$major.$minor -t habidat/auth:$major -t habidat/auth:stable --pull
+  docker build . --file docker/Dockerfile -t soudis/pariti -t soudis/pariti:$major.$minor.$revision -t soudis/pariti:$major.$minor -t soudis/pariti:$major -t soudis/pariti:stable --pull
 else
-  docker build . --file docker/production/Dockerfile -t habidat/auth:$major.$minor.$revision -t habidat/auth:$major.$minor -t habidat/auth:$major --pull
+  docker build . --file docker/Dockerfile -t soudis/pariti:$major.$minor.$revision -t soudis/pariti:$major.$minor -t soudis/pariti:$major --pull
 fi
 
 echo "FINISHED"
