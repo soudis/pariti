@@ -2,7 +2,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Group, Member } from "@prisma/client";
-import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -53,7 +54,8 @@ export function ExpenseDialog({
 	const t = useTranslations("forms.expense");
 	const { executeAsync: createExpense } = useAction(createExpenseAction);
 	const { executeAsync: editExpense } = useAction(editExpenseAction);
-
+	const router = useRouter();
+	const locale = useLocale();
 	const form = useForm({
 		resolver: zodResolver(expenseSchema),
 		defaultValues: {
@@ -167,6 +169,7 @@ export function ExpenseDialog({
 				handleActionErrors(
 					await createExpense({ groupId: group.id, expense: expenseData }),
 				);
+				router.push(`/${locale}/group/${group.id}?tab=expenses`);
 			}
 
 			setOpen(false);

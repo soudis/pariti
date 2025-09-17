@@ -1,7 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -35,7 +36,8 @@ export function ResourceDialog({
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const t = useTranslations("forms.resource");
-
+	const router = useRouter();
+	const locale = useLocale();
 	const { executeAsync: createResource } = useAction(createResourceAction);
 	const { executeAsync: editResource } = useAction(editResourceAction);
 
@@ -82,6 +84,7 @@ export function ResourceDialog({
 		} else {
 			// Create new resource
 			handleActionErrors(await createResource({ groupId, resource: data }));
+			router.push(`/${locale}/group/${groupId}?tab=resources`);
 		}
 
 		setOpen(false);
@@ -164,7 +167,11 @@ export function ResourceDialog({
 					>
 						{t("cancel")}
 					</Button>
-					<Button type="submit" disabled={loading}>
+					<Button
+						type="submit"
+						disabled={loading}
+						onClick={form.handleSubmit(onSubmit)}
+					>
 						{loading
 							? resource
 								? "Updating..."

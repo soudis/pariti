@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { createGroupAction } from "@/actions/create-group";
 import { Button } from "@/components/ui/button";
@@ -43,10 +43,18 @@ export function GroupDialog({ children }: GroupDialogProps) {
 		defaultValues: {
 			name: "",
 			description: "",
-			currency: "USD",
+			currency: "EUR",
 			weightsEnabled: false,
 		},
 	});
+
+	useEffect(() => {
+		if (open) {
+			form.reset();
+		}
+	}, [open, form]);
+
+	console.log(form.formState.isSubmitting);
 
 	const onSubmit = async (data: GroupFormData) => {
 		setLoading(true);
@@ -126,7 +134,11 @@ export function GroupDialog({ children }: GroupDialogProps) {
 					>
 						{t("cancel")}
 					</Button>
-					<Button type="submit" disabled={loading}>
+					<Button
+						type="submit"
+						disabled={loading}
+						onClick={form.handleSubmit(onSubmit)}
+					>
 						{loading ? t("creating") : t("create")}
 					</Button>
 				</DialogFooter>

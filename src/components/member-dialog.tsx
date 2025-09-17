@@ -1,7 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -46,6 +47,8 @@ export function MemberDialog({
 
 	const { executeAsync: createMember } = useAction(createMemberAction);
 	const { executeAsync: updateMember } = useAction(updateMemberAction);
+	const router = useRouter();
+	const locale = useLocale();
 
 	const form = useForm({
 		resolver: zodResolver(memberSchema),
@@ -88,6 +91,7 @@ export function MemberDialog({
 				// Create new member
 				handleActionErrors(await createMember({ groupId, member: data }));
 				form.reset();
+				router.push(`/${locale}/group/${groupId}?tab=members`);
 			}
 			setOpen(false);
 		} catch (error) {
@@ -187,7 +191,11 @@ export function MemberDialog({
 					>
 						{t("cancel")}
 					</Button>
-					<Button type="submit" disabled={loading}>
+					<Button
+						type="submit"
+						disabled={loading}
+						onClick={form.handleSubmit(onSubmit)}
+					>
 						{loading
 							? member
 								? t("updating")

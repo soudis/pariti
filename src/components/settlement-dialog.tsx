@@ -163,7 +163,11 @@ export function SettlementDialog({
 					>
 						{t("cancel")}
 					</Button>
-					<Button type="submit" disabled={loading}>
+					<Button
+						type="submit"
+						disabled={loading}
+						onClick={form.handleSubmit(onSubmit)}
+					>
 						{loading ? t("generating") : t("generate")}
 					</Button>
 				</DialogFooter>
