@@ -20,6 +20,22 @@ export const getDefaultWeightTypes = (): WeightType[] => [
 	getDefaultWeightType(),
 ];
 
+export const getDefaultSharingMethod = ({
+	weightsEnabled,
+	weightTypes,
+}: {
+	weightsEnabled: boolean;
+	weightTypes: WeightType[];
+}): string => {
+	if (weightsEnabled && weightTypes.length > 1) {
+		return weightTypes.find((wt) => wt.isDefault)?.id || "equal";
+	}
+	if (weightsEnabled && weightTypes.length === 1) {
+		return weightTypes[0].id;
+	}
+	return "equal";
+};
+
 export const getWeightTypeById = (
 	weightTypes: WeightType[],
 	id: string,
@@ -35,10 +51,8 @@ export const getDefaultWeightTypeFromList = (
 
 export const memberAmountSchema = z.object({
 	memberId: z.string(),
-	amount: z.coerce.number().min(0, "Amount must be non-negative"),
-	weight: z.coerce.number().min(0.1, "Weight must be at least 0.1").default(1), // Legacy field for backward compatibility
-	weightTypeId: z.string().optional(), // ID of the weight type used
-	isManuallyEdited: z.coerce.boolean().default(false),
+	amount: z.coerce.number().nullish(),
+	weight: z.coerce.number().nullish(),
 });
 
 export const expenseSchema = z
@@ -49,11 +63,8 @@ export const expenseSchema = z
 		paidById: z.string().min(1, "Please select who paid"),
 		date: z.coerce.date(),
 		splitAll: z.coerce.boolean(),
-		selectedMembers: z
-			.array(z.string())
-			.min(1, "Please select at least one member"),
-		sharingMethod: z.enum(["equal", "weights"]).default("equal"),
-		weightTypeId: z.string().optional(), // ID of the weight type to use for distribution
+		selectedMembers: z.array(z.string()),
+		sharingMethod: z.string(),
 		memberAmounts: z.array(memberAmountSchema).optional(),
 		isRecurring: z.coerce.boolean(),
 		recurringType: z.enum(["weekly", "monthly", "yearly"]).nullish(),
@@ -114,11 +125,9 @@ export const consumptionSchema = z.object({
 	amount: z.coerce.number().min(0.01, "Amount must be greater than 0"),
 	isUnitAmount: z.coerce.boolean(),
 	date: z.coerce.date(),
-	selectedMembers: z
-		.array(z.string())
-		.min(1, "Please select at least one member"),
-	sharingMethod: z.enum(["equal", "weights"]).default("equal"),
-	weightTypeId: z.string().optional(), // ID of the weight type to use for distribution
+	splitAll: z.coerce.boolean(),
+	selectedMembers: z.array(z.string()),
+	sharingMethod: z.string(),
 	memberAmounts: z.array(memberAmountSchema).optional(),
 });
 

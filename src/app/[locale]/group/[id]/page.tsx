@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
-import { getSettlementCutoffDate } from "@/actions";
-import { getGroupWithRecurringExpenses } from "@/actions/get-group";
+import { getCalculatedGroup } from "@/actions/get-group";
 import { GroupHeader } from "@/components/group-header";
 import { GroupTabs } from "@/components/group-tabs";
 import { GroupVisitTracker } from "@/components/group-visit-tracker";
+import { getSettlementCutoffDate } from "@/lib/get-settlement-cutoff-date";
 
 interface GroupPageProps {
 	params: {
@@ -13,14 +13,14 @@ interface GroupPageProps {
 
 export default async function GroupPage({ params }: GroupPageProps) {
 	const { id } = await params;
-	const group = await getGroupWithRecurringExpenses(id);
+	const group = await getCalculatedGroup(id);
 
 	if (!group) {
 		notFound();
 	}
 
 	// Get the settlement cutoff date for filtering
-	const cutoffDate = await getSettlementCutoffDate(group.id);
+	const cutoffDate = getSettlementCutoffDate(group);
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">

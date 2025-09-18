@@ -4,8 +4,8 @@ import { Edit, Plus, Trash2, User, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
 import { useEffect, useState } from "react";
-import { calculateMemberBalances, removeMemberAction } from "@/actions";
-import type { getGroupWithRecurringExpenses } from "@/actions/get-group";
+import { removeMemberAction } from "@/actions";
+import type { getCalculatedGroup } from "@/actions/get-group";
 import { MemberDialog } from "@/components/member-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,41 +14,14 @@ import { formatCurrency } from "@/lib/currency";
 import { handleActionErrors } from "@/lib/utils";
 
 interface MembersSectionProps {
-	group: Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>;
+	group: Awaited<ReturnType<typeof getCalculatedGroup>>;
 }
 
 export function MembersSection({ group }: MembersSectionProps) {
 	const [deletingId, setDeletingId] = useState<string | null>(null);
-	const [memberBalances, setMemberBalances] = useState<
-		Array<{ memberId: string; balance: number }>
-	>([]);
-	const [loadingBalances, setLoadingBalances] = useState(false);
 	const t = useTranslations("members");
 
 	const { executeAsync: removeMember } = useAction(removeMemberAction);
-
-	// Load member balances
-	useEffect(() => {
-		const loadBalances = async () => {
-			setLoadingBalances(true);
-			try {
-				const balances = await calculateMemberBalances(group.id);
-				console.log("balances end", JSON.stringify(balances, null, 2));
-				setMemberBalances(balances);
-			} catch (error) {
-				console.error("Failed to load member balances:", error);
-			} finally {
-				setLoadingBalances(false);
-			}
-		};
-
-		loadBalances();
-	}, [group.id]); // Recalculate when group changes
-
-	const getMemberBalance = (memberId: string) => {
-		const balance = memberBalances.find((b) => b.memberId === memberId);
-		return balance ? balance.balance : 0;
-	};
 
 	const formatBalance = (balance: number) => {
 		if (balance === 0) return formatCurrency(0, group.currency);
@@ -127,9 +100,7 @@ export function MembersSection({ group }: MembersSectionProps) {
 														// Multiple weight types
 														group.weightTypes.map((weightType) => {
 															const weight =
-																member.weights?.[weightType.id] ||
-																member.weight ||
-																1;
+																member.weights?.[weightType.id] || 1;
 															return (
 																<Badge
 																	key={weightType.id}
@@ -143,7 +114,10 @@ export function MembersSection({ group }: MembersSectionProps) {
 													) : (
 														// Single weight (legacy)
 														<Badge variant="secondary" className="text-xs">
-															Weight: {Number(member.weight || 1).toFixed(1)}
+															Weight:{" "}
+															{Number(
+																member.weights?.[group.weightTypes[0].id] || 1,
+															).toFixed(1)}
 														</Badge>
 													)}
 												</div>
@@ -154,7 +128,7 @@ export function MembersSection({ group }: MembersSectionProps) {
 									<div className="flex items-start gap-2 flex-shrink-0 ml-2">
 										<MemberDialog
 											group={group}
-											member={{ ...member, weight: Number(member.weight) }}
+											member={member}
 											weightsEnabled={group.weightsEnabled}
 											weightTypes={group.weightTypes}
 										>
@@ -201,15 +175,11 @@ export function MembersSection({ group }: MembersSectionProps) {
 									<span className="text-sm font-medium text-gray-700 dark:text-gray-200">
 										{t("balance")}:
 									</span>
-									{loadingBalances ? (
-										<div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-									) : (
-										<p
-											className={`font-medium ${getBalanceColor(getMemberBalance(member.id))}`}
-										>
-											{formatBalance(getMemberBalance(member.id))}
-										</p>
-									)}
+									<p
+										className={`font-medium ${getBalanceColor(member.balance)}`}
+									>
+										{formatBalance(member.balance)}
+									</p>
 								</div>
 							</div>
 						))}

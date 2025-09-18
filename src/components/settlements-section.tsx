@@ -19,7 +19,7 @@ import {
 	removeSettlementAction,
 	updateSettlementMemberStatusAction,
 } from "@/actions";
-import type { getGroupWithRecurringExpenses } from "@/actions/get-group";
+import type { getCalculatedGroup } from "@/actions/get-group";
 import { QRCodeDialog } from "@/components/qr-code-dialog";
 import { SettlementDialog } from "@/components/settlement-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +30,7 @@ import { handleActionErrors } from "@/lib/utils";
 
 interface SettlementsSectionProps {
 	currency: string;
-	group: Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>;
+	group: Awaited<ReturnType<typeof getCalculatedGroup>>;
 }
 
 export function SettlementsSection({

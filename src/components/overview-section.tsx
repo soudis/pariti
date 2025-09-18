@@ -5,7 +5,7 @@ import { DollarSign, Package, Plus, Receipt, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 import type { getGroup } from "@/actions";
-import type { getGroupWithRecurringExpenses } from "@/actions/get-group";
+import type { getCalculatedGroup } from "@/actions/get-group";
 import { ConsumptionDialog } from "@/components/consumption-dialog";
 import { ExpenseDialog } from "@/components/expense-dialog";
 import { MemberDialog } from "@/components/member-dialog";
@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/currency";
 
 interface OverviewSectionProps {
-	group: Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>;
+	group: Awaited<ReturnType<typeof getCalculatedGroup>>;
 	cutoffDate: Date | null;
 }
 

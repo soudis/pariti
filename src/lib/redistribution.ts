@@ -75,11 +75,19 @@ export function redistributeAmounts(
 		// Redistribute based on member weights (legacy behavior or specific weight type)
 		const automaticMembers = automaticAmounts.map((ma) => {
 			const member = members.find((m) => m.id === ma.memberId);
-			let weight = member?.weight || 1;
+			let weight = 1; // Default to 1 for "Equally"
 
 			// If a specific weight type is selected, use that weight
-			if (weightTypeId && member?.weights && member.weights[weightTypeId]) {
-				weight = member.weights[weightTypeId];
+			if (
+				weightTypeId &&
+				member?.weights &&
+				typeof member.weights === "object" &&
+				member.weights[weightTypeId]
+			) {
+				weight = Number(member.weights[weightTypeId]) || 1;
+			} else if (!weightTypeId) {
+				// Legacy behavior: use member's default weight
+				weight = member?.weight || 1;
 			}
 
 			return {

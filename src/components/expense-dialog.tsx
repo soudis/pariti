@@ -1,19 +1,14 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { Group, Member } from "@prisma/client";
+import type { Member } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import {
-	createExpenseAction,
-	editExpenseAction,
-	getActiveMembersForDate,
-	type getGroup,
-} from "@/actions";
-import type { getGroupWithRecurringExpenses } from "@/actions/get-group";
+import { createExpenseAction, editExpenseAction } from "@/actions";
+import type { getCalculatedGroup } from "@/actions/get-group";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -32,11 +27,15 @@ import {
 	TextField,
 } from "@/components/ui/form-field";
 import { MemberEditor } from "@/components/ui/member-editor";
-import { type ExpenseFormData, expenseSchema } from "@/lib/schemas";
+import {
+	type ExpenseFormData,
+	expenseSchema,
+	getDefaultSharingMethod,
+} from "@/lib/schemas";
 import { handleActionErrors } from "@/lib/utils";
 
 interface ExpenseDialogProps {
-	group: Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>;
+	group: Awaited<ReturnType<typeof getCalculatedGroup>>;
 	children: React.ReactNode;
 	expense?: ExpenseFormData & { id: string }; // For editing existing expense
 }
@@ -64,17 +63,15 @@ export function ExpenseDialog({
 			amount: 0,
 			paidById: "",
 			date: new Date(),
-			splitAll: false,
+			splitAll: true,
 			selectedMembers: [],
-			sharingMethod: "equal" as const,
+			sharingMethod: getDefaultSharingMethod(group),
 			isRecurring: false,
 			recurringType: "monthly",
 			recurringStartDate: undefined,
 			memberAmounts: [],
 		},
 	});
-
-	const currentDate = form.watch("date") as Date;
 
 	// Initialize form with expense data when editing
 	useEffect(() => {
@@ -87,7 +84,7 @@ export function ExpenseDialog({
 				date: new Date(expense.date),
 				splitAll: expense.splitAll,
 				selectedMembers: expense.splitAll ? [] : expense.selectedMembers,
-				sharingMethod: expense.sharingMethod || "equal",
+				sharingMethod: expense.sharingMethod || getDefaultSharingMethod(group),
 				isRecurring: expense.isRecurring,
 				recurringType: expense.recurringType || "monthly",
 				recurringStartDate: expense.recurringStartDate
@@ -102,37 +99,16 @@ export function ExpenseDialog({
 				amount: 0,
 				paidById: "",
 				date: new Date(),
-				splitAll: false,
+				splitAll: true,
 				selectedMembers: [],
-				sharingMethod: "equal",
+				sharingMethod: getDefaultSharingMethod(group),
 				isRecurring: false,
 				recurringType: "monthly",
 				recurringStartDate: undefined,
 				memberAmounts: [],
 			});
 		}
-	}, [expense, form]);
-
-	const updateActiveMembersForDate = useCallback(
-		async (date: Date) => {
-			try {
-				const activeMembers = await getActiveMembersForDate(group.id, date);
-				setActiveMembersAtDate(activeMembers);
-
-				// If split all is enabled, update selected members to active members at this date
-				const splitAll = form.getValues("splitAll");
-				if (splitAll) {
-					form.setValue(
-						"selectedMembers",
-						activeMembers.map((member) => member.id),
-					);
-				}
-			} catch (error) {
-				console.error("Failed to get active members:", error);
-			}
-		},
-		[group.id, form],
-	);
+	}, [expense, form, group]);
 
 	// Initialize active members when dialog opens
 	useEffect(() => {
@@ -140,12 +116,6 @@ export function ExpenseDialog({
 			form.reset();
 		}
 	}, [open, form]);
-
-	useEffect(() => {
-		if (open) {
-			updateActiveMembersForDate(currentDate);
-		}
-	}, [currentDate, updateActiveMembersForDate, open]);
 
 	const onSubmit = async (data: ExpenseFormData) => {
 		setLoading(true);
@@ -286,18 +256,8 @@ export function ExpenseDialog({
 							</div>
 
 							<MemberEditor
-								members={activeMembersAtDate.map((member) => ({
-									...member,
-									weight: Number(member.weight),
-								}))}
-								activeMembersAtDate={activeMembersAtDate.map((member) => ({
-									...member,
-									weight: Number(member.weight),
-								}))}
+								group={group}
 								expenseDate={form.watch("date") as Date}
-								currency={group.currency}
-								weightsEnabled={group.weightsEnabled}
-								weightTypes={group.weightTypes}
 							/>
 						</form>
 					</Form>

@@ -158,11 +158,11 @@ export function SettingsSection({ group }: SettingsSectionProps) {
 							/>
 
 							{/* Weight Types Management */}
-							{form.watch("weightsEnabled") && (
+							{!!form.watch("weightsEnabled") && (
 								<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
 									<div className="flex items-center justify-between">
 										<h4 className="font-medium text-sm text-gray-900 dark:text-gray-100">
-											Weight Types
+											{t("weightTypes.title")}
 										</h4>
 										<Button
 											type="button"
@@ -172,7 +172,7 @@ export function SettingsSection({ group }: SettingsSectionProps) {
 											className="flex items-center gap-2"
 										>
 											<Plus className="w-4 h-4" />
-											Add Weight Type
+											{t("weightTypes.addButton")}
 										</Button>
 									</div>
 									<div className="space-y-2">
@@ -188,11 +188,11 @@ export function SettingsSection({ group }: SettingsSectionProps) {
 														updateWeightTypeName(weightType.id, e.target.value)
 													}
 													className="flex-1 px-2 py-1 text-sm border rounded bg-transparent"
-													placeholder="Weight type name"
+													placeholder={t("weightTypes.namePlaceholder")}
 												/>
 												{weightType.isDefault && (
 													<span className="text-xs text-gray-500 dark:text-gray-400 px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded">
-														Default
+														{t("weightTypes.defaultLabel")}
 													</span>
 												)}
 												{!weightType.isDefault && (
@@ -210,9 +210,7 @@ export function SettingsSection({ group }: SettingsSectionProps) {
 										))}
 									</div>
 									<p className="text-xs text-gray-500 dark:text-gray-400">
-										Weight types allow you to define different ways to
-										distribute expenses and consumptions. Members can have
-										different weights for each type.
+										{t("weightTypes.description")}
 									</p>
 								</div>
 							)}

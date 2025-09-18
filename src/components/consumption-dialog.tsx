@@ -3,15 +3,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import {
-	createConsumptionAction,
-	editConsumptionAction,
-	getActiveMembersForDate,
-	type getGroup,
-} from "@/actions";
-import type { getGroupWithRecurringExpenses } from "@/actions/get-group";
+import { createConsumptionAction, editConsumptionAction } from "@/actions";
+import type { getCalculatedGroup } from "@/actions/get-group";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -31,11 +26,15 @@ import {
 } from "@/components/ui/form-field";
 import { Label } from "@/components/ui/label";
 import { MemberEditor } from "@/components/ui/member-editor";
-import { type ConsumptionFormData, consumptionSchema } from "@/lib/schemas";
+import {
+	type ConsumptionFormData,
+	consumptionSchema,
+	getDefaultSharingMethod,
+} from "@/lib/schemas";
 import { handleActionErrors } from "@/lib/utils";
 
 interface ConsumptionDialogProps {
-	group: Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>;
+	group: Awaited<ReturnType<typeof getCalculatedGroup>>;
 	children: React.ReactNode;
 	consumption?: ConsumptionFormData & { id: string }; // For editing existing consumption
 	onConsumptionUpdated?: () => void;
@@ -43,17 +42,13 @@ interface ConsumptionDialogProps {
 
 export function ConsumptionDialog({
 	group,
-	group: { members, resources },
+	group: { resources },
 	children,
 	consumption,
 	onConsumptionUpdated,
 }: ConsumptionDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const [activeMembersAtDate, setActiveMembersAtDate] =
-		useState<
-			Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>["members"]
-		>(members);
 	const t = useTranslations("forms.consumption");
 
 	const { executeAsync: createConsumption } = useAction(
@@ -69,8 +64,9 @@ export function ConsumptionDialog({
 			amount: 0,
 			isUnitAmount: false,
 			date: new Date(),
+			splitAll: true,
 			selectedMembers: [],
-			sharingMethod: "equal" as const,
+			sharingMethod: getDefaultSharingMethod(group),
 			memberAmounts: [],
 		},
 	});
@@ -84,8 +80,10 @@ export function ConsumptionDialog({
 				amount: consumption.amount,
 				isUnitAmount: consumption.isUnitAmount,
 				date: new Date(consumption.date),
+				splitAll: consumption.splitAll,
 				selectedMembers: consumption.selectedMembers,
-				sharingMethod: consumption.sharingMethod || "equal",
+				sharingMethod:
+					consumption.sharingMethod || getDefaultSharingMethod(group),
 				memberAmounts: consumption.memberAmounts || [],
 			});
 		} else {
@@ -95,32 +93,13 @@ export function ConsumptionDialog({
 				amount: 0,
 				isUnitAmount: true,
 				date: new Date(),
+				splitAll: true,
 				selectedMembers: [],
-				sharingMethod: "equal",
+				sharingMethod: getDefaultSharingMethod(group),
 				memberAmounts: [],
 			});
 		}
-	}, [consumption, form]);
-
-	const updateActiveMembersForDate = useCallback(
-		async (date: Date) => {
-			try {
-				const activeMembers = await getActiveMembersForDate(group.id, date);
-				setActiveMembersAtDate(activeMembers);
-			} catch (error) {
-				console.error("Failed to get active members:", error);
-			}
-		},
-		[group.id],
-	);
-
-	// Initialize active members when dialog opens
-	useEffect(() => {
-		if (open) {
-			const currentDate = form.getValues("date") as Date;
-			updateActiveMembersForDate(currentDate);
-		}
-	}, [open, form, updateActiveMembersForDate]);
+	}, [consumption, form, group]);
 
 	// Initialize active members when dialog opens
 	useEffect(() => {
@@ -266,18 +245,8 @@ export function ConsumptionDialog({
 							)}
 
 							<MemberEditor
-								members={activeMembersAtDate.map((member) => ({
-									...member,
-									weight: Number(member.weight),
-								}))}
-								activeMembersAtDate={activeMembersAtDate.map((member) => ({
-									...member,
-									weight: Number(member.weight),
-								}))}
+								group={group}
 								expenseDate={form.watch("date") as Date}
-								currency="€" // TODO: Get from group
-								weightsEnabled={group.weightsEnabled}
-								weightTypes={group.weightTypes}
 								isUnitBased={form.watch("isUnitAmount") as boolean}
 								unitPrice={(() => {
 									const selectedResource = resources.find(

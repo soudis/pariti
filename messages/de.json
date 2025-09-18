@@ -158,6 +158,13 @@
 			"currency": "Währung",
 			"weightsEnabled": "Mitglieder-Gewichtungen aktivieren",
 			"weightsEnabledDescription": "Erlaube verschiedene Gewichtungen für Mitglieder, um ihren Anteil an Ausgaben anzupassen",
+			"weightTypes": {
+				"title": "Gewichtungstypen",
+				"addButton": "Gewichtungstyp hinzufügen",
+				"namePlaceholder": "Name des Gewichtungstyps",
+				"defaultLabel": "Standard",
+				"description": "Gewichtungstypen ermöglichen es, verschiedene Arten der Verteilung von Ausgaben und Verbräuchen zu definieren. Mitglieder können verschiedene Gewichtungen für jeden Typ haben."
+			},
 			"updateSettings": "Einstellungen aktualisieren",
 			"updating": "Aktualisiere...",
 			"settingsUpdated": "Einstellungen erfolgreich aktualisiert!",

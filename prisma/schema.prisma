@@ -38,7 +38,6 @@ model Member {
   name       String
   email      String?
   iban       String?
-  weight     Decimal   @default(1) @db.Decimal(5, 2) // Legacy field, kept for backward compatibility
   weights    Json?     // Object with weight type IDs as keys and weight values as values: {weightTypeId: number}
   groupId    String
   activeFrom DateTime  @default(now())
@@ -65,8 +64,8 @@ model Expense {
   date               DateTime  @default(now())
   groupId            String
   paidById           String
-  splitAll           Boolean   @default(false) // If true, split between all members (including future ones)
-  sharingMethod      String    @default("equal") // 'equal' or 'weights'
+  splitAll           Boolean   @default(true) // If true, split between all members (including future ones)
+  sharingMethod      String    
   isRecurring        Boolean   @default(false)
   recurringType      String? // 'weekly', 'monthly', 'yearly'
   recurringStartDate DateTime?
@@ -85,10 +84,8 @@ model ExpenseMember {
   id               String   @id @default(cuid())
   expenseId        String
   memberId         String
-  amount           Decimal  @db.Decimal(10, 2) // How much this member owes for this expense
-  weight           Decimal  @default(1) @db.Decimal(5, 2) // Legacy field, kept for backward compatibility
-  weightTypeId     String?  // ID of the weight type used for this expense member
-  isManuallyEdited Boolean  @default(false) // Whether this amount was manually edited by user
+  amount           Decimal?  @db.Decimal(10, 2) // How much this member owes for this expense
+  weight           Decimal?  @default(1) @db.Decimal(5, 2) // Legacy field, kept for backward compatibility
   createdAt        DateTime @default(now())
 
   // Relations
@@ -125,9 +122,10 @@ model Consumption {
   isUnitAmount Boolean  @default(false) // true if amount is in units, false if in money
   date         DateTime @default(now())
   description  String?
-  sharingMethod String  @default("equal") // 'equal' or 'weights'
+  sharingMethod String  
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  splitAll     Boolean  @default(true) // If true, split between all members (including future ones)
 
   // Relations
   resource     Resource           @relation(fields: [resourceId], references: [id], onDelete: Cascade)
@@ -141,10 +139,8 @@ model ConsumptionMember {
   createdAt        DateTime @default(now())
   consumptionId    String
   memberId         String
-  amount           Decimal  @db.Decimal(10, 2) // amount this member owes
-  weight           Decimal  @default(1) @db.Decimal(5, 2) // Legacy field, kept for backward compatibility
-  weightTypeId     String?  // ID of the weight type used for this consumption member
-  isManuallyEdited Boolean  @default(false) // Whether this amount was manually edited by user
+  amount           Decimal?  @db.Decimal(10, 2) // amount this member owes
+  weight           Decimal?  @default(1) @db.Decimal(5, 2) // Legacy field, kept for backward compatibility
 
   // Relations
   consumption   Consumption @relation(fields: [consumptionId], references: [id], onDelete: Cascade)

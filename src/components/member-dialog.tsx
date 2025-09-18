@@ -7,7 +7,7 @@ import { useAction } from "next-safe-action/hooks";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { createMemberAction } from "@/actions/create-member";
-import type { getGroupWithRecurringExpenses } from "@/actions/get-group";
+import type { getCalculatedGroup } from "@/actions/get-group";
 import { updateMemberAction } from "@/actions/update-member";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,7 +35,7 @@ import {
 import { handleActionErrors } from "@/lib/utils";
 
 interface MemberDialogProps {
-	group: Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>;
+	group: Awaited<ReturnType<typeof getCalculatedGroup>>;
 	weightsEnabled: boolean;
 	weightTypes?: WeightType[];
 	member?: MemberFormData & { id: string }; // For editing existing member

@@ -11,7 +11,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useQueryState } from "nuqs";
 import type { getGroup } from "@/actions";
-import type { getGroupWithRecurringExpenses } from "@/actions/get-group";
+import type { getCalculatedGroup } from "@/actions/get-group";
 import { ExpensesSection } from "@/components/expenses-section";
 import { MembersSection } from "@/components/members-section";
 import { OverviewSection } from "@/components/overview-section";
@@ -21,7 +21,7 @@ import { SettlementsSection } from "@/components/settlements-section";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface GroupTabsProps {
-	group: Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>;
+	group: Awaited<ReturnType<typeof getCalculatedGroup>>;
 	cutoffDate: Date | null;
 }
 

@@ -1,9 +1,12 @@
 "use client";
 
+import type { Member } from "@prisma/client";
+import Decimal from "decimal.js";
 import { Check, Edit3, Lock, Undo2, Unlock, User, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useId, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
+import type { getCalculatedGroup } from "@/actions/get-group";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,25 +20,17 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/currency";
-import { type MemberAmount, redistributeAmounts } from "@/lib/redistribution";
-import { getDefaultWeightTypes, type WeightType } from "@/lib/schemas";
+import { getCalculatedMemberAmounts } from "@/lib/get-calculated-member-amounts";
+import {
+	type ConsumptionFormData,
+	type ExpenseFormData,
+	getDefaultWeightTypes,
+} from "@/lib/schemas";
 import { cn } from "@/lib/utils";
 
-interface Member {
-	id: string;
-	name: string;
-	weight: number;
-	activeFrom?: Date | null;
-	activeTo?: Date | null;
-}
-
 interface MemberEditorProps {
-	members: Member[];
-	activeMembersAtDate: Member[];
+	group: Awaited<ReturnType<typeof getCalculatedGroup>>;
 	expenseDate: Date;
-	currency: string;
-	weightsEnabled: boolean;
-	weightTypes?: WeightType[];
 	className?: string;
 	// For unit-based consumptions
 	isUnitBased?: boolean;
@@ -43,12 +38,9 @@ interface MemberEditorProps {
 }
 
 export function MemberEditor({
-	members,
-	activeMembersAtDate,
+	group,
+	group: { members, currency, weightsEnabled, weightTypes },
 	expenseDate,
-	currency,
-	weightsEnabled,
-	weightTypes,
 	className,
 	isUnitBased = false,
 	unitPrice = 1,
@@ -65,152 +57,78 @@ export function MemberEditor({
 	// Get available weight types or use default
 	const availableWeightTypes = weightTypes || getDefaultWeightTypes();
 
-	const { watch, setValue } = useFormContext();
-	const selectedMembers = watch("selectedMembers") || [];
+	const { watch, setValue, formState } = useFormContext<
+		ExpenseFormData | ConsumptionFormData
+	>();
+	const selectedMembersIds = watch("selectedMembers") || [];
 	const splitAll = watch("splitAll") || false;
 	const totalAmount = watch("amount") || 0;
-	const sharingMethod = watch("sharingMethod") || "equal";
+	const sharingMethod = watch("sharingMethod");
 	const memberAmounts = watch("memberAmounts") || [];
+	const formErrors = formState.errors;
+	console.log(formErrors);
 
-	// Get current amounts for selected members only
-	const getCurrentAmounts = (): MemberAmount[] => {
-		return members.map((member) => {
-			const existing = memberAmounts.find(
-				(ma: MemberAmount) => ma.memberId === member.id,
-			);
-			return (
-				existing || {
-					memberId: member.id,
-					amount: 0,
-					weight: 1,
-					isManuallyEdited: false,
-				}
-			);
-		});
-	};
+	const activeMembersAtDate = useMemo(() => {
+		return members.filter(
+			(member) =>
+				(!member.activeFrom ||
+					new Date(member.activeFrom).getTime() <= expenseDate.getTime()) &&
+				(!member.activeTo ||
+					new Date(member.activeTo).getTime() >= expenseDate.getTime()),
+		);
+	}, [members, expenseDate]);
 
-	const currentAmounts = getCurrentAmounts();
-	const totalCurrentAmount = currentAmounts.reduce(
-		(sum, ma) => sum + ma.amount,
-		0,
-	);
-	const difference =
-		(isUnitBased ? totalAmount * unitPrice : totalAmount) - totalCurrentAmount;
-
-	const redistribute = useCallback(
-		(
-			selectedMembersLocal: string[] = selectedMembers,
-			amountsLocal: MemberAmount[] = currentAmounts,
-			sharingMethodLocal: "equal" | "weights" = sharingMethod,
-			weightTypeId?: string,
-		) => {
-			const selectedMembersList = activeMembersAtDate.filter((member) =>
-				selectedMembersLocal.includes(member.id),
-			);
-			const selectedAmounts = amountsLocal.filter(
-				(ma) =>
-					selectedMembersLocal.includes(ma.memberId) &&
-					activeMembersAtDate.find((member) => member.id === ma.memberId),
-			);
-
-			// For unit-based consumptions, we need to work with units internally
-			if (isUnitBased && unitPrice > 0) {
-				// Convert monetary amounts to units for redistribution
-				const amountsInUnits = selectedAmounts.map((ma) => ({
-					...ma,
-					amount: ma.amount / unitPrice,
-				}));
-
-				const redistributedAmounts = redistributeAmounts(
-					selectedMembersList,
-					amountsInUnits,
-					totalAmount, // totalAmount is already in units
-					weightsEnabled,
-					sharingMethodLocal,
-					weightTypeId,
-				);
-
-				// Convert back to monetary amounts for storage
-				const monetaryAmounts = redistributedAmounts.map((ma) => ({
-					...ma,
-					amount: ma.amount * unitPrice,
-				}));
-				setValue("memberAmounts", monetaryAmounts);
-			} else {
-				// For regular expenses, work directly with monetary amounts
-				const redistributedAmounts = redistributeAmounts(
-					selectedMembersList,
-					selectedAmounts,
-					totalAmount,
-					weightsEnabled,
-					sharingMethodLocal,
-					weightTypeId,
-				);
-				setValue("memberAmounts", redistributedAmounts);
-			}
-		},
-		[
-			activeMembersAtDate,
-			selectedMembers,
-			currentAmounts,
-			totalAmount,
-			weightsEnabled,
+	const calculatedMemberAmounts = useMemo(() => {
+		return getCalculatedMemberAmounts(group, memberAmounts, {
+			amount: new Decimal(totalAmount),
 			sharingMethod,
-			isUnitBased,
-			unitPrice,
-			setValue,
-		],
+			splitAll,
+			date: expenseDate,
+		});
+	}, [group, memberAmounts, totalAmount, sharingMethod, splitAll, expenseDate]);
+
+	const totalCurrentAmount = useMemo(
+		() => calculatedMemberAmounts.reduce((sum, ma) => sum + ma.amount, 0),
+		[calculatedMemberAmounts],
 	);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: always needs to update when totalAmount changes
-	useEffect(() => {
-		redistribute();
-	}, [totalAmount]);
+	const difference = useMemo(
+		() =>
+			(isUnitBased ? totalAmount * unitPrice : totalAmount) -
+			totalCurrentAmount,
+		[isUnitBased, totalAmount, unitPrice, totalCurrentAmount],
+	);
 
 	const handleMemberToggle = (memberId: string, checked: boolean) => {
-		let updatedSelectedMembers = selectedMembers;
+		let updatedSelectedMembers = selectedMembersIds;
 		if (checked) {
-			updatedSelectedMembers = [...selectedMembers, memberId];
+			updatedSelectedMembers = [...selectedMembersIds, memberId];
 		} else {
-			updatedSelectedMembers = selectedMembers.filter(
+			updatedSelectedMembers = selectedMembersIds.filter(
 				(id: string) => id !== memberId,
 			);
 		}
 		setValue("selectedMembers", updatedSelectedMembers);
-		redistribute(updatedSelectedMembers);
+		setValue("memberAmounts", [
+			...memberAmounts.filter((ma) =>
+				updatedSelectedMembers.includes(ma.memberId),
+			),
+			...updatedSelectedMembers
+				.filter((id) => !memberAmounts.some((ma) => ma.memberId === id))
+				.map((id) => ({ memberId: id, amount: null, weight: null })),
+		]);
 	};
 
 	const handleSplitAllToggle = (checked: boolean) => {
 		setValue("splitAll", checked);
-		if (checked) {
-			// Select all active members at the expense date
-			setValue(
-				"selectedMembers",
-				activeMembersAtDate.map((member) => member.id),
-			);
-			redistribute(activeMembersAtDate.map((member) => member.id));
-		} else {
-			// Clear selection when "split all" is disabled
-			setValue("selectedMembers", []);
-			redistribute([]);
-		}
 	};
 
 	const handleAmountChange = (memberId: string, newAmount: number) => {
 		// Update the amount and mark as manually edited
-		const hasChanged =
-			newAmount !==
-			currentAmounts.find((ma) => ma.memberId === memberId)?.amount;
-		if (hasChanged) {
-			const updatedAmounts = currentAmounts.map((ma) =>
-				ma.memberId === memberId
-					? { ...ma, amount: newAmount, isManuallyEdited: true }
-					: ma,
-			);
-
-			// Trigger redistribution with updated amounts
-			redistribute(selectedMembers, updatedAmounts);
-		}
+		const updatedAmounts = memberAmounts.map((ma) =>
+			ma.memberId === memberId ? { ...ma, amount: newAmount } : ma,
+		);
+		setValue("memberAmounts", updatedAmounts);
 	};
 
 	const handleAmountInputChange = (_memberId: string, value: string) => {
@@ -228,43 +146,48 @@ export function MemberEditor({
 
 	const handleAmountInputFocus = (memberId: string) => {
 		setEditingMemberId(memberId);
-		const memberAmount = currentAmounts.find((ma) => ma.memberId === memberId);
+		const memberAmount = calculatedMemberAmounts.find(
+			(ma) => ma.memberId === memberId,
+		);
 		setTempAmountValue(memberAmount?.amount.toFixed(2) || "0");
 	};
 
 	const handleToggleManualEdit = (memberId: string) => {
-		const memberToToggle = currentAmounts.find(
-			(ma) => ma.memberId === memberId,
-		);
+		const memberToToggle = memberAmounts.find((ma) => ma.memberId === memberId);
 		if (!memberToToggle) return;
 
-		const isCurrentlyManual = memberToToggle.isManuallyEdited;
+		const isCurrentlyManual = !!memberToToggle.amount;
 
 		// Toggle the manual edit status
-		const updatedAmounts = currentAmounts.map((ma) =>
+		const updatedAmounts = memberAmounts.map((ma) =>
 			ma.memberId === memberId
-				? { ...ma, isManuallyEdited: !isCurrentlyManual }
+				? {
+						...ma,
+						amount: isCurrentlyManual
+							? null
+							: calculatedMemberAmounts.find((ma) => ma.memberId === memberId)
+									?.amount,
+					}
 				: ma,
 		);
-		redistribute(selectedMembers, updatedAmounts);
+		setValue("memberAmounts", updatedAmounts);
 	};
 
 	const handleResetToDefaults = () => {
 		// Reset all amounts to automatic (not manually edited)
-		const resetAmounts = currentAmounts.map((ma) => ({
+		const resetAmounts = memberAmounts.map((ma) => ({
 			...ma,
-			isManuallyEdited: false,
+			amount: null,
+			weight: null,
 		}));
-		redistribute(selectedMembers, resetAmounts);
+		setValue("memberAmounts", resetAmounts);
 	};
 
 	const handleWeightChange = (memberId: string, newWeight: number) => {
-		const updatedAmounts = currentAmounts.map((ma) =>
+		const updatedAmounts = memberAmounts.map((ma) =>
 			ma.memberId === memberId ? { ...ma, weight: newWeight } : ma,
 		);
 		setValue("memberAmounts", updatedAmounts);
-		// Trigger redistribution with new weights
-		redistribute(selectedMembers, updatedAmounts);
 	};
 
 	const handleWeightInputChange = (_memberId: string, value: string) => {
@@ -282,12 +205,11 @@ export function MemberEditor({
 
 	const handleWeightInputFocus = (memberId: string) => {
 		setEditingWeightMemberId(memberId);
-		setTempWeightValue(getMemberWeight(memberId).toString());
-	};
-
-	const getMemberWeight = (memberId: string): number => {
-		const memberAmount = currentAmounts.find((ma) => ma.memberId === memberId);
-		return memberAmount?.weight ?? 1;
+		setTempWeightValue(
+			calculatedMemberAmounts
+				.find((ma) => ma.memberId === memberId)
+				?.weight.toString() || "1",
+		);
 	};
 
 	const isMemberActive = (member: Member) => {
@@ -322,6 +244,33 @@ export function MemberEditor({
 						})}
 					</p>
 				)}
+
+				{/* Weight Type Selection for Split All */}
+				{splitAll && weightsEnabled && (
+					<div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+						<Label className="text-sm font-medium mb-2 block">
+							Distribution Method
+						</Label>
+						<Select
+							value={sharingMethod}
+							onValueChange={(value: string) => {
+								setValue("sharingMethod", value);
+							}}
+						>
+							<SelectTrigger className="w-full">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="equal">Equally</SelectItem>
+								{availableWeightTypes.map((weightType) => (
+									<SelectItem key={weightType.id} value={weightType.id}>
+										By {weightType.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+				)}
 			</div>
 
 			{/* Individual Member Selection with Amount Editing */}
@@ -338,26 +287,7 @@ export function MemberEditor({
 							<Select
 								value={sharingMethod}
 								onValueChange={(value: string) => {
-									if (value === "equal") {
-										setValue("sharingMethod", "equal");
-										setValue("weightTypeId", undefined);
-										redistribute(selectedMembers, currentAmounts, "equal");
-									} else if (value.startsWith("weights-")) {
-										const weightTypeId = value.replace("weights-", "");
-										setValue("sharingMethod", "weights");
-										setValue("weightTypeId", weightTypeId);
-										redistribute(
-											selectedMembers,
-											currentAmounts,
-											"weights",
-											weightTypeId,
-										);
-									} else {
-										// Legacy "weights" value
-										setValue("sharingMethod", "weights");
-										setValue("weightTypeId", undefined);
-										redistribute(selectedMembers, currentAmounts, "weights");
-									}
+									setValue("sharingMethod", value);
 								}}
 							>
 								<SelectTrigger className="w-32 h-8 text-xs">
@@ -381,7 +311,7 @@ export function MemberEditor({
 									)}
 								</SelectContent>
 							</Select>
-							{currentAmounts.some((ma) => ma.isManuallyEdited) && (
+							{memberAmounts.some((ma) => !!ma.amount || !!ma.weight) && (
 								<Button
 									type="button"
 									variant="outline"
@@ -397,17 +327,19 @@ export function MemberEditor({
 					<div className="space-y-3">
 						{members.map((member) => {
 							const isActive = isMemberActive(member);
-							const isSelected = selectedMembers.includes(member.id);
-							const memberAmount = currentAmounts.find(
+							const isSelected = selectedMembersIds.includes(member.id);
+							const memberAmount = memberAmounts.find(
 								(ma) => ma.memberId === member.id,
 							) || {
 								memberId: member.id,
-								amount: 0,
-								weight: 1,
-								isManuallyEdited: false,
+								amount: null,
+								weight: null,
 							};
+							const calculatedMemberAmount = calculatedMemberAmounts.find(
+								(ma) => ma.memberId === member.id,
+							);
 							const isEditing = editingMemberId === member.id;
-							const isManuallyEdited = memberAmount.isManuallyEdited;
+							const isManuallyEdited = !!memberAmount.amount;
 
 							return (
 								<div
@@ -436,7 +368,7 @@ export function MemberEditor({
 												</span>
 												{weightsEnabled && sharingMethod === "equal" && (
 													<span className="text-xs text-gray-500">
-														({t("weight")}: {member.weight})
+														({t("weight")}: {calculatedMemberAmount?.weight})
 													</span>
 												)}
 												{sharingMethod === "weights" && !isManuallyEdited && (
@@ -451,7 +383,8 @@ export function MemberEditor({
 															value={
 																editingWeightMemberId === member.id
 																	? tempWeightValue
-																	: getMemberWeight(member.id)
+																	: calculatedMemberAmount?.weight.toString() ||
+																		"1"
 															}
 															onChange={(e) =>
 																handleWeightInputChange(
@@ -493,7 +426,8 @@ export function MemberEditor({
 															value={
 																editingMemberId === member.id
 																	? tempAmountValue
-																	: memberAmount.amount.toFixed(2)
+																	: calculatedMemberAmount?.amount.toFixed(2) ||
+																		"0"
 															}
 															onChange={(e) =>
 																handleAmountInputChange(
@@ -528,7 +462,10 @@ export function MemberEditor({
 															type="button"
 															onClick={() => setEditingMemberId(member.id)}
 														>
-															{formatCurrency(memberAmount.amount, currency)}
+															{formatCurrency(
+																calculatedMemberAmount?.amount || 0,
+																currency,
+															)}
 														</button>
 														<Button
 															type="button"
@@ -573,7 +510,7 @@ export function MemberEditor({
 					</div>
 
 					{/* Total and Difference */}
-					{selectedMembers.length > 0 && (
+					{selectedMembersIds.length > 0 && (
 						<div className="pt-3 border-t space-y-2">
 							<div className="flex justify-between text-sm">
 								<span>{t("totalAmount")}:</span>

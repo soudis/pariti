@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getGroupWithRecurringExpenses } from "@/actions/get-group";
+import { getCalculatedGroup } from "@/actions/get-group";
 import { db } from "@/lib/db";
 import { actionClient } from "@/lib/safe-action";
 import {
@@ -10,19 +10,24 @@ import {
 	type SettlementFormData,
 } from "@/lib/schemas";
 import { convertToPlainObject } from "@/lib/utils";
-import { calculateBalances } from "./utils";
 
 async function createSettlement(groupId: string, data: SettlementFormData) {
-	const group = await getGroupWithRecurringExpenses(groupId);
+	const group = await getCalculatedGroup(groupId);
 
 	if (!group) throw new Error("Group not found");
 
-	// Calculate balances for all members and resources
-	const balances = await calculateBalances(group);
-
 	// Generate settlement transactions based on type
 	const transactions = generateSettlementTransactions(
-		balances,
+		{
+			...group.members.reduce((acc, member) => {
+				acc.set(member.id, member.balance);
+				return acc;
+			}, new Map<string, number>()),
+			...group.resources.reduce((acc, resource) => {
+				acc.set(resource.id, resource.balance);
+				return acc;
+			}, new Map<string, number>()),
+		},
 		data.settlementType,
 		data.centerId,
 	);

@@ -18,7 +18,7 @@ import { useAction } from "next-safe-action/hooks";
 import { useQueryState } from "nuqs";
 import { useId, useState } from "react";
 import { removeExpenseAction } from "@/actions";
-import type { getGroupWithRecurringExpenses } from "@/actions/get-group";
+import type { getCalculatedGroup } from "@/actions/get-group";
 import { ExpenseDialog } from "@/components/expense-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ import { formatCurrency } from "@/lib/currency";
 import { handleActionErrors } from "@/lib/utils";
 
 interface ExpensesSectionProps {
-	group: Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>;
+	group: Awaited<ReturnType<typeof getCalculatedGroup>>;
 	cutoffDate: Date | null;
 }
 
@@ -217,7 +217,6 @@ export function ExpensesSection({
 													memberId: em.memberId,
 													amount: Number(em.amount),
 													weight: Number(em.weight),
-													isManuallyEdited: em.isManuallyEdited,
 												})),
 											}}
 										>
@@ -267,16 +266,20 @@ export function ExpensesSection({
 									</p>
 									<div className="flex flex-wrap gap-2">
 										{expense.splitAll ? (
-											expense.effectiveMembers &&
-											expense.effectiveMembers.length > 0 ? (
-												expense.effectiveMembers.map((member) => (
+											expense.calculatedExpenseMembers &&
+											expense.calculatedExpenseMembers.length > 0 ? (
+												expense.calculatedExpenseMembers.map((member) => (
 													<Badge
-														key={member.id}
+														key={member.memberId}
 														variant="outline"
 														className="text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300"
 													>
-														{member.name}:{" "}
-														{formatCurrency(member.amount, group.currency)}
+														{
+															group.members.find(
+																(m) => m.id === member.memberId,
+															)?.name
+														}
+														: {formatCurrency(member.amount, group.currency)}
 													</Badge>
 												))
 											) : (
@@ -292,14 +295,18 @@ export function ExpensesSection({
 												</Badge>
 											)
 										) : (
-											expense.expenseMembers.map((expenseMember) => (
+											expense.calculatedExpenseMembers.map((expenseMember) => (
 												<Badge
-													key={expenseMember.id}
+													key={expenseMember.memberId}
 													variant="outline"
 													className="text-xs"
 												>
-													{expenseMember.member.name}: $
-													{Number(expenseMember.amount).toFixed(2)}
+													{
+														group.members.find(
+															(m) => m.id === expenseMember.memberId,
+														)?.name
+													}
+													: ${Number(expenseMember.amount).toFixed(2)}
 												</Badge>
 											))
 										)}
@@ -308,7 +315,7 @@ export function ExpensesSection({
 										<p className="text-xs text-blue-600 dark:text-blue-400">
 											{t("includesActiveMembers", {
 												count:
-													expense.effectiveMembers?.length ||
+													expense.calculatedExpenseMembers?.length ||
 													group.members.length,
 												date: new Date(expense.date).toLocaleDateString(),
 											})}

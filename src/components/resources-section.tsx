@@ -20,7 +20,7 @@ import {
 	removeConsumptionAction,
 	removeResourceAction,
 } from "@/actions";
-import type { getGroupWithRecurringExpenses } from "@/actions/get-group";
+import type { getCalculatedGroup } from "@/actions/get-group";
 import { ConsumptionDialog } from "@/components/consumption-dialog";
 import { ResourceDialog } from "@/components/resource-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +32,7 @@ import { formatCurrency } from "@/lib/currency";
 import { handleActionErrors } from "@/lib/utils";
 
 interface ResourcesSectionProps {
-	group: Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>;
+	group: Awaited<ReturnType<typeof getCalculatedGroup>>;
 	cutoffDate: Date | null;
 }
 
@@ -361,8 +361,6 @@ export function ResourcesSection({
 																						memberId: cm.memberId,
 																						amount: Number(cm.amount),
 																						weight: Number(cm.weight),
-																						isManuallyEdited:
-																							cm.isManuallyEdited,
 																					}),
 																				),
 																		}}
