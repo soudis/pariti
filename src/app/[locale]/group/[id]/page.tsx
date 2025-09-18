@@ -1,9 +1,6 @@
 import { notFound } from "next/navigation";
-import {
-	generateRecurringExpenseInstances,
-	getGroup,
-	getSettlementCutoffDate,
-} from "@/actions";
+import { getSettlementCutoffDate } from "@/actions";
+import { getGroupWithRecurringExpenses } from "@/actions/get-group";
 import { GroupHeader } from "@/components/group-header";
 import { GroupTabs } from "@/components/group-tabs";
 import { GroupVisitTracker } from "@/components/group-visit-tracker";
@@ -16,30 +13,11 @@ interface GroupPageProps {
 
 export default async function GroupPage({ params }: GroupPageProps) {
 	const { id } = await params;
-	const group = await getGroup(id);
+	const group = await getGroupWithRecurringExpenses(id);
 
 	if (!group) {
 		notFound();
 	}
-
-	// Generate recurring expense instances and convert Decimal to numbers
-	const allExpenses: Awaited<
-		ReturnType<typeof generateRecurringExpenseInstances>
-	> = [];
-	for (const expense of group.expenses) {
-		const instances = await generateRecurringExpenseInstances(expense);
-		allExpenses.push(...instances);
-	}
-
-	// Sort expenses by date (newest first)
-	allExpenses.sort(
-		(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-	);
-
-	// Collect all consumptions from resources
-	const allConsumptions = group.resources.flatMap(
-		(resource) => resource.consumptions,
-	);
 
 	// Get the settlement cutoff date for filtering
 	const cutoffDate = await getSettlementCutoffDate(group.id);
@@ -51,12 +29,7 @@ export default async function GroupPage({ params }: GroupPageProps) {
 				<div className="max-w-6xl mx-auto space-y-4">
 					<GroupHeader group={group} />
 
-					<GroupTabs
-						group={group}
-						expenses={allExpenses}
-						cutoffDate={cutoffDate}
-						consumptions={allConsumptions}
-					/>
+					<GroupTabs group={group} cutoffDate={cutoffDate} />
 				</div>
 			</div>
 		</div>

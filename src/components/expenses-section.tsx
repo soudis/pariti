@@ -17,11 +17,8 @@ import { useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
 import { useQueryState } from "nuqs";
 import { useId, useState } from "react";
-import {
-	type generateRecurringExpenseInstances,
-	type getGroup,
-	removeExpenseAction,
-} from "@/actions";
+import { removeExpenseAction } from "@/actions";
+import type { getGroupWithRecurringExpenses } from "@/actions/get-group";
 import { ExpenseDialog } from "@/components/expense-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,14 +30,13 @@ import { formatCurrency } from "@/lib/currency";
 import { handleActionErrors } from "@/lib/utils";
 
 interface ExpensesSectionProps {
-	group: Awaited<ReturnType<typeof getGroup>>;
-	expenses?: Awaited<ReturnType<typeof generateRecurringExpenseInstances>>;
+	group: Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>;
 	cutoffDate: Date | null;
 }
 
 export function ExpensesSection({
 	group,
-	expenses,
+	group: { expenses },
 	cutoffDate,
 }: ExpensesSectionProps) {
 	const [deletingId, setDeletingId] = useState<string | null>(null);

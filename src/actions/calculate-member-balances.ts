@@ -1,54 +1,10 @@
 "use server";
 
-import { db } from "@/lib/db";
-import { generateRecurringExpenseInstances } from "./generate-recurring-expense-instances";
+import { getGroupWithRecurringExpenses } from "@/actions/get-group";
 import { getSettlementCutoffDate } from "./get-settlement-cutoff-date";
 
 export async function calculateMemberBalances(groupId: string) {
-	const group = await db.group.findUnique({
-		where: { id: groupId },
-		include: {
-			members: true,
-			expenses: {
-				include: {
-					paidBy: true,
-					expenseMembers: {
-						include: {
-							member: true,
-						},
-					},
-				},
-			},
-			resources: {
-				include: {
-					consumptions: {
-						include: {
-							consumptionMembers: {
-								include: {
-									member: true,
-								},
-							},
-						},
-					},
-				},
-			},
-			settlements: {
-				include: {
-					settlementMembers: {
-						include: {
-							fromMember: true,
-							toMember: true,
-							fromResource: true,
-							toResource: true,
-						},
-					},
-				},
-				where: {
-					status: { not: "completed" },
-				},
-			},
-		},
-	});
+	const group = await getGroupWithRecurringExpenses(groupId);
 
 	if (!group) return [];
 
@@ -62,22 +18,10 @@ export async function calculateMemberBalances(groupId: string) {
 	// Get the settlement cutoff date for filtering
 	const cutoffDate = await getSettlementCutoffDate(groupId);
 
-	// Generate all recurring expense instances (including virtual ones)
-	const allExpenses = [];
-	for (const expense of group.expenses) {
-		try {
-			const instances = await generateRecurringExpenseInstances(expense);
-			allExpenses.push(...instances);
-		} catch {
-			// If recurring generation fails, use the original expense
-			allExpenses.push(expense);
-		}
-	}
-
 	// Filter expenses based on cutoff date
 	const filteredExpenses = cutoffDate
-		? allExpenses.filter((expense) => new Date(expense.date) >= cutoffDate)
-		: allExpenses;
+		? group.expenses.filter((expense) => new Date(expense.date) >= cutoffDate)
+		: group.expenses;
 
 	// Process all expenses (including virtual/recurring ones)
 	filteredExpenses.forEach((expense: any) => {

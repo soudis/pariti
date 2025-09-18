@@ -4,19 +4,17 @@ import { Edit, Plus, Trash2, User, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
 import { useEffect, useState } from "react";
-import {
-	calculateMemberBalances,
-	type getGroup,
-	removeMemberAction,
-} from "@/actions";
+import { calculateMemberBalances, removeMemberAction } from "@/actions";
+import type { getGroupWithRecurringExpenses } from "@/actions/get-group";
 import { MemberDialog } from "@/components/member-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/currency";
 import { handleActionErrors } from "@/lib/utils";
 
 interface MembersSectionProps {
-	group: Awaited<ReturnType<typeof getGroup>>;
+	group: Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>;
 }
 
 export function MembersSection({ group }: MembersSectionProps) {
@@ -79,8 +77,9 @@ export function MembersSection({ group }: MembersSectionProps) {
 						{t("title")}
 					</CardTitle>
 					<MemberDialog
-						groupId={group.id}
+						group={group}
 						weightsEnabled={group.weightsEnabled}
+						weightTypes={group.weightTypes}
 					>
 						<Button size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
 							<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
@@ -121,14 +120,43 @@ export function MembersSection({ group }: MembersSectionProps) {
 													{member.iban}
 												</p>
 											)}
+											{/* Weights display */}
+											{group.weightsEnabled && (
+												<div className="mt-2 flex flex-wrap gap-1">
+													{group.weightTypes && group.weightTypes.length > 1 ? (
+														// Multiple weight types
+														group.weightTypes.map((weightType) => {
+															const weight =
+																member.weights?.[weightType.id] ||
+																member.weight ||
+																1;
+															return (
+																<Badge
+																	key={weightType.id}
+																	variant="secondary"
+																	className="text-xs"
+																>
+																	{weightType.name}: {Number(weight).toFixed(1)}
+																</Badge>
+															);
+														})
+													) : (
+														// Single weight (legacy)
+														<Badge variant="secondary" className="text-xs">
+															Weight: {Number(member.weight || 1).toFixed(1)}
+														</Badge>
+													)}
+												</div>
+											)}
 										</div>
 									</div>
 									{/* Action buttons - aligned to top right */}
 									<div className="flex items-start gap-2 flex-shrink-0 ml-2">
 										<MemberDialog
-											groupId={group.id}
+											group={group}
 											member={{ ...member, weight: Number(member.weight) }}
 											weightsEnabled={group.weightsEnabled}
+											weightTypes={group.weightTypes}
 										>
 											<Button
 												variant="ghost"

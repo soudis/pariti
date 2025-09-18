@@ -1,9 +1,43 @@
 import { z } from "zod";
 
+// Weight type definition
+export const weightTypeSchema = z.object({
+	id: z.string(),
+	name: z.string().min(1, "Weight type name is required"),
+	isDefault: z.boolean().default(false),
+});
+
+export type WeightType = z.infer<typeof weightTypeSchema>;
+
+// Utility functions for weight types
+export const getDefaultWeightType = (): WeightType => ({
+	id: "default",
+	name: "Default",
+	isDefault: true,
+});
+
+export const getDefaultWeightTypes = (): WeightType[] => [
+	getDefaultWeightType(),
+];
+
+export const getWeightTypeById = (
+	weightTypes: WeightType[],
+	id: string,
+): WeightType | undefined => {
+	return weightTypes.find((wt) => wt.id === id);
+};
+
+export const getDefaultWeightTypeFromList = (
+	weightTypes: WeightType[],
+): WeightType => {
+	return weightTypes.find((wt) => wt.isDefault) || getDefaultWeightType();
+};
+
 export const memberAmountSchema = z.object({
 	memberId: z.string(),
 	amount: z.coerce.number().min(0, "Amount must be non-negative"),
-	weight: z.coerce.number().min(0.1, "Weight must be at least 0.1").default(1),
+	weight: z.coerce.number().min(0.1, "Weight must be at least 0.1").default(1), // Legacy field for backward compatibility
+	weightTypeId: z.string().optional(), // ID of the weight type used
 	isManuallyEdited: z.coerce.boolean().default(false),
 });
 
@@ -19,6 +53,7 @@ export const expenseSchema = z
 			.array(z.string())
 			.min(1, "Please select at least one member"),
 		sharingMethod: z.enum(["equal", "weights"]).default("equal"),
+		weightTypeId: z.string().optional(), // ID of the weight type to use for distribution
 		memberAmounts: z.array(memberAmountSchema).optional(),
 		isRecurring: z.coerce.boolean(),
 		recurringType: z.enum(["weekly", "monthly", "yearly"]).nullish(),
@@ -83,6 +118,7 @@ export const consumptionSchema = z.object({
 		.array(z.string())
 		.min(1, "Please select at least one member"),
 	sharingMethod: z.enum(["equal", "weights"]).default("equal"),
+	weightTypeId: z.string().optional(), // ID of the weight type to use for distribution
 	memberAmounts: z.array(memberAmountSchema).optional(),
 });
 
@@ -90,10 +126,10 @@ export const memberSchema = z.object({
 	name: z.string().min(1, "Name is required"),
 	email: z.email().nullish().or(z.literal("")),
 	iban: z.string().nullish(),
-	weight: z.coerce
-		.number()
-		.min(0.01, "Weight must be greater than 0")
-		.optional(),
+	weight: z.coerce.number().min(0, "Weight must be non-negative").optional(), // Legacy field for backward compatibility
+	weights: z
+		.record(z.string(), z.coerce.number().min(0, "Weight must be non-negative"))
+		.optional(), // Object with weight type IDs as keys
 	activeFrom: z.coerce.date(),
 	activeTo: z.coerce.date().nullish(),
 	hasEndDate: z.coerce.boolean().nullish(),
@@ -105,6 +141,7 @@ export const groupSchema = z.object({
 	description: z.string().nullish(),
 	currency: z.string().min(1, "Currency is required"),
 	weightsEnabled: z.coerce.boolean(),
+	weightTypes: z.array(weightTypeSchema).optional(),
 });
 
 export const createGroupInputSchema = z.object({

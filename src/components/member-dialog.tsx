@@ -7,6 +7,7 @@ import { useAction } from "next-safe-action/hooks";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { createMemberAction } from "@/actions/create-member";
+import type { getGroupWithRecurringExpenses } from "@/actions/get-group";
 import { updateMemberAction } from "@/actions/update-member";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,19 +26,27 @@ import {
 	NumberField,
 	TextField,
 } from "@/components/ui/form-field";
-import { type MemberFormData, memberSchema } from "@/lib/schemas";
+import {
+	getDefaultWeightTypes,
+	type MemberFormData,
+	memberSchema,
+	type WeightType,
+} from "@/lib/schemas";
 import { handleActionErrors } from "@/lib/utils";
 
 interface MemberDialogProps {
-	groupId: string;
+	group: Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>;
 	weightsEnabled: boolean;
+	weightTypes?: WeightType[];
 	member?: MemberFormData & { id: string }; // For editing existing member
 	children: React.ReactNode;
 }
 
 export function MemberDialog({
-	groupId,
+	group,
+	group: { id: groupId },
 	weightsEnabled,
+	weightTypes,
 	member,
 	children,
 }: MemberDialogProps) {
@@ -50,13 +59,20 @@ export function MemberDialog({
 	const router = useRouter();
 	const locale = useLocale();
 
+	// Get available weight types or use default
+	const availableWeightTypes = weightTypes || getDefaultWeightTypes();
+
 	const form = useForm({
 		resolver: zodResolver(memberSchema),
 		defaultValues: {
 			name: member?.name || "",
 			email: member?.email || "",
 			iban: member?.iban || "",
-			weight: member?.weight || 1,
+			weight: member?.weight || 1, // Legacy field
+			weights:
+				member?.weights ||
+				// biome-ignore lint/performance/noAccumulatingSpread: needed
+				group.weightTypes.reduce((acc, wt) => ({ ...acc, [wt.id]: 1 }), {}), // New multiple weights field
 			activeFrom: member?.activeFrom || new Date(),
 			activeTo: member?.activeTo ? new Date(member.activeTo) : undefined,
 			hasEndDate: !!member?.activeTo,
@@ -70,13 +86,17 @@ export function MemberDialog({
 				name: member?.name || "",
 				email: member?.email || "",
 				iban: member?.iban || "",
-				weight: member?.weight || 1,
+				weight: member?.weight || 1, // Legacy field
+				weights:
+					member?.weights ||
+					// biome-ignore lint/performance/noAccumulatingSpread: needed
+					group.weightTypes.reduce((acc, wt) => ({ ...acc, [wt.id]: 1 }), {}), // New multiple weights field
 				activeFrom: member?.activeFrom || new Date(),
 				activeTo: member?.activeTo ? new Date(member.activeTo) : undefined,
 				hasEndDate: !!member?.activeTo,
 			});
 		}
-	}, [open, member, form]);
+	}, [open, member, form, group.weightTypes]);
 
 	const onSubmit = async (data: MemberFormData) => {
 		setLoading(true);
@@ -141,15 +161,39 @@ export function MemberDialog({
 							/>
 
 							{weightsEnabled && (
-								<NumberField
-									control={form.control}
-									name="weight"
-									label={t("weight")}
-									placeholder={t("weightPlaceholder")}
-									min={0.01}
-									step="0.01"
-									required
-								/>
+								<div className="space-y-4">
+									{availableWeightTypes.length === 1 ? (
+										// Single weight type (backward compatibility)
+										<NumberField
+											control={form.control}
+											name="weight"
+											label={t("weight")}
+											placeholder={t("weightPlaceholder")}
+											min={0}
+											step="0.1"
+											required
+										/>
+									) : (
+										// Multiple weight types
+										<div className="space-y-3">
+											<h4 className="font-medium text-sm text-gray-900 dark:text-gray-100">
+												Weights
+											</h4>
+											{availableWeightTypes.map((weightType) => (
+												<NumberField
+													key={weightType.id}
+													control={form.control}
+													name={`weights.${weightType.id}`}
+													label={weightType.name}
+													placeholder={`Weight for ${weightType.name}`}
+													min={0}
+													step="0.1"
+													required
+												/>
+											))}
+										</div>
+									)}
+								</div>
 							)}
 
 							<DateField

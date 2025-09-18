@@ -20,6 +20,7 @@ import {
 	removeConsumptionAction,
 	removeResourceAction,
 } from "@/actions";
+import type { getGroupWithRecurringExpenses } from "@/actions/get-group";
 import { ConsumptionDialog } from "@/components/consumption-dialog";
 import { ResourceDialog } from "@/components/resource-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -31,15 +32,13 @@ import { formatCurrency } from "@/lib/currency";
 import { handleActionErrors } from "@/lib/utils";
 
 interface ResourcesSectionProps {
-	groupId: string;
-	group: Awaited<ReturnType<typeof getGroup>>;
+	group: Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>;
 	cutoffDate: Date | null;
 }
 
 export function ResourcesSection({
-	groupId,
 	group,
-	group: { resources, members },
+	group: { resources, id: groupId },
 	cutoffDate,
 }: ResourcesSectionProps) {
 	const [deletingResourceId, setDeletingResourceId] = useState<string | null>(
@@ -160,11 +159,7 @@ export function ResourcesSection({
 							</div>
 						)}
 						<div className="grid grid-cols-1 sm:flex sm:gap-2 gap-2">
-							<ConsumptionDialog
-								groupId={groupId}
-								resources={resources}
-								members={members}
-							>
+							<ConsumptionDialog group={group}>
 								<Button
 									size="sm"
 									className="w-full sm:w-auto text-xs sm:text-sm"
@@ -348,9 +343,7 @@ export function ResourcesSection({
 																</div>
 																<div className="flex items-center gap-2">
 																	<ConsumptionDialog
-																		groupId={groupId}
-																		resources={resources}
-																		members={members}
+																		group={group}
 																		consumption={{
 																			...consumption,
 																			amount: Number(consumption.amount),

@@ -43,7 +43,8 @@ async function updateMember(memberId: Member["id"], data: MemberFormData) {
 			name: data.name,
 			email: data.email,
 			iban: data.iban,
-			weight: data.weight,
+			weight: data.weight, // Legacy field
+			weights: data.weights, // New multiple weights field
 			activeFrom: data.activeFrom,
 			activeTo: data.activeTo,
 		},

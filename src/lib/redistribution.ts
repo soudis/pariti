@@ -9,7 +9,8 @@ export interface MemberAmount {
 
 export interface Member {
 	id: string;
-	weight: number;
+	weight: number; // Legacy field
+	weights?: Record<string, number>; // New multiple weights field
 }
 
 export interface MemberWeight {
@@ -27,6 +28,7 @@ export function redistributeAmounts(
 	totalAmount: number,
 	weightsEnabled: boolean,
 	sharingMethod: "equal" | "weights" = "equal",
+	weightTypeId?: string,
 ): MemberAmount[] {
 	// Separate manually edited and automatic members
 	const manuallyEditedAmounts = memberAmounts.filter(
@@ -70,12 +72,19 @@ export function redistributeAmounts(
 			};
 		});
 	} else if (weightsEnabled && sharingMethod === "equal") {
-		// Redistribute based on member weights (legacy behavior)
+		// Redistribute based on member weights (legacy behavior or specific weight type)
 		const automaticMembers = automaticAmounts.map((ma) => {
 			const member = members.find((m) => m.id === ma.memberId);
+			let weight = member?.weight || 1;
+
+			// If a specific weight type is selected, use that weight
+			if (weightTypeId && member?.weights && member.weights[weightTypeId]) {
+				weight = member.weights[weightTypeId];
+			}
+
 			return {
 				...ma,
-				weight: member?.weight || 1,
+				weight: weight,
 			};
 		});
 

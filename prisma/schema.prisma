@@ -20,6 +20,7 @@ model Group {
   description   String?
   currency      String   @default("USD")
   weightsEnabled Boolean  @default(false)
+  weightTypes   Json?    // Array of weight type definitions: [{id: string, name: string, isDefault: boolean}]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -37,7 +38,8 @@ model Member {
   name       String
   email      String?
   iban       String?
-  weight     Decimal   @default(1) @db.Decimal(5, 2)
+  weight     Decimal   @default(1) @db.Decimal(5, 2) // Legacy field, kept for backward compatibility
+  weights    Json?     // Object with weight type IDs as keys and weight values as values: {weightTypeId: number}
   groupId    String
   activeFrom DateTime  @default(now())
   activeTo   DateTime?
@@ -84,7 +86,8 @@ model ExpenseMember {
   expenseId        String
   memberId         String
   amount           Decimal  @db.Decimal(10, 2) // How much this member owes for this expense
-  weight           Decimal  @default(1) @db.Decimal(5, 2) // Custom weight for this member in this expense
+  weight           Decimal  @default(1) @db.Decimal(5, 2) // Legacy field, kept for backward compatibility
+  weightTypeId     String?  // ID of the weight type used for this expense member
   isManuallyEdited Boolean  @default(false) // Whether this amount was manually edited by user
   createdAt        DateTime @default(now())
 
@@ -139,7 +142,8 @@ model ConsumptionMember {
   consumptionId    String
   memberId         String
   amount           Decimal  @db.Decimal(10, 2) // amount this member owes
-  weight           Decimal  @default(1) @db.Decimal(5, 2) // Custom weight for this member in this consumption
+  weight           Decimal  @default(1) @db.Decimal(5, 2) // Legacy field, kept for backward compatibility
+  weightTypeId     String?  // ID of the weight type used for this consumption member
   isManuallyEdited Boolean  @default(false) // Whether this amount was manually edited by user
 
   // Relations

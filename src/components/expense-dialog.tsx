@@ -11,7 +11,9 @@ import {
 	createExpenseAction,
 	editExpenseAction,
 	getActiveMembersForDate,
+	type getGroup,
 } from "@/actions";
+import type { getGroupWithRecurringExpenses } from "@/actions/get-group";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -34,9 +36,7 @@ import { type ExpenseFormData, expenseSchema } from "@/lib/schemas";
 import { handleActionErrors } from "@/lib/utils";
 
 interface ExpenseDialogProps {
-	group: Group & {
-		members: Member[];
-	};
+	group: Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>;
 	children: React.ReactNode;
 	expense?: ExpenseFormData & { id: string }; // For editing existing expense
 }
@@ -297,6 +297,7 @@ export function ExpenseDialog({
 								expenseDate={form.watch("date") as Date}
 								currency={group.currency}
 								weightsEnabled={group.weightsEnabled}
+								weightTypes={group.weightTypes}
 							/>
 						</form>
 					</Form>

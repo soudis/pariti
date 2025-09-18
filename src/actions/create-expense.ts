@@ -38,7 +38,7 @@ async function createExpense(groupId: string, data: ExpenseFormData) {
 		// Calculate weighted amounts automatically
 		const members = await db.member.findMany({
 			where: { id: { in: data.selectedMembers } },
-			select: { id: true, weight: true },
+			select: { id: true, weight: true, weights: true },
 		});
 
 		const weightedAmounts = calculateWeightedAmounts(
@@ -50,6 +50,7 @@ async function createExpense(groupId: string, data: ExpenseFormData) {
 		expenseMembersData = weightedAmounts.map((wa) => ({
 			memberId: wa.memberId,
 			amount: wa.amount,
+			weightTypeId: data.weightTypeId,
 			isManuallyEdited: false,
 		}));
 	}
@@ -63,6 +64,8 @@ async function createExpense(groupId: string, data: ExpenseFormData) {
 			groupId: groupId,
 			paidById: data.paidById,
 			splitAll: data.splitAll || false,
+			sharingMethod: data.sharingMethod || "equal",
+			weightTypeId: data.weightTypeId,
 			isRecurring: data.isRecurring || false,
 			recurringType: data.recurringType,
 			recurringStartDate: data.recurringStartDate,

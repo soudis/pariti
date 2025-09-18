@@ -8,6 +8,7 @@ import {
 	createGroupInputSchema,
 	createGroupReturnSchema,
 	type GroupFormData,
+	getDefaultWeightTypes,
 } from "@/lib/schemas";
 import { convertToPlainObject } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ async function createGroup(data: GroupFormData) {
 			description: data.description,
 			currency: data.currency,
 			weightsEnabled: data.weightsEnabled,
+			weightTypes: data.weightTypes || getDefaultWeightTypes(),
 		},
 	});
 	revalidatePath("/");

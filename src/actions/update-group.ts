@@ -17,6 +17,7 @@ async function updateGroup(groupId: string, data: GroupFormData) {
 			description: data.description,
 			currency: data.currency,
 			weightsEnabled: data.weightsEnabled,
+			weightTypes: data.weightTypes || null,
 		},
 	});
 	revalidatePath(`/group/${groupId}`);

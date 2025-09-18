@@ -19,6 +19,7 @@ import {
 	removeSettlementAction,
 	updateSettlementMemberStatusAction,
 } from "@/actions";
+import type { getGroupWithRecurringExpenses } from "@/actions/get-group";
 import { QRCodeDialog } from "@/components/qr-code-dialog";
 import { SettlementDialog } from "@/components/settlement-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -28,18 +29,13 @@ import { formatCurrency } from "@/lib/currency";
 import { handleActionErrors } from "@/lib/utils";
 
 interface SettlementsSectionProps {
-	groupId: string;
-	settlements: Awaited<ReturnType<typeof getGroup>>["settlements"];
-	members: Awaited<ReturnType<typeof getGroup>>["members"];
-	resources: Awaited<ReturnType<typeof getGroup>>["resources"];
 	currency: string;
+	group: Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>;
 }
 
 export function SettlementsSection({
-	groupId,
-	settlements,
-	members,
-	resources,
+	group: { settlements, members, resources, id: groupId },
+
 	currency,
 }: SettlementsSectionProps) {
 	const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);

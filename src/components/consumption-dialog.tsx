@@ -11,6 +11,7 @@ import {
 	getActiveMembersForDate,
 	type getGroup,
 } from "@/actions";
+import type { getGroupWithRecurringExpenses } from "@/actions/get-group";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -34,18 +35,15 @@ import { type ConsumptionFormData, consumptionSchema } from "@/lib/schemas";
 import { handleActionErrors } from "@/lib/utils";
 
 interface ConsumptionDialogProps {
-	groupId: string;
-	resources: Awaited<ReturnType<typeof getGroup>>["resources"];
-	members: Awaited<ReturnType<typeof getGroup>>["members"];
+	group: Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>;
 	children: React.ReactNode;
 	consumption?: ConsumptionFormData & { id: string }; // For editing existing consumption
 	onConsumptionUpdated?: () => void;
 }
 
 export function ConsumptionDialog({
-	groupId,
-	resources,
-	members,
+	group,
+	group: { members, resources },
 	children,
 	consumption,
 	onConsumptionUpdated,
@@ -53,7 +51,9 @@ export function ConsumptionDialog({
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [activeMembersAtDate, setActiveMembersAtDate] =
-		useState<Awaited<ReturnType<typeof getGroup>>["members"]>(members);
+		useState<
+			Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>["members"]
+		>(members);
 	const t = useTranslations("forms.consumption");
 
 	const { executeAsync: createConsumption } = useAction(
@@ -105,13 +105,13 @@ export function ConsumptionDialog({
 	const updateActiveMembersForDate = useCallback(
 		async (date: Date) => {
 			try {
-				const activeMembers = await getActiveMembersForDate(groupId, date);
+				const activeMembers = await getActiveMembersForDate(group.id, date);
 				setActiveMembersAtDate(activeMembers);
 			} catch (error) {
 				console.error("Failed to get active members:", error);
 			}
 		},
-		[groupId],
+		[group.id],
 	);
 
 	// Initialize active members when dialog opens
@@ -276,7 +276,8 @@ export function ConsumptionDialog({
 								}))}
 								expenseDate={form.watch("date") as Date}
 								currency="€" // TODO: Get from group
-								weightsEnabled={false} // TODO: Get from group
+								weightsEnabled={group.weightsEnabled}
+								weightTypes={group.weightTypes}
 								isUnitBased={form.watch("isUnitAmount") as boolean}
 								unitPrice={(() => {
 									const selectedResource = resources.find(

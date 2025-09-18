@@ -3,7 +3,9 @@
 import type { Expense, Group, Member } from "@prisma/client";
 import { DollarSign, Package, Plus, Receipt, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useMemo } from "react";
 import type { getGroup } from "@/actions";
+import type { getGroupWithRecurringExpenses } from "@/actions/get-group";
 import { ConsumptionDialog } from "@/components/consumption-dialog";
 import { ExpenseDialog } from "@/components/expense-dialog";
 import { MemberDialog } from "@/components/member-dialog";
@@ -14,40 +16,53 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/currency";
 
 interface OverviewSectionProps {
-	group: Group & { expenses: Expense[]; members: Member[] };
-	resources: Awaited<ReturnType<typeof getGroup>>["resources"];
-	consumptions: Awaited<
-		ReturnType<typeof getGroup>
-	>["resources"][number]["consumptions"];
+	group: Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>;
 	cutoffDate: Date | null;
 }
 
 export function OverviewSection({
 	group,
-	resources,
-	consumptions,
+	group: { resources },
 	cutoffDate,
 }: OverviewSectionProps) {
 	const t = useTranslations("group");
 
 	// Filter expenses and consumptions based on cutoff date
-	const filteredExpenses = cutoffDate
-		? group.expenses.filter((expense) => new Date(expense.date) >= cutoffDate)
-		: group.expenses;
-
-	const filteredConsumptions = cutoffDate
-		? consumptions.filter(
-				(consumption) => new Date(consumption.date) >= cutoffDate,
-			)
-		: consumptions;
-
-	const totalExpenses = filteredExpenses.reduce(
-		(sum, expense) => sum + Number(expense.amount),
-		0,
+	const filteredExpenses = useMemo(
+		() =>
+			cutoffDate
+				? group.expenses.filter(
+						(expense) => new Date(expense.date) >= cutoffDate,
+					)
+				: group.expenses,
+		[group.expenses, cutoffDate],
 	);
-	const totalConsumptions = filteredConsumptions.reduce(
-		(sum, consumption) => sum + Number(consumption.amount),
-		0,
+
+	const filteredConsumptions = useMemo(
+		() =>
+			cutoffDate
+				? group.resources
+						.flatMap((resource) => resource.consumptions)
+						.filter((consumption) => new Date(consumption.date) >= cutoffDate)
+				: group.resources.flatMap((resource) => resource.consumptions),
+		[group.resources, cutoffDate],
+	);
+
+	const totalExpenses = useMemo(
+		() =>
+			filteredExpenses.reduce(
+				(sum, expense) => sum + Number(expense.amount),
+				0,
+			),
+		[filteredExpenses],
+	);
+	const totalConsumptions = useMemo(
+		() =>
+			filteredConsumptions.reduce(
+				(sum, consumption) => sum + Number(consumption.amount),
+				0,
+			),
+		[filteredConsumptions],
 	);
 
 	return (
@@ -125,11 +140,7 @@ export function OverviewSection({
 								</Button>
 							</ExpenseDialog>
 
-							<ConsumptionDialog
-								groupId={group.id}
-								resources={resources}
-								members={group.members}
-							>
+							<ConsumptionDialog group={group}>
 								<Button variant="default" size="sm" className="w-full text-sm">
 									<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
 									<span className="truncate">{t("addConsumption")}</span>
@@ -139,10 +150,7 @@ export function OverviewSection({
 
 						{/* Secondary Actions */}
 						<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-							<MemberDialog
-								groupId={group.id}
-								weightsEnabled={group.weightsEnabled}
-							>
+							<MemberDialog group={group} weightsEnabled={group.weightsEnabled}>
 								<Button variant="outline" size="sm" className="w-full text-sm">
 									<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
 									<span className="truncate">{t("addMember")}</span>

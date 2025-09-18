@@ -1,15 +1,12 @@
 import type {
 	Consumption,
 	ConsumptionMember,
-	Expense,
-	ExpenseMember,
-	Group,
 	Member,
 	Resource,
 	Settlement,
 	SettlementMember,
 } from "@prisma/client";
-import { generateRecurringExpenseInstances } from "./generate-recurring-expense-instances";
+import type { getGroupWithRecurringExpenses } from "@/actions/get-group";
 import { getSettlementCutoffDate } from "./get-settlement-cutoff-date";
 
 // Helper function to calculate weighted amounts for members
@@ -40,19 +37,7 @@ export function calculateWeightedAmounts(
 
 // Helper function to calculate balances
 export async function calculateBalances(
-	group: Group & {
-		expenses: (Expense & {
-			expenseMembers: (ExpenseMember & { member: Member })[];
-			paidBy: Member;
-		})[];
-		members: Member[];
-		resources: (Resource & {
-			consumptions: (Consumption & {
-				consumptionMembers: ConsumptionMember[];
-			})[];
-		})[];
-		settlements: (Settlement & { settlementMembers: SettlementMember[] })[];
-	},
+	group: Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>,
 ) {
 	const balances = new Map<string, number>();
 
@@ -67,22 +52,10 @@ export async function calculateBalances(
 	// Get the settlement cutoff date for filtering
 	const cutoffDate = await getSettlementCutoffDate(group.id);
 
-	// Generate all recurring expense instances (including virtual ones)
-	const allExpenses = [];
-	for (const expense of group.expenses) {
-		try {
-			const instances = await generateRecurringExpenseInstances(expense);
-			allExpenses.push(...instances);
-		} catch {
-			// If recurring generation fails, use the original expense
-			allExpenses.push(expense);
-		}
-	}
-
 	// Filter expenses based on cutoff date
 	const filteredExpenses = cutoffDate
-		? allExpenses.filter((expense) => new Date(expense.date) >= cutoffDate)
-		: allExpenses;
+		? group.expenses.filter((expense) => new Date(expense.date) >= cutoffDate)
+		: group.expenses;
 
 	// Process all expenses (including virtual/recurring ones)
 	filteredExpenses.forEach((expense: any) => {

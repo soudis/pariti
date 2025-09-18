@@ -1,5 +1,6 @@
 "use server";
 
+import z from "zod";
 import { db } from "@/lib/db";
 import { convertToPlainObject } from "@/lib/utils";
 
@@ -12,5 +13,10 @@ export async function getActiveMembersForDate(groupId: string, date: Date) {
 		},
 		orderBy: { name: "asc" },
 	});
-	return convertToPlainObject(members);
+	return convertToPlainObject(
+		members.map((member) => ({
+			...member,
+			weights: z.record(z.string(), z.number()).parse(member.weights),
+		})),
+	);
 }

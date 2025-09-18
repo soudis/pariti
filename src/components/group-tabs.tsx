@@ -10,7 +10,8 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useQueryState } from "nuqs";
-import type { generateRecurringExpenseInstances, getGroup } from "@/actions";
+import type { getGroup } from "@/actions";
+import type { getGroupWithRecurringExpenses } from "@/actions/get-group";
 import { ExpensesSection } from "@/components/expenses-section";
 import { MembersSection } from "@/components/members-section";
 import { OverviewSection } from "@/components/overview-section";
@@ -20,21 +21,11 @@ import { SettlementsSection } from "@/components/settlements-section";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface GroupTabsProps {
-	group: Awaited<ReturnType<typeof getGroup>>;
-	expenses?: Awaited<ReturnType<typeof generateRecurringExpenseInstances>>;
+	group: Awaited<ReturnType<typeof getGroupWithRecurringExpenses>>;
 	cutoffDate: Date | null;
-	consumptions: Awaited<
-		ReturnType<typeof getGroup>
-	>["resources"][number]["consumptions"];
 }
 
-export function GroupTabs({
-	group,
-	expenses,
-	group: { resources, settlements },
-	cutoffDate,
-	consumptions,
-}: GroupTabsProps) {
+export function GroupTabs({ group, cutoffDate }: GroupTabsProps) {
 	const t = useTranslations("group");
 	const [activeTab, setActiveTab] = useQueryState("tab", {
 		defaultValue: "overview",
@@ -71,12 +62,7 @@ export function GroupTabs({
 			</TabsList>
 
 			<TabsContent value="overview" className="mt-4">
-				<OverviewSection
-					group={group}
-					resources={resources}
-					consumptions={consumptions}
-					cutoffDate={cutoffDate}
-				/>
+				<OverviewSection group={group} cutoffDate={cutoffDate} />
 			</TabsContent>
 
 			<TabsContent value="members" className="mt-4">
@@ -84,29 +70,15 @@ export function GroupTabs({
 			</TabsContent>
 
 			<TabsContent value="expenses" className="mt-4">
-				<ExpensesSection
-					group={group}
-					expenses={expenses}
-					cutoffDate={cutoffDate}
-				/>
+				<ExpensesSection group={group} cutoffDate={cutoffDate} />
 			</TabsContent>
 
 			<TabsContent value="resources" className="mt-4">
-				<ResourcesSection
-					groupId={group.id}
-					group={group}
-					cutoffDate={cutoffDate}
-				/>
+				<ResourcesSection group={group} cutoffDate={cutoffDate} />
 			</TabsContent>
 
 			<TabsContent value="settlements" className="mt-4">
-				<SettlementsSection
-					groupId={group.id}
-					settlements={settlements}
-					members={group.members}
-					resources={resources}
-					currency={group.currency}
-				/>
+				<SettlementsSection group={group} currency={group.currency} />
 			</TabsContent>
 
 			<TabsContent value="settings" className="mt-4">

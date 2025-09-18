@@ -23,7 +23,8 @@ async function createMember(groupId: string, data: MemberFormData) {
 			name: data.name,
 			email: data.email,
 			iban: data.iban,
-			weight: data.weight || 1,
+			weight: data.weight || 1, // Legacy field
+			weights: data.weights || null, // New multiple weights field
 			groupId: groupId,
 			activeFrom: data.activeFrom || new Date(),
 			activeTo: data.activeTo,

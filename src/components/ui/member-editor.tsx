@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/currency";
 import { type MemberAmount, redistributeAmounts } from "@/lib/redistribution";
+import { getDefaultWeightTypes, type WeightType } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
 
 interface Member {
@@ -34,6 +35,7 @@ interface MemberEditorProps {
 	expenseDate: Date;
 	currency: string;
 	weightsEnabled: boolean;
+	weightTypes?: WeightType[];
 	className?: string;
 	// For unit-based consumptions
 	isUnitBased?: boolean;
@@ -46,6 +48,7 @@ export function MemberEditor({
 	expenseDate,
 	currency,
 	weightsEnabled,
+	weightTypes,
 	className,
 	isUnitBased = false,
 	unitPrice = 1,
@@ -58,6 +61,9 @@ export function MemberEditor({
 	const [tempWeightValue, setTempWeightValue] = useState<string>("");
 	const [tempAmountValue, setTempAmountValue] = useState<string>("");
 	const t = useTranslations("forms.expense");
+
+	// Get available weight types or use default
+	const availableWeightTypes = weightTypes || getDefaultWeightTypes();
 
 	const { watch, setValue } = useFormContext();
 	const selectedMembers = watch("selectedMembers") || [];
@@ -96,6 +102,7 @@ export function MemberEditor({
 			selectedMembersLocal: string[] = selectedMembers,
 			amountsLocal: MemberAmount[] = currentAmounts,
 			sharingMethodLocal: "equal" | "weights" = sharingMethod,
+			weightTypeId?: string,
 		) => {
 			const selectedMembersList = activeMembersAtDate.filter((member) =>
 				selectedMembersLocal.includes(member.id),
@@ -120,6 +127,7 @@ export function MemberEditor({
 					totalAmount, // totalAmount is already in units
 					weightsEnabled,
 					sharingMethodLocal,
+					weightTypeId,
 				);
 
 				// Convert back to monetary amounts for storage
@@ -136,6 +144,7 @@ export function MemberEditor({
 					totalAmount,
 					weightsEnabled,
 					sharingMethodLocal,
+					weightTypeId,
 				);
 				setValue("memberAmounts", redistributedAmounts);
 			}
@@ -328,9 +337,27 @@ export function MemberEditor({
 						<div className="flex items-center gap-2">
 							<Select
 								value={sharingMethod}
-								onValueChange={(value: "equal" | "weights") => {
-									setValue("sharingMethod", value);
-									redistribute(selectedMembers, currentAmounts, value);
+								onValueChange={(value: string) => {
+									if (value === "equal") {
+										setValue("sharingMethod", "equal");
+										setValue("weightTypeId", undefined);
+										redistribute(selectedMembers, currentAmounts, "equal");
+									} else if (value.startsWith("weights-")) {
+										const weightTypeId = value.replace("weights-", "");
+										setValue("sharingMethod", "weights");
+										setValue("weightTypeId", weightTypeId);
+										redistribute(
+											selectedMembers,
+											currentAmounts,
+											"weights",
+											weightTypeId,
+										);
+									} else {
+										// Legacy "weights" value
+										setValue("sharingMethod", "weights");
+										setValue("weightTypeId", undefined);
+										redistribute(selectedMembers, currentAmounts, "weights");
+									}
 								}}
 							>
 								<SelectTrigger className="w-32 h-8 text-xs">
@@ -338,7 +365,20 @@ export function MemberEditor({
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="equal">{t("shareEqually")}</SelectItem>
-									<SelectItem value="weights">{t("shareByWeights")}</SelectItem>
+									{availableWeightTypes.length === 1 ? (
+										<SelectItem value="weights">
+											{t("shareByWeights")}
+										</SelectItem>
+									) : (
+										availableWeightTypes.map((weightType) => (
+											<SelectItem
+												key={weightType.id}
+												value={`weights-${weightType.id}`}
+											>
+												By {weightType.name}
+											</SelectItem>
+										))
+									)}
 								</SelectContent>
 							</Select>
 							{currentAmounts.some((ma) => ma.isManuallyEdited) && (

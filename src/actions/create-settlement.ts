@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getGroupWithRecurringExpenses } from "@/actions/get-group";
 import { db } from "@/lib/db";
 import { actionClient } from "@/lib/safe-action";
 import {
@@ -12,50 +13,7 @@ import { convertToPlainObject } from "@/lib/utils";
 import { calculateBalances } from "./utils";
 
 async function createSettlement(groupId: string, data: SettlementFormData) {
-	const group = await db.group.findUnique({
-		where: { id: groupId },
-		include: {
-			members: true,
-			expenses: {
-				include: {
-					paidBy: true,
-					expenseMembers: {
-						include: {
-							member: true,
-						},
-					},
-				},
-			},
-			resources: {
-				include: {
-					consumptions: {
-						include: {
-							consumptionMembers: {
-								include: {
-									member: true,
-								},
-							},
-						},
-					},
-				},
-			},
-			settlements: {
-				include: {
-					settlementMembers: {
-						include: {
-							fromMember: true,
-							toMember: true,
-							fromResource: true,
-							toResource: true,
-						},
-					},
-				},
-				where: {
-					status: { not: "completed" },
-				},
-			},
-		},
-	});
+	const group = await getGroupWithRecurringExpenses(groupId);
 
 	if (!group) throw new Error("Group not found");
 
