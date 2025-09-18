@@ -154,11 +154,9 @@ export function ConsumptionDialog({
 			<DialogTrigger asChild>{children}</DialogTrigger>
 			<DialogContent className="sm:max-w-[500px] h-full sm:h-[90vh] flex flex-col">
 				<DialogHeader className="flex-shrink-0">
-					<DialogTitle>
-						{consumption ? "Edit Consumption" : t("title")}
-					</DialogTitle>
+					<DialogTitle>{consumption ? t("editTitle") : t("title")}</DialogTitle>
 					<DialogDescription>
-						{consumption ? "Update the consumption details." : t("description")}
+						{consumption ? t("editDescription") : t("description")}
 					</DialogDescription>
 				</DialogHeader>
 				<div className="flex-1 overflow-y-auto">
@@ -279,7 +277,7 @@ export function ConsumptionDialog({
 								? "Updating..."
 								: t("adding")
 							: consumption
-								? "Update Consumption"
+								? t("updateButton")
 								: t("add")}
 					</Button>
 				</DialogFooter>

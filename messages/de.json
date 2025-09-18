@@ -63,6 +63,7 @@
 		"consumptions": "Nutzungen",
 		"settings": "Einstellungen",
 		"quickActions": "Schnellaktionen",
+		"menu": "Menü",
 		"addExpense": "Ausgabe hinzufügen",
 		"addMember": "Mitglied hinzufügen",
 		"addResource": "Ressource hinzufügen",
@@ -132,7 +133,9 @@
 		"completed": "Abgeschlossen",
 		"markCompleted": "Als abgeschlossen markieren",
 		"payments": "Zahlungen",
-		"qrCode": "QR-Code"
+		"qrCode": "QR-Code",
+		"failedToCopyLink": "Link konnte nicht kopiert werden",
+		"menu": "Menü"
 	},
 	"forms": {
 		"group": {
@@ -209,6 +212,7 @@
 			"paidByPlaceholder": "Mitglied auswählen",
 			"date": "Datum",
 			"datePlaceholder": "Ausgabedatum auswählen",
+			"distributionMethod": "Verteilungsmethode",
 			"recurring": {
 				"title": "Diese Ausgabe wiederkehrend machen",
 				"frequency": "Häufigkeit",
@@ -223,6 +227,7 @@
 			"allMembers": "Alle Mitglieder (einschließlich zukünftiger Mitglieder)",
 			"shareEqually": "Gleichmäßig",
 			"shareByWeights": "Nach Gewichtung",
+			"byWeightType": "Nach {weightType}",
 			"noActiveMembers": "Keine aktiven Mitglieder an diesem Datum",
 			"amountPerPerson": "Betrag pro Person: {amount}€",
 			"includesActiveMembers": "Diese Ausgabe wird alle {count} aktiven Mitglieder vom {date} einbeziehen",
@@ -243,9 +248,19 @@
 			"selectMembers": "Bitte wähle mindestens ein Mitglied für diese Ausgabe aus",
 			"selectStartDate": "Bitte wähle ein Startdatum für wiederkehrende Ausgaben aus"
 		},
+		"datePicker": {
+			"placeholder": "Datum auswählen"
+		},
+		"settlements": {
+			"unknown": "Unbekannt"
+		},
 		"resource": {
 			"title": "Ressource hinzufügen",
 			"description": "Füge eine neue Ressource hinzu, um geteilte Nutzung zu verfolgen.",
+			"editTitle": "Ressource bearbeiten",
+			"editDescription": "Aktualisiere die Ressourcendetails.",
+			"updateButton": "Ressource aktualisieren",
+			"updating": "Aktualisiere...",
 			"name": "Ressourcenname",
 			"namePlaceholder": "z.B. Sauna, Toilettenpapier, Auto",
 			"descriptionLabel": "Beschreibung (optional)",
@@ -262,6 +277,9 @@
 		"consumption": {
 			"title": "Nutzung erfassen",
 			"description": "Erfasse den Nutzung einer Ressource durch Gruppenmitglieder.",
+			"editTitle": "Nutzung bearbeiten",
+			"editDescription": "Aktualisiere die Nutzungsdetails.",
+			"updateButton": "Nutzung aktualisieren",
 			"resourceLabel": "Ressource",
 			"resourcePlaceholder": "Ressource auswählen",
 			"descriptionLabel": "Beschreibung (optional)",

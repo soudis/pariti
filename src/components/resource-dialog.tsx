@@ -96,9 +96,9 @@ export function ResourceDialog({
 			<DialogTrigger asChild>{children}</DialogTrigger>
 			<DialogContent className="sm:max-w-[425px] h-full sm:h-[60vh] flex flex-col">
 				<DialogHeader className="flex-shrink-0">
-					<DialogTitle>{resource ? "Edit Resource" : t("title")}</DialogTitle>
+					<DialogTitle>{resource ? t("editTitle") : t("title")}</DialogTitle>
 					<DialogDescription>
-						{resource ? "Update the resource details." : t("description")}
+						{resource ? t("editDescription") : t("description")}
 					</DialogDescription>
 				</DialogHeader>
 				<div className="flex-1 overflow-y-auto">
@@ -174,10 +174,10 @@ export function ResourceDialog({
 					>
 						{loading
 							? resource
-								? "Updating..."
+								? t("updating")
 								: t("creating")
 							: resource
-								? "Update Resource"
+								? t("updateButton")
 								: t("create")}
 					</Button>
 				</DialogFooter>

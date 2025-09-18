@@ -249,7 +249,7 @@ export function MemberEditor({
 				{splitAll && weightsEnabled && (
 					<div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
 						<Label className="text-sm font-medium mb-2 block">
-							Distribution Method
+							{t("distributionMethod")}
 						</Label>
 						<Select
 							value={sharingMethod}
@@ -261,10 +261,10 @@ export function MemberEditor({
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="equal">Equally</SelectItem>
+								<SelectItem value="equal">{t("shareEqually")}</SelectItem>
 								{availableWeightTypes.map((weightType) => (
 									<SelectItem key={weightType.id} value={weightType.id}>
-										By {weightType.name}
+										{t("byWeightType", { weightType: weightType.name })}
 									</SelectItem>
 								))}
 							</SelectContent>
@@ -305,7 +305,7 @@ export function MemberEditor({
 												key={weightType.id}
 												value={`weights-${weightType.id}`}
 											>
-												By {weightType.name}
+												{t("byWeightType", { weightType: weightType.name })}
 											</SelectItem>
 										))
 									)}

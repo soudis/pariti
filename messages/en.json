@@ -66,6 +66,7 @@
 		"addExpense": "Add Expense",
 		"addMember": "Add Member",
 		"addResource": "Add Resource",
+		"menu": "Menu",
 		"addConsumption": "Add Consumption",
 		"generateSettlement": "Generate Settlement",
 		"notFound": {
@@ -132,7 +133,9 @@
 		"completed": "Completed",
 		"markCompleted": "Mark Completed",
 		"payments": "Payments",
-		"qrCode": "QR Code"
+		"qrCode": "QR Code",
+		"failedToCopyLink": "Failed to copy link",
+		"menu": "Menu"
 	},
 	"forms": {
 		"group": {
@@ -208,6 +211,7 @@
 			"paidByPlaceholder": "Select member",
 			"date": "Date",
 			"datePlaceholder": "Select expense date",
+			"distributionMethod": "Distribution Method",
 			"recurring": {
 				"title": "Make this a recurring expense",
 				"frequency": "Frequency",
@@ -228,6 +232,7 @@
 			"weight": "weight",
 			"shareEqually": "Equally",
 			"shareByWeights": "By Weights",
+			"byWeightType": "By {weightType}",
 			"inactive": "Inactive",
 			"allowAutomaticRecalculation": "Allow automatic recalculation",
 			"protectFromAutomaticRecalculation": "Protect from automatic recalculation",
@@ -242,9 +247,19 @@
 			"selectMembers": "Please select at least one member for this expense",
 			"selectStartDate": "Please select a start date for recurring expenses"
 		},
+		"datePicker": {
+			"placeholder": "Pick a date"
+		},
+		"settlements": {
+			"unknown": "Unknown"
+		},
 		"resource": {
 			"title": "Add Resource",
 			"description": "Add a new resource to track shared consumption.",
+			"editTitle": "Edit Resource",
+			"editDescription": "Update the resource details.",
+			"updateButton": "Update Resource",
+			"updating": "Updating...",
 			"name": "Resource Name",
 			"namePlaceholder": "e.g., Sauna, Toilet Paper, Car",
 			"descriptionLabel": "Description (optional)",
@@ -261,6 +276,9 @@
 		"consumption": {
 			"title": "Log Consumption",
 			"description": "Log consumption of a resource by group members.",
+			"editTitle": "Edit Consumption",
+			"editDescription": "Update the consumption details.",
+			"updateButton": "Update Consumption",
 			"resourceLabel": "Resource",
 			"resourcePlaceholder": "Select resource",
 			"descriptionLabel": "Description (optional)",

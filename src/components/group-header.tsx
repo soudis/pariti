@@ -64,7 +64,7 @@ export function GroupHeader({ group }: GroupHeaderProps) {
 			toast.success(t("copied"));
 		} catch (error) {
 			console.error("Failed to copy:", error);
-			toast.error("Failed to copy link");
+			toast.error(t("failedToCopyLink"));
 		}
 	};
 
@@ -97,10 +97,10 @@ export function GroupHeader({ group }: GroupHeaderProps) {
 									variant="outline"
 									size="sm"
 									className="p-2"
-									title="Menu"
+									title={t("menu")}
 								>
 									<Menu className="w-4 h-4" />
-									<span className="sr-only">Menu</span>
+									<span className="sr-only">{t("menu")}</span>
 								</Button>
 							</PopoverTrigger>
 							<PopoverContent className="w-80" align="end">

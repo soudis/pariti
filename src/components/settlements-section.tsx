@@ -15,7 +15,6 @@ import { useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import {
-	type getGroup,
 	removeSettlementAction,
 	updateSettlementMemberStatusAction,
 } from "@/actions";
@@ -72,7 +71,7 @@ export function SettlementsSection({
 	) => {
 		if (member) return member.name;
 		if (resource) return resource.name;
-		return "Unknown";
+		return t("unknown");
 	};
 
 	const openSettlements = settlements.filter((s) => s.status === "open");
