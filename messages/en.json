@@ -149,6 +149,13 @@
 			"currency": "Currency",
 			"weightsEnabled": "Enable Member Weights",
 			"weightsEnabledDescription": "Allow different weights for members to adjust their share of expenses",
+			"weightTypes": {
+				"title": "Weight Types",
+				"addButton": "Add Weight Type",
+				"namePlaceholder": "Weight type name",
+				"defaultLabel": "Default",
+				"description": "Weight types allow you to define different ways to distribute expenses and consumptions. Members can have different weights for each type."
+			},
 			"cancel": "Cancel",
 			"create": "Create Group",
 			"creating": "Creating..."

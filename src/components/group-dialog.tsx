@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
@@ -23,7 +24,12 @@ import {
 	SelectField,
 	TextField,
 } from "@/components/ui/form-field";
-import { type GroupFormData, groupSchema } from "@/lib/schemas";
+import {
+	type GroupFormData,
+	getDefaultWeightTypes,
+	groupSchema,
+	type WeightType,
+} from "@/lib/schemas";
 import { handleActionErrors } from "@/lib/utils";
 
 interface GroupDialogProps {
@@ -45,24 +51,65 @@ export function GroupDialog({ children }: GroupDialogProps) {
 			description: "",
 			currency: "EUR",
 			weightsEnabled: false,
+			weightTypes: getDefaultWeightTypes(),
 		},
 	});
+
+	const [weightTypes, setWeightTypes] = useState<WeightType[]>(
+		getDefaultWeightTypes(),
+	);
 
 	useEffect(() => {
 		if (open) {
 			form.reset();
+			setWeightTypes(getDefaultWeightTypes());
 		}
 	}, [open, form]);
+
+	const addWeightType = () => {
+		const newWeightType: WeightType = {
+			id: `weight-type-${Date.now()}`,
+			name: `Weight Type ${weightTypes.length + 1}`,
+			isDefault: false,
+		};
+		const updatedWeightTypes = [...weightTypes, newWeightType];
+		setWeightTypes(updatedWeightTypes);
+		form.setValue("weightTypes", updatedWeightTypes);
+	};
+
+	const removeWeightType = (id: string) => {
+		// Don't allow removing the default weight type
+		const weightType = weightTypes.find((wt) => wt.id === id);
+		if (weightType?.isDefault) return;
+
+		const updatedWeightTypes = weightTypes.filter((wt) => wt.id !== id);
+		setWeightTypes(updatedWeightTypes);
+		form.setValue("weightTypes", updatedWeightTypes);
+	};
+
+	const updateWeightTypeName = (id: string, name: string) => {
+		const updatedWeightTypes = weightTypes.map((wt) =>
+			wt.id === id ? { ...wt, name } : wt,
+		);
+		setWeightTypes(updatedWeightTypes);
+		form.setValue("weightTypes", updatedWeightTypes);
+	};
 
 	console.log(form.formState.isSubmitting);
 
 	const onSubmit = async (data: GroupFormData) => {
 		setLoading(true);
 
-		const group = handleActionErrors(await createGroup({ group: data }));
+		const submitData = {
+			...data,
+			weightTypes: weightTypes,
+		};
+
+		const group = handleActionErrors(await createGroup({ group: submitData }));
 
 		setOpen(false);
 		form.reset();
+		setWeightTypes(getDefaultWeightTypes());
 
 		router.push(`/${locale}/group/${group.id}`);
 		setLoading(false);
@@ -122,6 +169,64 @@ export function GroupDialog({ children }: GroupDialogProps) {
 								label={t("weightsEnabled")}
 								description={t("weightsEnabledDescription")}
 							/>
+
+							{/* Weight Types Management */}
+							{!!form.watch("weightsEnabled") && (
+								<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+									<div className="space-y-3">
+										<h4 className="font-medium text-sm text-gray-900 dark:text-gray-100">
+											{t("weightTypes.title")}
+										</h4>
+										<Button
+											type="button"
+											variant="outline"
+											size="sm"
+											onClick={addWeightType}
+											className="flex items-center gap-2 w-fit"
+										>
+											<Plus className="w-4 h-4" />
+											{t("weightTypes.addButton")}
+										</Button>
+									</div>
+									<div className="space-y-2">
+										{weightTypes.map((weightType) => (
+											<div
+												key={weightType.id}
+												className="flex items-center gap-2 p-2 bg-white dark:bg-gray-700 rounded border"
+											>
+												<input
+													type="text"
+													value={weightType.name}
+													onChange={(e) =>
+														updateWeightTypeName(weightType.id, e.target.value)
+													}
+													className="flex-1 px-2 py-1 text-sm border rounded bg-transparent"
+													placeholder={t("weightTypes.namePlaceholder")}
+												/>
+												{weightType.isDefault && (
+													<span className="text-xs text-gray-500 dark:text-gray-400 px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded">
+														{t("weightTypes.defaultLabel")}
+													</span>
+												)}
+												{!weightType.isDefault && (
+													<Button
+														type="button"
+														variant="ghost"
+														size="sm"
+														onClick={() => removeWeightType(weightType.id)}
+														className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+													>
+														<Trash2 className="w-4 h-4" />
+													</Button>
+												)}
+											</div>
+										))}
+									</div>
+									<p className="text-xs text-gray-500 dark:text-gray-400">
+										{t("weightTypes.description")}
+									</p>
+								</div>
+							)}
 						</form>
 					</Form>
 				</div>
