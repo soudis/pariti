@@ -79,13 +79,27 @@ export function MemberEditor({
 	}, [members, expenseDate]);
 
 	const calculatedMemberAmounts = useMemo(() => {
-		return getCalculatedMemberAmounts(group, memberAmounts, {
-			amount: new Decimal(totalAmount),
-			sharingMethod,
-			splitAll,
-			date: expenseDate,
-		});
-	}, [group, memberAmounts, totalAmount, sharingMethod, splitAll, expenseDate]);
+		return getCalculatedMemberAmounts(
+			group,
+			memberAmounts,
+			{
+				amount: new Decimal(totalAmount),
+				sharingMethod,
+				splitAll,
+				date: expenseDate,
+			},
+			isUnitBased ? unitPrice : undefined,
+		);
+	}, [
+		group,
+		memberAmounts,
+		totalAmount,
+		sharingMethod,
+		splitAll,
+		expenseDate,
+		isUnitBased,
+		unitPrice,
+	]);
 
 	const totalCurrentAmount = useMemo(
 		() => calculatedMemberAmounts.reduce((sum, ma) => sum + ma.amount, 0),

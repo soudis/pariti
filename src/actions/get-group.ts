@@ -109,6 +109,7 @@ export async function getCalculatedGroup(id: string) {
 						amount: ma.amount ? Number(ma.amount) : null,
 					})),
 					consumption,
+					resource.unitPrice ? Number(resource.unitPrice) : undefined,
 				),
 			})),
 		})),
@@ -163,7 +164,9 @@ export async function getCalculatedGroup(id: string) {
 			// Members who consumed pay (negative balance)
 			balances.set(
 				resource.id,
-				(balances.get(resource.id) || 0) + Number(consumption.amount),
+				(balances.get(resource.id) || 0) +
+					Number(consumption.amount) *
+						(consumption.isUnitAmount ? Number(resource.unitPrice) : 1),
 			);
 			consumption.calculatedConsumptionMembers.forEach((consumptionMember) => {
 				balances.set(
@@ -213,6 +216,25 @@ export async function getCalculatedGroup(id: string) {
 					}
 				});
 		});
+
+	console.log(
+		"group",
+		JSON.stringify(
+			convertToPlainObject({
+				...calculatedGroup,
+				members: calculatedGroup.members.map((member) => ({
+					...member,
+					balance: balances.get(member.id) || 0,
+				})),
+				resources: calculatedGroup.resources.map((resource) => ({
+					...resource,
+					balance: balances.get(resource.id) || 0,
+				})),
+			}),
+			null,
+			2,
+		),
+	);
 	return convertToPlainObject({
 		...calculatedGroup,
 		members: calculatedGroup.members.map((member) => ({

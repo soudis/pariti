@@ -100,7 +100,7 @@ export function MembersSection({ group }: MembersSectionProps) {
 														// Multiple weight types
 														group.weightTypes.map((weightType) => {
 															const weight =
-																member.weights?.[weightType.id] || 1;
+																member.weights?.[weightType.id] || 0;
 															return (
 																<Badge
 																	key={weightType.id}

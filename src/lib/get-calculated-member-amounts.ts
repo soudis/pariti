@@ -20,7 +20,7 @@ export function getCalculatedMemberAmounts(
 	group: Pick<Awaited<ReturnType<typeof getGroup>>, "members">,
 	memberAmounts: MemberAmount[],
 	{
-		amount: totalAmount,
+		amount,
 		sharingMethod,
 		splitAll,
 		date,
@@ -28,6 +28,7 @@ export function getCalculatedMemberAmounts(
 		Awaited<ReturnType<typeof getGroup>>["expenses"][number],
 		"amount" | "sharingMethod" | "splitAll" | "date"
 	>,
+	unitPrice?: number,
 ): CalculatedMemberAmount[] {
 	const getWeight = (memberId: string) => {
 		if (sharingMethod === "equal") {
@@ -38,6 +39,8 @@ export function getCalculatedMemberAmounts(
 			1
 		);
 	};
+
+	const totalAmount = Number(amount) * (unitPrice ?? 1);
 
 	if (splitAll) {
 		const activeMembers = group.members.filter((member) => {

@@ -47,8 +47,12 @@ export function ResourcesSection({
 	const [deletingConsumptionId, setDeletingConsumptionId] = useState<
 		string | null
 	>(null);
-	const [expandedResources, setExpandedResources] = useState<Set<string>>(
-		new Set(),
+	const [expandedResources, setExpandedResources] = useQueryState(
+		"expandedResources",
+		{
+			defaultValue: "",
+			shallow: false,
+		},
 	);
 	const [showHiddenConsumptions, setShowHiddenConsumptions] = useQueryState(
 		"showHiddenConsumptions",
@@ -67,7 +71,7 @@ export function ResourcesSection({
 	// Helper function to filter consumptions based on cutoff date
 	const filterConsumptions = (
 		consumptions: Awaited<
-			ReturnType<typeof getGroup>
+			ReturnType<typeof getCalculatedGroup>
 		>["resources"][number]["consumptions"],
 	) => {
 		if (!cutoffDate || showHiddenConsumptions === "true") {
@@ -91,6 +95,18 @@ export function ResourcesSection({
 	};
 
 	const formatDate = (date: Date) => new Date(date).toLocaleDateString();
+
+	const formatBalance = (balance: number) => {
+		if (balance === 0) return formatCurrency(0, group.currency);
+		const sign = balance > 0 ? "+" : "-";
+		return `${sign}${formatCurrency(Math.abs(balance), group.currency)}`;
+	};
+
+	const getBalanceColor = (balance: number) => {
+		if (balance > 0) return "text-green-600 dark:text-green-400";
+		if (balance < 0) return "text-red-600 dark:text-red-400";
+		return "text-gray-600 dark:text-gray-400";
+	};
 
 	// Helper function to calculate total consumption amount for a resource
 	const calculateTotalConsumption = (
@@ -116,15 +132,22 @@ export function ResourcesSection({
 
 	// Helper function to toggle resource expansion
 	const toggleResourceExpansion = (resourceId: string) => {
-		setExpandedResources((prev) => {
-			const newSet = new Set(prev);
-			if (newSet.has(resourceId)) {
-				newSet.delete(resourceId);
-			} else {
-				newSet.add(resourceId);
-			}
-			return newSet;
-		});
+		const currentExpanded = expandedResources
+			? expandedResources.split(",")
+			: [];
+		const isExpanded = currentExpanded.includes(resourceId);
+
+		if (isExpanded) {
+			// Remove the resource from expanded list
+			const newExpanded = currentExpanded.filter((id) => id !== resourceId);
+			setExpandedResources(
+				newExpanded.length > 0 ? newExpanded.join(",") : null,
+			);
+		} else {
+			// Add the resource to expanded list
+			const newExpanded = [...currentExpanded, resourceId];
+			setExpandedResources(newExpanded.join(","));
+		}
 	};
 
 	return (
@@ -195,7 +218,9 @@ export function ResourcesSection({
 							const filteredConsumptions = filterConsumptions(
 								resource.consumptions,
 							);
-							const isExpanded = expandedResources.has(resource.id);
+							const isExpanded = expandedResources
+								? expandedResources.split(",").includes(resource.id)
+								: false;
 							const totalConsumption =
 								calculateTotalConsumption(filteredConsumptions);
 
@@ -276,6 +301,12 @@ export function ResourcesSection({
 													>
 														{formatCurrency(totalConsumption, group.currency)}{" "}
 														{t("total")}
+													</Badge>
+													<Badge
+														variant="outline"
+														className={`text-xs sm:text-sm ${getBalanceColor(resource.balance)}`}
+													>
+														{formatBalance(resource.balance)} {t("balance")}
 													</Badge>
 												</div>
 												<Button
@@ -411,18 +442,21 @@ export function ResourcesSection({
 																	{t("splitBetween")}:
 																</p>
 																<div className="flex flex-wrap gap-2">
-																	{consumption.consumptionMembers.map(
-																		(
-																			consumptionMember: Awaited<
-																				ReturnType<typeof getGroup>
-																			>["resources"][number]["consumptions"][number]["consumptionMembers"][number],
-																		) => (
+																	{consumption.calculatedConsumptionMembers.map(
+																		(consumptionMember) => (
 																			<Badge
-																				key={consumptionMember.member.id}
+																				key={consumptionMember.memberId}
 																				variant="outline"
 																				className="text-xs"
 																			>
-																				{consumptionMember.member.name}: €
+																				{
+																					group.members.find(
+																						(m) =>
+																							m.id ===
+																							consumptionMember.memberId,
+																					)?.name
+																				}
+																				: €
 																				{Number(
 																					consumptionMember.amount,
 																				).toFixed(2)}

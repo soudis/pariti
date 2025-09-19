@@ -8,6 +8,7 @@ import {
 	editResourceReturnSchema,
 	type ResourceFormData,
 } from "@/lib/schemas";
+import { convertToPlainObject } from "@/lib/utils";
 
 async function updateResource(resourceId: string, data: ResourceFormData) {
 	const resource = await db.resource.update({
@@ -15,8 +16,8 @@ async function updateResource(resourceId: string, data: ResourceFormData) {
 		data: {
 			name: data.name,
 			description: data.description,
-			unit: data.unit,
-			unitPrice: data.unitPrice,
+			unit: data.hasUnit ? data.unit : null,
+			unitPrice: data.hasUnit ? data.unitPrice : null,
 		},
 		include: {
 			consumptions: {
@@ -32,7 +33,7 @@ async function updateResource(resourceId: string, data: ResourceFormData) {
 	});
 
 	revalidatePath(`/group/${resource.groupId}`);
-	return { resource };
+	return { resource: convertToPlainObject(resource) };
 }
 
 export const updateResourceAction = actionClient

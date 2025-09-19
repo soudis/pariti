@@ -96,6 +96,8 @@ function generateSettlementTransactions(
 	const creditors: Array<{ key: string; amount: number }> = [];
 	const debtors: Array<{ key: string; amount: number }> = [];
 
+	console.log("balances", balances);
+
 	for (const [key, amount] of balances.entries()) {
 		if (amount > 0.01) {
 			creditors.push({ key, amount });

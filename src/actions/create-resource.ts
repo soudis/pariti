@@ -15,8 +15,8 @@ async function createResource(groupId: string, data: ResourceFormData) {
 		data: {
 			name: data.name,
 			description: data.description,
-			unit: data.unit,
-			unitPrice: data.unitPrice,
+			unit: data.hasUnit ? data.unit : null,
+			unitPrice: data.hasUnit ? data.unitPrice : null,
 			groupId,
 		},
 		include: {
