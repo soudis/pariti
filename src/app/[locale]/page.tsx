@@ -219,17 +219,17 @@ export default function Home() {
 								<div className="w-full max-w-md">
 									<Card>
 										<CardHeader>
-											<div className="w-8 h-8 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mb-2 mx-auto">
+											<div className="w-8 h-8 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mb-2 ">
 												<span className="text-red-600 dark:text-red-400 font-bold">
 													5
 												</span>
 											</div>
-											<CardTitle className="text-lg text-center">
+											<CardTitle className="text-lg">
 												{t("home.howItWorks.step5.title")}
 											</CardTitle>
 										</CardHeader>
 										<CardContent>
-											<p className="text-gray-600 dark:text-gray-300 text-center">
+											<p className="text-gray-600 dark:text-gray-300">
 												{t("home.howItWorks.step5.description")}
 											</p>
 										</CardContent>
