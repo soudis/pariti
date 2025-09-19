@@ -4,7 +4,7 @@ import type { Member } from "@prisma/client";
 import Decimal from "decimal.js";
 import { Check, Edit3, Lock, Undo2, Unlock, User, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useId, useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import type { getCalculatedGroup } from "@/actions/get-group";
 import { Badge } from "@/components/ui/badge";

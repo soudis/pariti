@@ -3,7 +3,7 @@
 import { Edit, Plus, Trash2, User, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { removeMemberAction } from "@/actions";
 import type { getCalculatedGroup } from "@/actions/get-group";
 import { MemberDialog } from "@/components/member-dialog";

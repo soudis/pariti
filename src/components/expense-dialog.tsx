@@ -47,9 +47,6 @@ export function ExpenseDialog({
 }: ExpenseDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const [activeMembersAtDate, setActiveMembersAtDate] = useState<Member[]>(
-		group.members,
-	);
 	const t = useTranslations("forms.expense");
 	const { executeAsync: createExpense } = useAction(createExpenseAction);
 	const { executeAsync: editExpense } = useAction(editExpenseAction);
