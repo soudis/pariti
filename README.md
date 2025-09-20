@@ -98,9 +98,8 @@ A comprehensive money sharing application for groups and friends, built with Nex
 ### Docker Deployment
 - `pnpm docker:build` - Build Docker image
 - `pnpm docker:push` - Push Docker image to registry
-- `pnpm docker:deploy:nginx` - Deploy with Nginx proxy
-- `pnpm docker:deploy:traefik` - Deploy with Traefik proxy
-- `pnpm docker:update` - Update running containers with new image
+- `pnpm docker:deploy:create` - Create a new deployment configuration
+- `pnpm docker:deploy:up <name>` - Deploy an existing configuration
 
 ## Database Schema
 
@@ -171,48 +170,101 @@ pnpm db:studio
 
 ### Docker Deployment
 
-The application includes comprehensive Docker deployment support with multiple proxy configurations:
+The application includes a flexible deployment system that allows you to create and manage multiple deployment configurations:
 
-#### Quick Deploy
+#### Create a New Deployment
 ```bash
-# Deploy with Nginx proxy
-pnpm docker:deploy:nginx
-
-# Deploy with Traefik proxy
-pnpm docker:deploy:traefik
+# Interactive deployment creation
+pnpm docker:deploy:create
 ```
 
-#### Docker Deployment
+This command will:
+- Prompt for a deployment name
+- Ask you to choose a proxy type (nginx, traefik, or custom)
+- Collect domain and admin email information
+- Optionally ask for a Docker Host (for remote deployments)
+- Generate a complete deployment configuration in `deployments/<name>/`
+
+#### Deploy an Existing Configuration
 ```bash
-cd docker
-./deploy.sh nginx  # or traefik
+# Deploy a specific configuration
+pnpm docker:deploy:up <deployment_name>
 ```
 
-#### Updating Existing Deployment
+This command will:
+- Pull the latest Docker images
+- Start the services using the specified deployment configuration
+- Use the DOCKER_HOST if specified in the deployment's .env file
+
+#### Deployment Types
+
+**Nginx Proxy**
+- Uses `jwilder/nginx-proxy` for automatic reverse proxy
+- Includes `jrcs/letsencrypt-nginx-proxy-companion` for SSL certificates
+- Creates its own `nginx_network`
+
+**Traefik Proxy**
+- Uses `traefik:v3.5.2` for reverse proxy and load balancing
+- Automatic SSL certificate management with Let's Encrypt
+- Creates its own `traefik_network`
+- Includes Traefik dashboard on port 8080
+
+**Custom Proxy**
+- Uses an external proxy network
+- You specify the network name during creation
+- Useful for integrating with existing proxy setups
+
+#### Remote Deployment
+To deploy to a remote Docker host:
+1. Create a deployment with a custom Docker Host
+2. The deployment will use the specified DOCKER_HOST for all Docker operations
+3. Make sure the remote host has access to the required Docker images
+
+#### Managing Deployments
+Once deployed, you can manage your deployment using standard Docker Compose commands:
+
 ```bash
-# Update to latest image
-pnpm docker:update
+# View logs
+docker compose -f deployments/<name>/docker-compose.yml --env-file deployments/<name>/.env logs -f
 
-# Update to specific image tag
-./scripts/update.sh nginx v1.2.3
+# Stop services
+docker compose -f deployments/<name>/docker-compose.yml --env-file deployments/<name>/.env down
 
-# Interactive update (prompts for options)
-./scripts/update.sh
+# Restart services
+docker compose -f deployments/<name>/docker-compose.yml --env-file deployments/<name>/.env restart
+
+# View status
+docker compose -f deployments/<name>/docker-compose.yml --env-file deployments/<name>/.env ps
 ```
 
-The deployment script will:
-- Generate secure database credentials
-- Prompt for domain and admin email
-- Create environment configuration
-- Deploy with SSL certificates (Let's Encrypt)
-- Set up reverse proxy configuration
+#### Examples
 
-The update script will:
-- Pull the latest Docker image
-- Stop the application container (preserves database)
-- Start the application with the new image
-- Provide rollback capability if update fails
-- Show deployment status and logs
+**Create a production deployment with nginx:**
+```bash
+pnpm docker:deploy:create
+# Enter deployment name: production
+# Choose proxy type: 1 (nginx)
+# Enter domain: myapp.example.com
+# Enter admin email: admin@example.com
+# Docker Host: (leave empty for local)
+```
+
+**Deploy to a remote server:**
+```bash
+pnpm docker:deploy:create
+# Enter deployment name: remote-prod
+# Choose proxy type: 2 (traefik)
+# Enter domain: myapp.example.com
+# Enter admin email: admin@example.com
+# Docker Host: ssh://user@remote-server:22
+```
+
+**Deploy the configuration:**
+```bash
+pnpm docker:deploy:up production
+```
+
+For more detailed information about the deployment system, see the [deployments/README.md](deployments/README.md) file.
 
 ## Advanced Features
 
