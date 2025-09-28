@@ -1,10 +1,8 @@
 "use client";
 
-import type { Expense, Group, Member } from "@prisma/client";
 import { DollarSign, Package, Plus, Receipt, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
-import type { getGroup } from "@/actions";
 import type { getCalculatedGroup } from "@/actions/get-group";
 import { ConsumptionDialog } from "@/components/consumption-dialog";
 import { ExpenseDialog } from "@/components/expense-dialog";

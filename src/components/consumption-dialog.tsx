@@ -26,11 +26,7 @@ import {
 } from "@/components/ui/form-field";
 import { Label } from "@/components/ui/label";
 import { MemberEditor } from "@/components/ui/member-editor";
-import {
-	type ConsumptionFormData,
-	consumptionSchema,
-	getDefaultSharingMethod,
-} from "@/lib/schemas";
+import { type ConsumptionFormData, consumptionSchema } from "@/lib/schemas";
 import { handleActionErrors } from "@/lib/utils";
 
 interface ConsumptionDialogProps {
