@@ -18,11 +18,10 @@ async function updateConsumption(
 		where: { id: consumptionId },
 		data: {
 			amount: data.amount,
-			isUnitAmount: data.isUnitAmount,
 			date: data.date,
 			description: data.description,
 			sharingMethod: data.sharingMethod || "equal",
-			splitAll: data.splitAll || true,
+			splitAll: data.splitAll ?? false,
 		},
 		include: {
 			consumptionMembers: {
