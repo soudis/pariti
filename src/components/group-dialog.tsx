@@ -116,7 +116,7 @@ export function GroupDialog({ children }: GroupDialogProps) {
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent className="sm:max-w-[425px] h-full sm:h-[60vh] flex flex-col">
+			<DialogContent className="sm:max-w-[425px] h-full flex flex-col">
 				<DialogHeader className="flex-shrink-0">
 					<DialogTitle>{t("title")}</DialogTitle>
 					<DialogDescription>{t("description")}</DialogDescription>

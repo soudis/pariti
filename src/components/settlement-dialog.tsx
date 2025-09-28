@@ -79,7 +79,7 @@ export function SettlementDialog({
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent className="sm:max-w-[500px] h-full sm:h-[90vh] flex flex-col">
+			<DialogContent className="sm:max-w-[500px] h-full flex flex-col">
 				<DialogHeader className="flex-shrink-0">
 					<DialogTitle>{t("title")}</DialogTitle>
 					<DialogDescription>{t("description")}</DialogDescription>

@@ -64,7 +64,7 @@ function DialogContent({
 					// Mobile: fullscreen with bottom padding for fixed footer
 					"inset-0 h-screen max-h-screen rounded-none p-4 pb-24",
 					// Desktop: centered modal that uses 90% height for maximum space
-					"sm:top-[50%] sm:left-[50%] sm:max-w-[calc(100%-2rem)] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:max-h-[90vh] sm:rounded-lg sm:p-6 sm:max-w-lg sm:h-[90vh]",
+					"sm:top-[50%] sm:left-[50%] sm:max-w-[calc(100%-2rem)] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:max-h-[90vh] sm:rounded-lg sm:p-6 sm:max-w-lg sm:h-fit",
 					className,
 				)}
 				{...props}

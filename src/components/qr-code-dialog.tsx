@@ -41,7 +41,7 @@ export function QRCodeDialog({
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent className="sm:max-w-[400px]">
+			<DialogContent className="sm:max-w-[500px] h-full sm:max-h-[90vh] flex flex-col">
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2">
 						<QrCode className="w-5 h-5" />
@@ -81,7 +81,7 @@ export function QRCodeDialog({
 					</div>
 
 					{/* QR Code */}
-					<div className="flex justify-center p-4 bg-white dark:bg-gray-900 rounded-lg border">
+					<div className="flex justify-center p-4 bg-white rounded-lg border">
 						<Girocode
 							iban={iban}
 							amount={amountInCents}

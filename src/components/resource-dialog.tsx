@@ -94,7 +94,7 @@ export function ResourceDialog({
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent className="sm:max-w-[425px] h-full sm:h-[60vh] flex flex-col">
+			<DialogContent className="sm:max-w-[425px] h-full flex flex-col">
 				<DialogHeader className="flex-shrink-0">
 					<DialogTitle>{resource ? t("editTitle") : t("title")}</DialogTitle>
 					<DialogDescription>

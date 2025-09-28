@@ -115,16 +115,12 @@ export function ResourcesSection({
 		>["resources"][number]["consumptions"],
 	) => {
 		return consumptions.reduce((total, consumption) => {
-			if (consumption.isUnitAmount) {
-				// Find the resource to get unit price
-				const resource = resources.find((r) =>
-					r.consumptions.some((c) => c.id === consumption.id),
-				);
-				if (resource?.unitPrice) {
-					return (
-						total + Number(consumption.amount) * Number(resource.unitPrice)
-					);
-				}
+			// Find the resource to get unit price
+			const resource = resources.find((r) =>
+				r.consumptions.some((c) => c.id === consumption.id),
+			);
+			if (resource?.unitPrice && resource.unit) {
+				return total + Number(consumption.amount) * Number(resource.unitPrice);
 			}
 			return total + Number(consumption.amount);
 		}, 0);
@@ -344,27 +340,26 @@ export function ResourcesSection({
 																			variant="secondary"
 																			className="text-sm"
 																		>
-																			{consumption.isUnitAmount
+																			{resource.unit && resource.unitPrice
 																				? `${consumption.amount} ${resource.unit}`
 																				: formatCurrency(
 																						Number(consumption.amount),
 																						group.currency,
 																					)}
 																		</Badge>
-																		{consumption.isUnitAmount &&
-																			resource.unitPrice && (
-																				<Badge
-																					variant="outline"
-																					className="text-xs"
-																				>
-																					{formatCurrency(
-																						Number(consumption.amount) *
-																							Number(resource.unitPrice),
-																						group.currency,
-																					)}{" "}
-																					{t("total")}
-																				</Badge>
-																			)}
+																		{resource.unit && resource.unitPrice && (
+																			<Badge
+																				variant="outline"
+																				className="text-xs"
+																			>
+																				{formatCurrency(
+																					Number(consumption.amount) *
+																						Number(resource.unitPrice),
+																					group.currency,
+																				)}{" "}
+																				{t("total")}
+																			</Badge>
+																		)}
 																	</div>
 																	{consumption.description && (
 																		<p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
