@@ -135,9 +135,10 @@
 		"markCompleted": "Als abgeschlossen markieren",
 		"payments": "Zahlungen",
 		"qrCode": "QR-Code",
-		"pay": "Bezahlen",
+		"copyIban": "IBAN kopieren",
 		"failedToCopyLink": "Link konnte nicht kopiert werden",
-		"menu": "Menü"
+		"menu": "Menü",
+		"copied": "IBAN in die Zwischenablage kopiert"
 	},
 	"forms": {
 		"group": {

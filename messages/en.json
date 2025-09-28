@@ -135,9 +135,10 @@
 		"markCompleted": "Mark Completed",
 		"payments": "Payments",
 		"qrCode": "QR Code",
-		"pay": "Pay",
+		"copyIban": "Copy IBAN",
 		"failedToCopyLink": "Failed to copy link",
-		"menu": "Menu"
+		"menu": "Menu",
+		"copied": "IBAN copied to clipboard"
 	},
 	"forms": {
 		"group": {
