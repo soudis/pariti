@@ -6,6 +6,7 @@ import {
 	Calendar,
 	CheckCircle,
 	Circle,
+	CreditCard,
 	Plus,
 	QrCode,
 	Scale,
@@ -72,6 +73,40 @@ export function SettlementsSection({
 		if (member) return member.name;
 		if (resource) return resource.name;
 		return t("unknown");
+	};
+
+	const generateSepaUri = (
+		iban: string,
+		amount: number,
+		recipientName: string,
+		description: string,
+	) => {
+		// Remove spaces and convert to uppercase for IBAN
+		const cleanIban = iban.replace(/\s/g, "").toUpperCase();
+
+		// Format amount to 2 decimal places
+		const formattedAmount = amount.toFixed(2);
+
+		// Create SEPA URI according to EPC QR Code specification
+		const sepaUri = `iban:${cleanIban}?amount=${formattedAmount}&recipient-name=${encodeURIComponent(recipientName)}&reference=${encodeURIComponent(description)}`;
+
+		return sepaUri;
+	};
+
+	const isMobile = () => {
+		return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+			navigator.userAgent,
+		);
+	};
+
+	const handlePayClick = (
+		iban: string,
+		amount: number,
+		recipientName: string,
+		description: string,
+	) => {
+		const sepaUri = generateSepaUri(iban, amount, recipientName, description);
+		window.open(sepaUri, "_blank");
 	};
 
 	const openSettlements = settlements.filter((s) => s.status === "open");
@@ -194,6 +229,27 @@ export function SettlementsSection({
 
 															{/* Action buttons - separate line */}
 															<div className="flex items-center gap-2 flex-wrap">
+																{settlementMember.toMember?.iban &&
+																	isMobile() && (
+																		<Button
+																			variant="outline"
+																			size="sm"
+																			className="flex items-center gap-2"
+																			onClick={() => {
+																				if (settlementMember.toMember?.iban) {
+																					handlePayClick(
+																						settlementMember.toMember.iban,
+																						Number(settlementMember.amount),
+																						settlementMember.toMember.name,
+																						settlement.title,
+																					);
+																				}
+																			}}
+																		>
+																			<CreditCard className="w-4 h-4" />
+																			{t("pay")}
+																		</Button>
+																	)}
 																{/* QR Code button for bank transfer */}
 																{settlementMember.toMember?.iban && (
 																	<QRCodeDialog
