@@ -22,11 +22,10 @@ async function createConsumption(data: ConsumptionFormData) {
 		data: {
 			resourceId: data.resourceId,
 			amount: data.amount,
-			isUnitAmount: data.isUnitAmount,
 			date: data.date,
 			description: data.description,
 			sharingMethod: data.sharingMethod || "equal",
-			splitAll: data.splitAll || true,
+			splitAll: data.splitAll,
 			consumptionMembers: {
 				create: data.memberAmounts || [],
 			},

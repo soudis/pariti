@@ -3,6 +3,7 @@
 FROM node:20-bookworm-slim AS base
 
 RUN apt-get update && apt-get install -y openssl curl
+RUN corepack enable pnpm 
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -30,7 +31,7 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN corepack enable pnpm && pnpm prisma generate && pnpm run build; 
+RUN pnpm prisma generate && pnpm run build; 
 
 
 # Production image, copy all the files and run next
@@ -44,15 +45,17 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
-
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./package.json
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --chown=nextjs:nodejs prisma ./prisma/    
+COPY --chown=nextjs:nodejs package.json ./package.json
+COPY --chown=nextjs:nodejs pnpm-lock.yaml ./pnpm-lock.yaml
+
+# Install pnpm in the runner stage
+RUN corepack enable pnpm
 
 USER nextjs
 
@@ -63,4 +66,19 @@ ENV PORT=3000
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/config/next-config-js/output
 ENV HOSTNAME="0.0.0.0"
-CMD ["node", "server.js"]
+
+# Create startup script
+COPY --chown=nextjs:nodejs <<EOF /app/start.sh
+#!/bin/sh
+set -e
+
+echo "Running database migrations..."
+npx --yes prisma migrate deploy
+
+echo "Starting application..."
+exec node server.js
+EOF
+
+RUN chmod +x /app/start.sh
+
+CMD ["/app/start.sh"]

@@ -16,7 +16,8 @@
 		"docker:build": "./scripts/build.sh latest",
 		"docker:push": "./scripts/push.sh latest",
 		"docker:deploy:create": "./scripts/deploy-create.sh",
-		"docker:deploy:up": "./scripts/deploy-up.sh"
+		"docker:deploy:up": "./scripts/deploy-up.sh",
+		"docker:deploy:logs": "./scripts/deploy-logs.sh"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^5.2.1",

@@ -64,9 +64,9 @@ export function ConsumptionDialog({
 			amount: 0,
 			isUnitAmount: false,
 			date: new Date(),
-			splitAll: true,
+			splitAll: false,
 			selectedMembers: [],
-			sharingMethod: getDefaultSharingMethod(group),
+			sharingMethod: "equal",
 			memberAmounts: [],
 		},
 	});
@@ -74,16 +74,19 @@ export function ConsumptionDialog({
 	// Initialize form with consumption data when editing
 	useEffect(() => {
 		if (consumption) {
+			const resource = resources.find((r) => r.id === consumption.resourceId);
 			form.reset({
 				resourceId: consumption.resourceId,
 				description: consumption.description || "",
 				amount: consumption.amount,
-				isUnitAmount: consumption.isUnitAmount,
+				isUnitAmount:
+					consumption.isUnitAmount ??
+					(resource?.unit && resource?.unitPrice) ??
+					false,
 				date: new Date(consumption.date),
 				splitAll: consumption.splitAll,
 				selectedMembers: consumption.selectedMembers,
-				sharingMethod:
-					consumption.sharingMethod || getDefaultSharingMethod(group),
+				sharingMethod: consumption.sharingMethod || "equal",
 				memberAmounts: consumption.memberAmounts || [],
 			});
 		} else {
@@ -93,13 +96,24 @@ export function ConsumptionDialog({
 				amount: 0,
 				isUnitAmount: true,
 				date: new Date(),
-				splitAll: true,
+				splitAll: false,
 				selectedMembers: [],
-				sharingMethod: getDefaultSharingMethod(group),
+				sharingMethod: "equal",
 				memberAmounts: [],
 			});
 		}
-	}, [consumption, form, group]);
+	}, [consumption, form, resources]);
+
+	const resourceId = form.watch("resourceId");
+	useEffect(() => {
+		if (resourceId) {
+			const resource = resources.find((r) => r.id === resourceId);
+			form.setValue(
+				"isUnitAmount",
+				(resource?.unit && resource?.unitPrice) ?? false,
+			);
+		}
+	}, [resourceId, form, resources]);
 
 	// Initialize active members when dialog opens
 	useEffect(() => {
@@ -191,70 +205,73 @@ export function ConsumptionDialog({
 								placeholder={t("datePlaceholder")}
 							/>
 
-							{form.watch("resourceId") && (
-								<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-									<div className="space-y-2">
-										<Label>{t("amountLabel")}</Label>
-										<div className="flex items-center space-x-2">
-											<TextField
-												control={form.control}
-												name="amount"
-												type="number"
-												step="1"
-												min={0}
-												placeholder="0.00"
-												required
-												className="flex-1"
-											/>
-											{(() => {
-												const selectedResource = resources.find(
-													(r) => r.id === form.getValues("resourceId"),
-												);
-												const isUnitAmount = form.watch("isUnitAmount");
-												return (
-													selectedResource?.unit && (
-														<span className="text-sm text-gray-500 whitespace-nowrap">
-															{isUnitAmount ? selectedResource.unit : "€"}
-														</span>
-													)
-												);
-											})()}
+							{resourceId && (
+								<>
+									<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+										<div className="space-y-2">
+											<Label>{t("amountLabel")}</Label>
+											<div className="flex items-center space-x-2">
+												<TextField
+													control={form.control}
+													name="amount"
+													type="number"
+													step="1"
+													min={0}
+													placeholder="0.00"
+													required
+													className="flex-1"
+												/>
+												{(() => {
+													const selectedResource = resources.find(
+														(r) => r.id === form.getValues("resourceId"),
+													);
+													const isUnitAmount = form.watch("isUnitAmount");
+													return (
+														selectedResource?.unit && (
+															<span className="text-sm text-gray-500 whitespace-nowrap">
+																{isUnitAmount ? selectedResource.unit : "€"}
+															</span>
+														)
+													);
+												})()}
+											</div>
 										</div>
+
+										{(() => {
+											const selectedResource = resources.find(
+												(r) => r.id === form.getValues("resourceId"),
+											);
+											return (
+												selectedResource?.unit &&
+												selectedResource?.unitPrice && (
+													<CheckboxField
+														control={form.control}
+														name="isUnitAmount"
+														text={t("isUnitAmount", {
+															unit: selectedResource.unit,
+														})}
+													/>
+												)
+											);
+										})()}
 									</div>
 
-									{(() => {
-										const selectedResource = resources.find(
-											(r) => r.id === form.getValues("resourceId"),
-										);
-										return (
-											selectedResource?.unit &&
-											selectedResource?.unitPrice && (
-												<CheckboxField
-													control={form.control}
-													name="isUnitAmount"
-													text={t("isUnitAmount", {
-														unit: selectedResource.unit,
-													})}
-												/>
-											)
-										);
-									})()}
-								</div>
+									<MemberEditor
+										group={group}
+										expenseDate={form.watch("date") as Date}
+										isUnitBased={form.watch("isUnitAmount") as boolean}
+										unitPrice={(() => {
+											const selectedResource = resources.find(
+												(r) => r.id === form.getValues("resourceId"),
+											);
+											return selectedResource?.unitPrice &&
+												selectedResource.unit
+												? Number(selectedResource.unitPrice)
+												: 1;
+										})()}
+									/>
+								</>
 							)}
-
-							<MemberEditor
-								group={group}
-								expenseDate={form.watch("date") as Date}
-								isUnitBased={form.watch("isUnitAmount") as boolean}
-								unitPrice={(() => {
-									const selectedResource = resources.find(
-										(r) => r.id === form.getValues("resourceId"),
-									);
-									return selectedResource?.unitPrice
-										? Number(selectedResource.unitPrice)
-										: 0;
-								})()}
-							/>
 						</form>
 					</Form>
 				</div>

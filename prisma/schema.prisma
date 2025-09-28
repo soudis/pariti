@@ -119,13 +119,12 @@ model Consumption {
   id           String   @id @default(cuid())
   resourceId   String
   amount       Decimal  @db.Decimal(10, 2) // either money amount or unit amount
-  isUnitAmount Boolean  @default(false) // true if amount is in units, false if in money
   date         DateTime @default(now())
   description  String?
   sharingMethod String  
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  splitAll     Boolean  @default(true) // If true, split between all members (including future ones)
+  splitAll     Boolean  @default(false) // If true, split between all members (including future ones)
 
   // Relations
   resource     Resource           @relation(fields: [resourceId], references: [id], onDelete: Cascade)

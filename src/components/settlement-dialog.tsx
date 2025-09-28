@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { createSettlementAction } from "@/actions";
 import { Button } from "@/components/ui/button";
@@ -59,6 +59,12 @@ export function SettlementDialog({
 			centerId: "",
 		},
 	});
+
+	useEffect(() => {
+		if (open) {
+			form.reset();
+		}
+	}, [open, form]);
 
 	const onSubmit = async (data: SettlementFormData) => {
 		setLoading(true);

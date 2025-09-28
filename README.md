@@ -100,6 +100,7 @@ A comprehensive money sharing application for groups and friends, built with Nex
 - `pnpm docker:push` - Push Docker image to registry
 - `pnpm docker:deploy:create` - Create a new deployment configuration
 - `pnpm docker:deploy:up <name>` - Deploy an existing configuration
+- `pnpm docker:deploy:logs <name>` - Show logs for a deployment
 
 ## Database Schema
 
@@ -220,11 +221,29 @@ To deploy to a remote Docker host:
 2. The deployment will use the specified DOCKER_HOST for all Docker operations
 3. Make sure the remote host has access to the required Docker images
 
+#### Viewing Logs
+```bash
+# Follow all logs (default)
+pnpm docker:deploy:logs <deployment_name>
+
+# Show recent logs and exit
+pnpm docker:deploy:logs <deployment_name> --no-follow
+
+# Show last 100 lines
+pnpm docker:deploy:logs <deployment_name> --lines 100
+
+# Show logs for specific service only
+pnpm docker:deploy:logs <deployment_name> --service next
+
+# Show logs from last hour
+pnpm docker:deploy:logs <deployment_name> --since 1h
+```
+
 #### Managing Deployments
 Once deployed, you can manage your deployment using standard Docker Compose commands:
 
 ```bash
-# View logs
+# View logs (alternative method)
 docker compose -f deployments/<name>/docker-compose.yml --env-file deployments/<name>/.env logs -f
 
 # Stop services

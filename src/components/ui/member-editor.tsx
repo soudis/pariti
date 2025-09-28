@@ -57,7 +57,7 @@ export function MemberEditor({
 	// Get available weight types or use default
 	const availableWeightTypes = weightTypes || getDefaultWeightTypes();
 
-	const { watch, setValue, formState } = useFormContext<
+	const { watch, setValue } = useFormContext<
 		ExpenseFormData | ConsumptionFormData
 	>();
 	const selectedMembersIds = watch("selectedMembers") || [];
@@ -65,8 +65,6 @@ export function MemberEditor({
 	const totalAmount = watch("amount") || 0;
 	const sharingMethod = watch("sharingMethod");
 	const memberAmounts = watch("memberAmounts") || [];
-	const formErrors = formState.errors;
-	console.log(formErrors);
 
 	const activeMembersAtDate = useMemo(() => {
 		return members.filter(

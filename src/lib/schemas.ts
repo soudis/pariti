@@ -123,7 +123,7 @@ export const consumptionSchema = z.object({
 	resourceId: z.string().min(1, "Please select a resource"),
 	description: z.string().nullish(),
 	amount: z.coerce.number().min(0.01, "Amount must be greater than 0"),
-	isUnitAmount: z.coerce.boolean(),
+	isUnitAmount: z.coerce.boolean().nullish(),
 	date: z.coerce.date(),
 	splitAll: z.coerce.boolean(),
 	selectedMembers: z.array(z.string()),

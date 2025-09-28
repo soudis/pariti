@@ -27,7 +27,7 @@ async function createExpense(groupId: string, data: ExpenseFormData) {
 			date: data.date || new Date(),
 			groupId: groupId,
 			paidById: data.paidById,
-			splitAll: data.splitAll || false,
+			splitAll: data.splitAll,
 			sharingMethod: data.sharingMethod || "equal",
 			isRecurring: data.isRecurring || false,
 			recurringType: data.recurringType,

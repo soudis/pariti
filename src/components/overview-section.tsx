@@ -150,7 +150,11 @@ export function OverviewSection({
 
 						{/* Secondary Actions */}
 						<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-							<MemberDialog group={group} weightsEnabled={group.weightsEnabled}>
+							<MemberDialog
+								group={group}
+								weightsEnabled={group.weightsEnabled}
+								weightTypes={group.weightTypes}
+							>
 								<Button variant="outline" size="sm" className="w-full text-sm">
 									<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
 									<span className="truncate">{t("addMember")}</span>

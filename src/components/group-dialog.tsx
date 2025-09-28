@@ -95,8 +95,6 @@ export function GroupDialog({ children }: GroupDialogProps) {
 		form.setValue("weightTypes", updatedWeightTypes);
 	};
 
-	console.log(form.formState.isSubmitting);
-
 	const onSubmit = async (data: GroupFormData) => {
 		setLoading(true);
 

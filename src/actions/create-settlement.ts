@@ -16,9 +16,9 @@ async function createSettlement(groupId: string, data: SettlementFormData) {
 
 	if (!group) throw new Error("Group not found");
 
-	// Generate settlement transactions based on type
-	const transactions = generateSettlementTransactions(
-		{
+	console.log(
+		"balances",
+		new Map([
 			...group.members.reduce((acc, member) => {
 				acc.set(member.id, member.balance);
 				return acc;
@@ -27,7 +27,21 @@ async function createSettlement(groupId: string, data: SettlementFormData) {
 				acc.set(resource.id, resource.balance);
 				return acc;
 			}, new Map<string, number>()),
-		},
+		]),
+	);
+
+	// Generate settlement transactions based on type
+	const transactions = generateSettlementTransactions(
+		new Map([
+			...group.members.reduce((acc, member) => {
+				acc.set(`member_${member.id}`, member.balance);
+				return acc;
+			}, new Map<string, number>()),
+			...group.resources.reduce((acc, resource) => {
+				acc.set(`resource_${resource.id}`, resource.balance);
+				return acc;
+			}, new Map<string, number>()),
+		]),
 		data.settlementType,
 		data.centerId,
 	);
@@ -96,8 +110,6 @@ function generateSettlementTransactions(
 	const creditors: Array<{ key: string; amount: number }> = [];
 	const debtors: Array<{ key: string; amount: number }> = [];
 
-	console.log("balances", balances);
-
 	for (const [key, amount] of balances.entries()) {
 		if (amount > 0.01) {
 			creditors.push({ key, amount });
@@ -105,6 +117,9 @@ function generateSettlementTransactions(
 			debtors.push({ key, amount: Math.abs(amount) });
 		}
 	}
+
+	console.log("creditors", creditors);
+	console.log("debtors", debtors);
 
 	if (settlementType === "optimized") {
 		// Optimized settlement: minimize number of transactions
@@ -142,69 +157,63 @@ function generateSettlementTransactions(
 	} else if (settlementType === "around_member" && centerId) {
 		// All transactions go through one member
 		const centerKey = `member_${centerId}`;
-		const centerBalance = balances.get(centerKey) || 0;
 
-		if (centerBalance > 0) {
-			// Center member is owed money, others pay them
-			for (const debtor of debtors) {
-				if (debtor.key !== centerKey) {
-					const [fromType, fromId] = parseKey(debtor.key);
-					transactions.push({
-						fromType,
-						fromId,
-						toType: "member",
-						toId: centerId,
-						amount: debtor.amount,
-					});
-				}
+		// First, all debtors pay the center member
+		for (const debtor of debtors) {
+			if (debtor.key !== centerKey) {
+				const [fromType, fromId] = parseKey(debtor.key);
+				transactions.push({
+					fromType,
+					fromId,
+					toType: "member",
+					toId: centerId,
+					amount: debtor.amount,
+				});
 			}
-		} else if (centerBalance < 0) {
-			// Center member owes money, they pay others
-			for (const creditor of creditors) {
-				if (creditor.key !== centerKey) {
-					const [toType, toId] = parseKey(creditor.key);
-					transactions.push({
-						fromType: "member",
-						fromId: centerId,
-						toType,
-						toId,
-						amount: creditor.amount,
-					});
-				}
+		}
+
+		// Then, the center member pays all creditors
+		for (const creditor of creditors) {
+			if (creditor.key !== centerKey) {
+				const [toType, toId] = parseKey(creditor.key);
+				transactions.push({
+					fromType: "member",
+					fromId: centerId,
+					toType,
+					toId,
+					amount: creditor.amount,
+				});
 			}
 		}
 	} else if (settlementType === "around_resource" && centerId) {
 		// All transactions go through one resource
 		const centerKey = `resource_${centerId}`;
-		const centerBalance = balances.get(centerKey) || 0;
 
-		if (centerBalance > 0) {
-			// Resource is owed money, members pay it
-			for (const debtor of debtors) {
-				if (debtor.key !== centerKey) {
-					const [fromType, fromId] = parseKey(debtor.key);
-					transactions.push({
-						fromType,
-						fromId,
-						toType: "resource",
-						toId: centerId,
-						amount: debtor.amount,
-					});
-				}
+		// First, all debtors pay the center resource
+		for (const debtor of debtors) {
+			if (debtor.key !== centerKey) {
+				const [fromType, fromId] = parseKey(debtor.key);
+				transactions.push({
+					fromType,
+					fromId,
+					toType: "resource",
+					toId: centerId,
+					amount: debtor.amount,
+				});
 			}
-		} else if (centerBalance < 0) {
-			// Resource owes money, it pays members
-			for (const creditor of creditors) {
-				if (creditor.key !== centerKey) {
-					const [toType, toId] = parseKey(creditor.key);
-					transactions.push({
-						fromType: "resource",
-						fromId: centerId,
-						toType,
-						toId,
-						amount: creditor.amount,
-					});
-				}
+		}
+
+		// Then, the center resource pays all creditors
+		for (const creditor of creditors) {
+			if (creditor.key !== centerKey) {
+				const [toType, toId] = parseKey(creditor.key);
+				transactions.push({
+					fromType: "resource",
+					fromId: centerId,
+					toType,
+					toId,
+					amount: creditor.amount,
+				});
 			}
 		}
 	}
