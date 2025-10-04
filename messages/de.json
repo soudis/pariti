@@ -271,6 +271,7 @@
 				"description": "Diese Ausgabe wird automatisch für jeden {type} Zeitraum ab dem Startdatum generiert."
 			},
 			"splitBetween": "Aufteilen zwischen allen aktiven Mitgliedern",
+			"splitBetweenAllMembers": "Aufteilen zwischen allen Mitgliedern",
 			"allMembers": "Alle Mitglieder (einschließlich zukünftiger Mitglieder)",
 			"shareEqually": "Gleichmäßig",
 			"shareByWeights": "Nach Gewichtung",
@@ -278,6 +279,7 @@
 			"noActiveMembers": "Keine aktiven Mitglieder an diesem Datum",
 			"amountPerPerson": "Betrag pro Person: {amount}€",
 			"includesActiveMembers": "Diese Ausgabe wird alle {count} aktiven Mitglieder vom {date} einbeziehen",
+			"includesAllMembers": "Diese Ausgabe wird alle {count} Mitglieder einbeziehen",
 			"selectMembersAndAmounts": "Aufteilung",
 			"resetToDefaults": "Auf Standard zurücksetzen",
 			"weight": "Gewicht",
@@ -317,6 +319,10 @@
 			"unitPlaceholder": "z.B. Stunden, Rollen, km",
 			"unitPriceLabel": "Preis pro Einheit",
 			"unitInfo": "Beim Erfassen der Nutzung kannst du entweder die Menge in Einheiten oder die Gesamtkosten in Geld angeben.",
+			"defaultWeightTypeLabel": "Standard-Gewichtstyp",
+			"defaultWeightTypePlaceholder": "Gewichtstyp auswählen",
+			"defaultWeightTypeDescription": "Dieser Gewichtstyp wird automatisch ausgewählt, wenn Nutzungen für diese Ressource erstellt werden.",
+			"equalDefault": "Gleichmäßig (Standard)",
 			"cancel": "Abbrechen",
 			"create": "Ressource hinzufügen",
 			"creating": "Füge hinzu..."

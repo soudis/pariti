@@ -99,14 +99,15 @@ model ExpenseMember {
 }
 
 model Resource {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  unit        String?  // e.g., "hours", "rolls", "km"
-  unitPrice   Decimal? @db.Decimal(10, 2) // price per unit
-  groupId     String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                String   @id @default(cuid())
+  name              String
+  description       String?
+  unit              String?  // e.g., "hours", "rolls", "km"
+  unitPrice         Decimal? @db.Decimal(10, 2) // price per unit
+  defaultWeightType String?  // Default weight type ID for this resource
+  groupId           String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   // Relations
   group       Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)

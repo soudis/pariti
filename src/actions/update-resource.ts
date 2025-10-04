@@ -18,6 +18,7 @@ async function updateResource(resourceId: string, data: ResourceFormData) {
 			description: data.description,
 			unit: data.hasUnit ? data.unit : null,
 			unitPrice: data.hasUnit ? data.unitPrice : null,
+			defaultWeightType: data.defaultWeightType,
 		},
 		include: {
 			consumptions: {

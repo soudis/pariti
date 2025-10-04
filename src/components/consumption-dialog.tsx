@@ -108,6 +108,11 @@ export function ConsumptionDialog({
 				"isUnitAmount",
 				(resource?.unit && resource?.unitPrice) ?? false,
 			);
+
+			// Auto-select default weight type from resource if available
+			if (resource?.defaultWeightType) {
+				form.setValue("sharingMethod", resource.defaultWeightType);
+			}
 		}
 	}, [resourceId, form, resources]);
 
@@ -119,6 +124,10 @@ export function ConsumptionDialog({
 			// Auto-select resource if there's only one available
 			if (!consumption && resources.length === 1) {
 				form.setValue("resourceId", resources[0].id);
+				// Also set the default weight type if available
+				if (resources[0].defaultWeightType) {
+					form.setValue("sharingMethod", resources[0].defaultWeightType);
+				}
 			}
 		}
 	}, [open, form, consumption, resources]);

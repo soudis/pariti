@@ -159,7 +159,7 @@ export function OverviewSection({
 								</Button>
 							</MemberDialog>
 
-							<ResourceDialog groupId={group.id}>
+							<ResourceDialog group={group}>
 								<Button variant="outline" size="lg" className="w-full text-sm">
 									<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
 									<span className="truncate">{t("addResource")}</span>

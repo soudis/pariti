@@ -7,6 +7,7 @@ import { useAction } from "next-safe-action/hooks";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { createResourceAction, editResourceAction } from "@/actions";
+import type { getCalculatedGroup } from "@/actions/get-group";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -18,18 +19,26 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { CheckboxField, TextField } from "@/components/ui/form-field";
-import { type ResourceFormData, resourceSchema } from "@/lib/schemas";
+import {
+	CheckboxField,
+	SelectField,
+	TextField,
+} from "@/components/ui/form-field";
+import {
+	type ResourceFormData,
+	resourceSchema,
+	type WeightType,
+} from "@/lib/schemas";
 import { handleActionErrors } from "@/lib/utils";
 
 interface ResourceDialogProps {
-	groupId: string;
+	group: Awaited<ReturnType<typeof getCalculatedGroup>>;
 	children: React.ReactNode;
 	resource?: ResourceFormData & { id: string }; // For editing existing resource
 }
 
 export function ResourceDialog({
-	groupId,
+	group: { id: groupId, weightsEnabled, weightTypes },
 	children,
 	resource,
 }: ResourceDialogProps) {
@@ -49,6 +58,7 @@ export function ResourceDialog({
 			hasUnit: false,
 			unit: "",
 			unitPrice: 0,
+			defaultWeightType: "",
 		},
 	});
 
@@ -61,6 +71,7 @@ export function ResourceDialog({
 				hasUnit: !!(resource.unit && resource.unitPrice),
 				unit: resource.unit || "",
 				unitPrice: resource.unitPrice || 0,
+				defaultWeightType: resource.defaultWeightType || "equal",
 			});
 		} else {
 			form.reset({
@@ -69,6 +80,7 @@ export function ResourceDialog({
 				hasUnit: false,
 				unit: "",
 				unitPrice: 0,
+				defaultWeightType: "equal",
 			});
 		}
 	}, [resource, form]);
@@ -121,6 +133,22 @@ export function ResourceDialog({
 								label={t("descriptionLabel")}
 								placeholder={t("descriptionPlaceholder")}
 							/>
+
+							{weightsEnabled && weightTypes && weightTypes.length > 1 && (
+								<SelectField
+									control={form.control}
+									name="defaultWeightType"
+									label={t("defaultWeightTypeLabel")}
+									placeholder={t("defaultWeightTypePlaceholder")}
+									options={[
+										{ value: "equal", label: t("equalDefault") },
+										...weightTypes.map((weightType: WeightType) => ({
+											value: weightType.id,
+											label: weightType.name,
+										})),
+									]}
+								/>
+							)}
 
 							<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
 								<CheckboxField

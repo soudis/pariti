@@ -189,7 +189,7 @@ export function ResourcesSection({
 									<span className="truncate">{t("logConsumption")}</span>
 								</Button>
 							</ConsumptionDialog>
-							<ResourceDialog groupId={groupId}>
+							<ResourceDialog group={group}>
 								<Button
 									size="sm"
 									variant="outline"
@@ -251,7 +251,7 @@ export function ResourcesSection({
 										</div>
 										<div className="flex items-center gap-2 flex-shrink-0">
 											<ResourceDialog
-												groupId={groupId}
+												group={group}
 												resource={{
 													...resource,
 													unitPrice: Number(resource.unitPrice),

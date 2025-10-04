@@ -270,10 +270,12 @@
 				"description": "This expense will be automatically generated for each {type} period from the start date."
 			},
 			"splitBetween": "Split between all active members",
+			"splitBetweenAllMembers": "Split between all members",
 			"allMembers": "All Members (including future members)",
 			"noActiveMembers": "No active members on this date",
 			"amountPerPerson": "Amount per person: ${amount}",
 			"includesActiveMembers": "This expense will include all {count} active members on {date}",
+			"includesAllMembers": "This expense will include all {count} members",
 			"selectMembersAndAmounts": "Shares",
 			"resetToDefaults": "Reset to Defaults",
 			"weight": "weight",
@@ -316,6 +318,10 @@
 			"unitPlaceholder": "e.g., hours, rolls, km",
 			"unitPriceLabel": "Price per Unit",
 			"unitInfo": "When logging consumption, you can specify either the amount in units or the total cost in money.",
+			"defaultWeightTypeLabel": "Default Weight Type",
+			"defaultWeightTypePlaceholder": "Select default weight type",
+			"defaultWeightTypeDescription": "This weight type will be automatically selected when creating consumptions for this resource.",
+			"equalDefault": "Equally (default)",
 			"cancel": "Cancel",
 			"create": "Add Resource",
 			"creating": "Adding..."

@@ -104,6 +104,7 @@ export const resourceSchema = z
 		hasUnit: z.coerce.boolean().optional(),
 		unit: z.string().nullish(),
 		unitPrice: z.coerce.number().min(0).nullish(),
+		defaultWeightType: z.string().nullish(),
 	})
 	.refine(
 		(data) => {

@@ -244,6 +244,31 @@ export function MemberEditor({
 
 	return (
 		<div className={cn("space-y-4", className)}>
+			{weightsEnabled && (
+				<div className="">
+					<Label className="text-sm font-medium mb-2 block">
+						{t("distributionMethod")}
+					</Label>
+					<Select
+						value={sharingMethod}
+						onValueChange={(value: string) => {
+							setValue("sharingMethod", value);
+						}}
+					>
+						<SelectTrigger className="w-full">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="equal">{t("shareEqually")}</SelectItem>
+							{availableWeightTypes.map((weightType) => (
+								<SelectItem key={weightType.id} value={weightType.id}>
+									{t("byWeightType", { weightType: weightType.name })}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
+			)}
 			{/* Split All Option */}
 			<div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
 				<div className="flex items-center space-x-4">
@@ -253,44 +278,23 @@ export function MemberEditor({
 						onCheckedChange={handleSplitAllToggle}
 					/>
 					<Label htmlFor={splitAllId} className="text-sm font-medium">
-						{t("splitBetween")}
+						{memberActiveDurationsEnabled
+							? t("splitBetween")
+							: t("splitBetweenAllMembers")}
 					</Label>
 				</div>
 				{activeMembersAtDate.length > 0 && (
 					<p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-						{t("includesActiveMembers", {
-							count: activeMembersAtDate.length,
-							date: expenseDate.toLocaleDateString(),
-						})}
+						{memberActiveDurationsEnabled
+							? t("includesActiveMembers", {
+									count: activeMembersAtDate.length,
+									date: expenseDate.toLocaleDateString(),
+								})
+							: t("includesAllMembers", { count: members.length })}
 					</p>
 				)}
 
 				{/* Weight Type Selection for Split All */}
-				{splitAll && weightsEnabled && (
-					<div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-						<Label className="text-sm font-medium mb-2 block">
-							{t("distributionMethod")}
-						</Label>
-						<Select
-							value={sharingMethod}
-							onValueChange={(value: string) => {
-								setValue("sharingMethod", value);
-							}}
-						>
-							<SelectTrigger className="w-full">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="equal">{t("shareEqually")}</SelectItem>
-								{availableWeightTypes.map((weightType) => (
-									<SelectItem key={weightType.id} value={weightType.id}>
-										{t("byWeightType", { weightType: weightType.name })}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-				)}
 			</div>
 
 			{/* Individual Member Selection with Amount Editing */}
@@ -304,33 +308,6 @@ export function MemberEditor({
 							</Label>
 						</div>
 						<div className="flex items-center gap-2">
-							<Select
-								value={sharingMethod}
-								onValueChange={(value: string) => {
-									setValue("sharingMethod", value);
-								}}
-							>
-								<SelectTrigger className="w-32 h-8 text-xs">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="equal">{t("shareEqually")}</SelectItem>
-									{availableWeightTypes.length === 1 ? (
-										<SelectItem value="weights">
-											{t("shareByWeights")}
-										</SelectItem>
-									) : (
-										availableWeightTypes.map((weightType) => (
-											<SelectItem
-												key={weightType.id}
-												value={`weights-${weightType.id}`}
-											>
-												{t("byWeightType", { weightType: weightType.name })}
-											</SelectItem>
-										))
-									)}
-								</SelectContent>
-							</Select>
 							{memberAmounts.some((ma) => !!ma.amount || !!ma.weight) && (
 								<Button
 									type="button"
@@ -386,9 +363,10 @@ export function MemberEditor({
 												<span className="font-medium text-sm truncate">
 													{member.name}
 												</span>
-												{weightsEnabled && sharingMethod === "equal" && (
+												{weightsEnabled && isSelected && (
 													<span className="text-xs text-gray-500">
-														({t("weight")}: {calculatedMemberAmount?.weight})
+														({t("weight")}:{" "}
+														{calculatedMemberAmount?.weight ?? 0})
 													</span>
 												)}
 												{sharingMethod === "weights" && !isManuallyEdited && (
