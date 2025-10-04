@@ -18,6 +18,8 @@ async function createResource(groupId: string, data: ResourceFormData) {
 			unit: data.hasUnit ? data.unit : null,
 			unitPrice: data.hasUnit ? data.unitPrice : null,
 			defaultWeightType: data.defaultWeightType,
+			linkedMemberId:
+				data.linkedMemberId === "_none" ? null : data.linkedMemberId,
 			groupId,
 		},
 		include: {

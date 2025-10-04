@@ -54,6 +54,7 @@ model Member {
   consumptionMembers ConsumptionMember[]
   settlementFrom     SettlementMember[]   @relation("SettlementFrom")
   settlementTo       SettlementMember[]   @relation("SettlementTo")
+  linkedResources    Resource[]           @relation("ResourceLinkedMember")
 
   @@map("members")
 }
@@ -105,12 +106,14 @@ model Resource {
   unit              String?  // e.g., "hours", "rolls", "km"
   unitPrice         Decimal? @db.Decimal(10, 2) // price per unit
   defaultWeightType String?  // Default weight type ID for this resource
+  linkedMemberId    String?  // Optional link to a member - if set, resource balance is added to member balance
   groupId           String
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
   // Relations
   group       Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  linkedMember Member?     @relation("ResourceLinkedMember", fields: [linkedMemberId], references: [id], onDelete: SetNull)
   consumptions Consumption[]
   settlementFrom SettlementMember[] @relation("SettlementFrom")
   settlementTo   SettlementMember[] @relation("SettlementTo")

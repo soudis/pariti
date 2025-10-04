@@ -38,7 +38,7 @@ interface ResourceDialogProps {
 }
 
 export function ResourceDialog({
-	group: { id: groupId, weightsEnabled, weightTypes },
+	group: { id: groupId, weightsEnabled, weightTypes, members },
 	children,
 	resource,
 }: ResourceDialogProps) {
@@ -59,6 +59,7 @@ export function ResourceDialog({
 			unit: "",
 			unitPrice: 0,
 			defaultWeightType: "",
+			linkedMemberId: "",
 		},
 	});
 
@@ -72,6 +73,7 @@ export function ResourceDialog({
 				unit: resource.unit || "",
 				unitPrice: resource.unitPrice || 0,
 				defaultWeightType: resource.defaultWeightType || "equal",
+				linkedMemberId: resource.linkedMemberId || "_none",
 			});
 		} else {
 			form.reset({
@@ -81,6 +83,7 @@ export function ResourceDialog({
 				unit: "",
 				unitPrice: 0,
 				defaultWeightType: "equal",
+				linkedMemberId: "_none",
 			});
 		}
 	}, [resource, form]);
@@ -183,6 +186,20 @@ export function ResourceDialog({
 									</div>
 								)}
 							</div>
+							<SelectField
+								control={form.control}
+								name="linkedMemberId"
+								label={t("linkedMemberLabel")}
+								placeholder={t("linkedMemberPlaceholder")}
+								description={t("linkedMemberDescription")}
+								options={[
+									{ value: "_none", label: t("noMemberLinked") },
+									...members.map((member) => ({
+										value: member.id,
+										label: member.name,
+									})),
+								]}
+							/>
 						</form>
 					</Form>
 				</div>

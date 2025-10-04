@@ -322,9 +322,13 @@
 			"defaultWeightTypePlaceholder": "Select default weight type",
 			"defaultWeightTypeDescription": "This weight type will be automatically selected when creating consumptions for this resource.",
 			"equalDefault": "Equally (default)",
+			"linkedMemberLabel": "Link to Member (optional)",
+			"linkedMemberPlaceholder": "Select a member",
+			"linkedMemberDescription": "If linked to a member, the resource balance will be added to the member's balance instead of being tracked separately.",
 			"cancel": "Cancel",
 			"create": "Add Resource",
-			"creating": "Adding..."
+			"creating": "Adding...",
+			"noMemberLinked": "No member linked"
 		},
 		"consumption": {
 			"title": "Log Consumption",

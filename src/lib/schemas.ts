@@ -105,6 +105,7 @@ export const resourceSchema = z
 		unit: z.string().nullish(),
 		unitPrice: z.coerce.number().min(0).nullish(),
 		defaultWeightType: z.string().nullish(),
+		linkedMemberId: z.string().nullish(),
 	})
 	.refine(
 		(data) => {

@@ -26,6 +26,7 @@ export async function getGroup(id: string) {
 			},
 			resources: {
 				include: {
+					linkedMember: true,
 					consumptions: {
 						include: {
 							consumptionMembers: {
@@ -163,15 +164,26 @@ export async function getCalculatedGroup(id: string) {
 			: resource.consumptions;
 
 		filteredConsumptions.forEach((consumption) => {
+			// Calculate the resource balance from this consumption
+			const resourceBalance =
+				Number(consumption.amount) *
+				(resource.unitPrice && resource.unit ? Number(resource.unitPrice) : 1);
+
+			// If resource is linked to a member, add balance to that member
+			if (resource.linkedMemberId) {
+				balances.set(
+					resource.linkedMemberId,
+					(balances.get(resource.linkedMemberId) || 0) + resourceBalance,
+				);
+			} else {
+				// Otherwise, track resource balance separately
+				balances.set(
+					resource.id,
+					(balances.get(resource.id) || 0) + resourceBalance,
+				);
+			}
+
 			// Members who consumed pay (negative balance)
-			balances.set(
-				resource.id,
-				(balances.get(resource.id) || 0) +
-					Number(consumption.amount) *
-						(resource.unitPrice && resource.unit
-							? Number(resource.unitPrice)
-							: 1),
-			);
 			consumption.calculatedConsumptionMembers.forEach((consumptionMember) => {
 				balances.set(
 					consumptionMember.memberId,
@@ -229,7 +241,7 @@ export async function getCalculatedGroup(id: string) {
 		})),
 		resources: calculatedGroup.resources.map((resource) => ({
 			...resource,
-			balance: balances.get(resource.id) || 0,
+			balance: resource.linkedMemberId ? 0 : balances.get(resource.id) || 0,
 		})),
 	});
 }

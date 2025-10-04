@@ -323,9 +323,13 @@
 			"defaultWeightTypePlaceholder": "Gewichtstyp auswählen",
 			"defaultWeightTypeDescription": "Dieser Gewichtstyp wird automatisch ausgewählt, wenn Nutzungen für diese Ressource erstellt werden.",
 			"equalDefault": "Gleichmäßig (Standard)",
+			"linkedMemberLabel": "Mit Mitglied verknüpfen (optional)",
+			"linkedMemberPlaceholder": "Mitglied auswählen",
+			"linkedMemberDescription": "Wenn mit einem Mitglied verknüpft, wird das Ressourcen-Guthaben zum Guthaben des Mitglieds hinzugefügt, anstatt separat verfolgt zu werden.",
 			"cancel": "Abbrechen",
 			"create": "Ressource hinzufügen",
-			"creating": "Füge hinzu..."
+			"creating": "Füge hinzu...",
+			"noMemberLinked": "Kein Mitglied verknüpft"
 		},
 		"consumption": {
 			"title": "Nutzung erfassen",
