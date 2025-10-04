@@ -160,22 +160,24 @@ export function MembersSection({ group }: MembersSectionProps) {
 								</div>
 
 								{/* Active period info */}
-								<div className="flex items-center gap-2 mb-3">
-									<span className="text-xs text-gray-500 dark:text-gray-400">
-										{t("active")}:{" "}
-										{new Date(member.activeFrom).toLocaleDateString()}
-									</span>
-									{member.activeTo && (
+								{group.memberActiveDurationsEnabled && (
+									<div className="flex items-center gap-2 mb-3">
 										<span className="text-xs text-gray-500 dark:text-gray-400">
-											- {new Date(member.activeTo).toLocaleDateString()}
+											{t("active")}:{" "}
+											{new Date(member.activeFrom).toLocaleDateString()}
 										</span>
-									)}
-									{!member.activeTo && (
-										<span className="text-xs text-green-600 dark:text-green-400">
-											{t("ongoing")}
-										</span>
-									)}
-								</div>
+										{member.activeTo && (
+											<span className="text-xs text-gray-500 dark:text-gray-400">
+												- {new Date(member.activeTo).toLocaleDateString()}
+											</span>
+										)}
+										{!member.activeTo && (
+											<span className="text-xs text-green-600 dark:text-green-400">
+												{t("ongoing")}
+											</span>
+										)}
+									</div>
+								)}
 
 								{/* Balance - separate line */}
 								<div className="flex justify-between items-center">
