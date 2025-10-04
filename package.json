@@ -17,6 +17,7 @@
 		"docker:push": "./scripts/push.sh latest",
 		"docker:deploy:create": "./scripts/deploy-create.sh",
 		"docker:deploy:up": "./scripts/deploy-up.sh",
+		"docker:deploy:migrate": "./scripts/deploy-migrate.sh",
 		"docker:deploy:logs": "./scripts/deploy-logs.sh"
 	},
 	"dependencies": {
