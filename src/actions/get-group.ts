@@ -229,7 +229,7 @@ export async function getCalculatedGroup(id: string) {
 					if (settlementMember.toResourceId) {
 						balances.set(
 							settlementMember.toResourceId,
-							(balances.get(settlementMember.toResourceId) || 0) +
+							(balances.get(settlementMember.toResourceId) || 0) -
 								Number(settlementMember.amount),
 						);
 					}
