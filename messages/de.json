@@ -180,8 +180,14 @@
 				"addButton": "Gewichtungstyp hinzufügen",
 				"namePlaceholder": "Name des Gewichtungstyps",
 				"defaultLabel": "Standard",
-				"description": "Gewichtungstypen ermöglichen es dir, verschiedene Wege zur Verteilung von Ausgaben und Verbräuchen zu definieren. Mitglieder können verschiedene Gewichtungen für jeden Typ haben."
+				"description": "Gewichtungstypen ermöglichen es dir, verschiedene Wege zur Verteilung von Ausgaben und Verbräuchen zu definieren. Mitglieder können verschiedene Gewichtungen für jeden Typ haben.",
+				"deleteDisabledTooltip": "Gewichtungstyp kann nicht gelöscht werden, da er derzeit von Mitgliedern, Ausgaben oder Verbräuchen verwendet wird",
+				"weightsDisabledTooltip": "Mitglieder-Gewichtungen können nicht deaktiviert werden, solange Gewichtungstypen in Verwendung sind"
 			},
+			"memberActiveDurationsEnabled": "Mitglieder-Aktivitätsdauern aktivieren",
+			"memberActiveDurationsEnabledDescription": "Erlaube Mitgliedern, Start- und Enddaten für ihre Teilnahme an der Gruppe zu haben",
+			"recurringExpensesEnabled": "Wiederkehrende Ausgaben aktivieren",
+			"recurringExpensesEnabledDescription": "Erlaube Ausgaben als wiederkehrend zu setzen (wöchentlich, monatlich, jährlich)",
 			"cancel": "Abbrechen",
 			"create": "Gruppe erstellen",
 			"creating": "Erstelle..."
@@ -204,6 +210,10 @@
 				"deleteDisabledTooltip": "Gewichtungstyp kann nicht gelöscht werden, da er derzeit von Mitgliedern, Ausgaben oder Verbräuchen verwendet wird",
 				"weightsDisabledTooltip": "Mitglieder-Gewichtungen können nicht deaktiviert werden, solange Gewichtungstypen in Verwendung sind"
 			},
+			"memberActiveDurationsEnabled": "Mitglieder-Aktivitätsdauern aktivieren",
+			"memberActiveDurationsEnabledDescription": "Erlaube Mitgliedern, Start- und Enddaten für ihre Teilnahme an der Gruppe zu haben",
+			"recurringExpensesEnabled": "Wiederkehrende Ausgaben aktivieren",
+			"recurringExpensesEnabledDescription": "Erlaube Ausgaben als wiederkehrend zu setzen (wöchentlich, monatlich, jährlich)",
 			"updateSettings": "Einstellungen aktualisieren",
 			"updating": "Aktualisiere...",
 			"settingsUpdated": "Einstellungen erfolgreich aktualisiert!",
@@ -219,6 +229,7 @@
 			"iban": "IBAN (optional)",
 			"ibanPlaceholder": "z.B. DE89 3704 0044 0532 0130 00",
 			"weight": "Gewichtung",
+			"weights": "Gewichtungen",
 			"weightPlaceholder": "z.B. 1,5",
 			"weightDescription": "Gewichtung bestimmt den Anteil des Mitglieds an Ausgaben (Standard: 1,0)",
 			"activeFrom": "Aktiv ab",

@@ -17,7 +17,10 @@ export interface CalculatedMemberAmount {
  * and ensuring the total matches the target amount
  */
 export function getCalculatedMemberAmounts(
-	group: Pick<Awaited<ReturnType<typeof getGroup>>, "members">,
+	group: Pick<
+		Awaited<ReturnType<typeof getGroup>>,
+		"members" | "memberActiveDurationsEnabled"
+	>,
 	memberAmounts: MemberAmount[],
 	{
 		amount,
@@ -44,6 +47,11 @@ export function getCalculatedMemberAmounts(
 
 	if (splitAll) {
 		const activeMembers = group.members.filter((member) => {
+			// If member active durations are disabled, include all members
+			if (!group.memberActiveDurationsEnabled) {
+				return true;
+			}
+			// Otherwise, check active duration
 			return (
 				(!member.activeFrom || member.activeFrom <= date) &&
 				(!member.activeTo || member.activeTo >= date)

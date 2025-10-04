@@ -213,43 +213,45 @@ export function ExpenseDialog({
 							/>
 
 							{/* Recurring Options */}
-							<div className="space-y-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-								<CheckboxField
-									control={form.control}
-									name="isRecurring"
-									label={t("recurring.title")}
-								/>
+							{group.recurringExpensesEnabled && (
+								<div className="space-y-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+									<CheckboxField
+										control={form.control}
+										name="isRecurring"
+										label={t("recurring.title")}
+									/>
 
-								{(form.watch("isRecurring") as boolean) && (
-									<div className="space-y-4 pl-6">
-										<div className="grid grid-cols-2 gap-4">
-											<SelectField
-												control={form.control}
-												name="recurringType"
-												label={t("recurring.frequency")}
-												options={[
-													{ value: "weekly", label: t("recurring.weekly") },
-													{ value: "monthly", label: t("recurring.monthly") },
-													{ value: "yearly", label: t("recurring.yearly") },
-												]}
-											/>
+									{(form.watch("isRecurring") as boolean) && (
+										<div className="space-y-4 pl-6">
+											<div className="grid grid-cols-2 gap-4">
+												<SelectField
+													control={form.control}
+													name="recurringType"
+													label={t("recurring.frequency")}
+													options={[
+														{ value: "weekly", label: t("recurring.weekly") },
+														{ value: "monthly", label: t("recurring.monthly") },
+														{ value: "yearly", label: t("recurring.yearly") },
+													]}
+												/>
 
-											<DateField
-												control={form.control}
-												name="recurringStartDate"
-												label={t("recurring.startDate")}
-												placeholder={t("recurring.startDatePlaceholder")}
-											/>
+												<DateField
+													control={form.control}
+													name="recurringStartDate"
+													label={t("recurring.startDate")}
+													placeholder={t("recurring.startDatePlaceholder")}
+												/>
+											</div>
+
+											<p className="text-xs text-gray-600 dark:text-gray-400">
+												{t("recurring.description", {
+													type: form.watch("recurringType") || "monthly",
+												})}
+											</p>
 										</div>
-
-										<p className="text-xs text-gray-600 dark:text-gray-400">
-											{t("recurring.description", {
-												type: form.watch("recurringType") || "monthly",
-											})}
-										</p>
-									</div>
-								)}
-							</div>
+									)}
+								</div>
+							)}
 
 							<MemberEditor
 								group={group}

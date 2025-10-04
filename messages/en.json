@@ -180,8 +180,14 @@
 				"addButton": "Add Weight Type",
 				"namePlaceholder": "Weight type name",
 				"defaultLabel": "Default",
-				"description": "Weight types allow you to define different ways to distribute expenses and consumptions. Members can have different weights for each type."
+				"description": "Weight types allow you to define different ways to distribute expenses and consumptions. Members can have different weights for each type.",
+				"deleteDisabledTooltip": "Cannot delete weight type that is currently in use by members, expenses, or consumptions",
+				"weightsDisabledTooltip": "Cannot disable member weights while weight types are in use"
 			},
+			"memberActiveDurationsEnabled": "Enable Member Active Durations",
+			"memberActiveDurationsEnabledDescription": "Allow members to have start and end dates for their participation in the group",
+			"recurringExpensesEnabled": "Enable Recurring Expenses",
+			"recurringExpensesEnabledDescription": "Allow expenses to be set as recurring (weekly, monthly, yearly)",
 			"cancel": "Cancel",
 			"create": "Create Group",
 			"creating": "Creating..."
@@ -204,6 +210,10 @@
 				"deleteDisabledTooltip": "Cannot delete weight type that is currently in use by members, expenses, or consumptions",
 				"weightsDisabledTooltip": "Cannot disable member weights while weight types are in use"
 			},
+			"memberActiveDurationsEnabled": "Enable Member Active Durations",
+			"memberActiveDurationsEnabledDescription": "Allow members to have start and end dates for their participation in the group",
+			"recurringExpensesEnabled": "Enable Recurring Expenses",
+			"recurringExpensesEnabledDescription": "Allow expenses to be set as recurring (weekly, monthly, yearly)",
 			"updateSettings": "Update Settings",
 			"updating": "Updating...",
 			"settingsUpdated": "Settings updated successfully!",
@@ -219,6 +229,7 @@
 			"iban": "IBAN (optional)",
 			"ibanPlaceholder": "e.g., DE89 3704 0044 0532 0130 00",
 			"weight": "Weight",
+			"weights": "Weights",
 			"weightPlaceholder": "e.g., 1.5",
 			"weightDescription": "Weight determines the member's share of expenses (default: 1.0)",
 			"activeFrom": "Active from",

@@ -6,7 +6,16 @@ import type { getGroup } from "@/actions/get-group";
 export async function generateRecurringExpenseInstances(
 	expense: Awaited<ReturnType<typeof getGroup>>["expenses"][number],
 	currentDate: Date = new Date(),
+	group?: Pick<
+		Awaited<ReturnType<typeof getGroup>>,
+		"recurringExpensesEnabled"
+	>,
 ) {
+	// If recurring expenses are disabled for the group, don't generate recurring instances
+	if (group && !group.recurringExpensesEnabled) {
+		return [expense];
+	}
+
 	if (expense.recurringStartDate && expense.isRecurring) {
 		const instances = [];
 		const startDate = new Date(expense.recurringStartDate);

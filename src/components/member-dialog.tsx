@@ -174,9 +174,9 @@ export function MemberDialog({
 										/>
 									) : (
 										// Multiple weight types
-										<div className="space-y-3">
+										<div className="space-y-4">
 											<h4 className="font-medium text-sm text-gray-900 dark:text-gray-100">
-												Weights
+												{t("weights")}
 											</h4>
 											{availableWeightTypes.map((weightType) => (
 												<NumberField
@@ -194,34 +194,37 @@ export function MemberDialog({
 									)}
 								</div>
 							)}
+							{group.memberActiveDurationsEnabled && (
+								<>
+									<DateField
+										control={form.control}
+										name="activeFrom"
+										label={t("activeFrom")}
+										placeholder={t("activeFromPlaceholder")}
+										required
+									/>
 
-							<DateField
-								control={form.control}
-								name="activeFrom"
-								label={t("activeFrom")}
-								placeholder={t("activeFromPlaceholder")}
-								required
-							/>
-
-							<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-								<CheckboxField
-									control={form.control}
-									name="hasEndDate"
-									label={t("hasEndDate")}
-								/>
-
-								{(form.watch("hasEndDate") as boolean) && (
-									<div className="space-y-4 pl-6">
-										<DateField
+									<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+										<CheckboxField
 											control={form.control}
-											name="activeTo"
-											label={t("activeTo")}
-											placeholder={t("activeToPlaceholder")}
-											required
+											name="hasEndDate"
+											label={t("hasEndDate")}
 										/>
+
+										{(form.watch("hasEndDate") as boolean) && (
+											<div className="space-y-4 pl-6">
+												<DateField
+													control={form.control}
+													name="activeTo"
+													label={t("activeTo")}
+													placeholder={t("activeToPlaceholder")}
+													required
+												/>
+											</div>
+										)}
 									</div>
-								)}
-							</div>
+								</>
+							)}
 						</form>
 					</Form>
 				</div>

@@ -75,7 +75,9 @@ export async function getCalculatedGroup(id: string) {
 		ReturnType<typeof generateRecurringExpenseInstances>
 	> = [];
 	for (const expense of group.expenses) {
-		allExpenses.push(...(await generateRecurringExpenseInstances(expense)));
+		allExpenses.push(
+			...(await generateRecurringExpenseInstances(expense, new Date(), group)),
+		);
 	}
 
 	// Sort expenses by date (newest first)

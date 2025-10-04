@@ -8,7 +8,6 @@
 - member editor: initialize selected members
 - member editor: only allow to edit weights if "custom" is selected. Make sure it works on mobile (currently it hides the member name, because the weight input is too large)
 - allow to submit by pressing enter 
-- setting for groups to disable active from / active to for members and also disable / enable recurring expenses (make ui as easy as possible and as complicated as necessary)
 - add default weight type when creating a resource
 - allow to link a resource to a member (to include the resource in the member balance)
 - when creating settlemetns allow to specify special transactions (person A pays person B) which then ignores person A in the settlements an creates this settelment transaction like specified

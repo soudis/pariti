@@ -151,6 +151,8 @@ export const groupSchema = z.object({
 	currency: z.string().min(1, "Currency is required"),
 	weightsEnabled: z.coerce.boolean(),
 	weightTypes: z.array(weightTypeSchema).optional(),
+	memberActiveDurationsEnabled: z.coerce.boolean(),
+	recurringExpensesEnabled: z.coerce.boolean(),
 });
 
 export const createGroupInputSchema = z.object({

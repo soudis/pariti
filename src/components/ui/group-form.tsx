@@ -58,6 +58,9 @@ export function GroupForm({
 			currency: group?.currency || "EUR",
 			weightsEnabled: group?.weightsEnabled || false,
 			weightTypes: group?.weightTypes || getDefaultWeightTypes(),
+			memberActiveDurationsEnabled:
+				group?.memberActiveDurationsEnabled || false,
+			recurringExpensesEnabled: group?.recurringExpensesEnabled || false,
 		},
 	});
 
@@ -74,6 +77,8 @@ export function GroupForm({
 				currency: group.currency,
 				weightsEnabled: group.weightsEnabled,
 				weightTypes: group.weightTypes || getDefaultWeightTypes(),
+				memberActiveDurationsEnabled: group.memberActiveDurationsEnabled,
+				recurringExpensesEnabled: group.recurringExpensesEnabled,
 			});
 			setWeightTypes(group.weightTypes || getDefaultWeightTypes());
 		}
@@ -279,6 +284,19 @@ export function GroupForm({
 					required
 				/>
 
+				<CheckboxField
+					control={form.control}
+					name="memberActiveDurationsEnabled"
+					label={t("memberActiveDurationsEnabled")}
+					description={t("memberActiveDurationsEnabledDescription")}
+				/>
+
+				<CheckboxField
+					control={form.control}
+					name="recurringExpensesEnabled"
+					label={t("recurringExpensesEnabled")}
+					description={t("recurringExpensesEnabledDescription")}
+				/>
 				{renderWeightsEnabledField()}
 
 				{renderWeightTypesSection()}

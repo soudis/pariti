@@ -39,7 +39,13 @@ interface MemberEditorProps {
 
 export function MemberEditor({
 	group,
-	group: { members, currency, weightsEnabled, weightTypes },
+	group: {
+		members,
+		currency,
+		weightsEnabled,
+		weightTypes,
+		memberActiveDurationsEnabled,
+	},
 	expenseDate,
 	className,
 	isUnitBased = false,
@@ -67,6 +73,7 @@ export function MemberEditor({
 	const memberAmounts = watch("memberAmounts") || [];
 
 	const activeMembersAtDate = useMemo(() => {
+		if (!memberActiveDurationsEnabled) return members;
 		return members.filter(
 			(member) =>
 				(!member.activeFrom ||
@@ -74,7 +81,7 @@ export function MemberEditor({
 				(!member.activeTo ||
 					new Date(member.activeTo).getTime() >= expenseDate.getTime()),
 		);
-	}, [members, expenseDate]);
+	}, [members, expenseDate, memberActiveDurationsEnabled]);
 
 	const calculatedMemberAmounts = useMemo(() => {
 		return getCalculatedMemberAmounts(
@@ -225,6 +232,7 @@ export function MemberEditor({
 	};
 
 	const isMemberActive = (member: Member) => {
+		if (!memberActiveDurationsEnabled) return true;
 		const now = expenseDate;
 		const activeFrom = member.activeFrom ? new Date(member.activeFrom) : null;
 		const activeTo = member.activeTo ? new Date(member.activeTo) : null;

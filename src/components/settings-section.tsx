@@ -43,7 +43,7 @@ export function SettingsSection({ group }: SettingsSectionProps) {
 					{t("title")}
 				</CardTitle>
 			</CardHeader>
-			<CardContent>
+			<CardContent className="space-y-4">
 				<GroupForm
 					group={group}
 					onSubmit={onSubmit}
