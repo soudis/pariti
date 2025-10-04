@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { NextIntlClientProvider } from "next-intl";
+import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { QueryProvider } from "@/components/query-provider";
-
-const locales = ["en", "de"];
+import { routing } from "@/i18n/routing";
 
 export const metadata: Metadata = {
 	title: "Pariti - Money Sharing Made Simple",
@@ -32,8 +31,9 @@ export default async function LocaleLayout({
 	const { locale } = await params;
 
 	// Validate that the incoming `locale` parameter is valid
-	if (!locales.includes(locale ?? "en")) notFound();
-
+	if (!hasLocale(routing.locales, locale)) {
+		notFound();
+	}
 	// Providing all messages to the client
 	// side is the easiest way to get started
 	const messages = await getMessages({ locale: locale ?? "en" });

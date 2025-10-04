@@ -1,8 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -26,6 +25,7 @@ import {
 	NumberField,
 	TextField,
 } from "@/components/ui/form-field";
+import { useRouter } from "@/i18n/navigation";
 import {
 	getDefaultWeightTypes,
 	type MemberFormData,
@@ -57,7 +57,6 @@ export function MemberDialog({
 	const { executeAsync: createMember } = useAction(createMemberAction);
 	const { executeAsync: updateMember } = useAction(updateMemberAction);
 	const router = useRouter();
-	const locale = useLocale();
 
 	// Get available weight types or use default
 	const availableWeightTypes = weightTypes || getDefaultWeightTypes();
@@ -111,7 +110,7 @@ export function MemberDialog({
 				// Create new member
 				handleActionErrors(await createMember({ groupId, member: data }));
 				form.reset();
-				router.push(`/${locale}/group/${groupId}?tab=members`);
+				router.push(`/group/${groupId}?tab=members`);
 			}
 			setOpen(false);
 		} catch (error) {

@@ -1,9 +1,7 @@
 # TODOS
 
 - make sure to secure the app against group id guessing attacks
-- make sure all dates are stored with same time (00:00)
 - Layout bug with "Default" badge for defualt weight type on create group dialog and section (exceeds row). Also Add weight type button too large. Unifiy group settings and group dialog. 
-- language sometimes falls back to english (even though german was manually picked by url). E.g when adding a member
 - include language switcher in burger menu
 - reorganize burger menu (get rid of sections, fix layout of theme switcher which is off), add option to create new group
 - implement join group dialog / and change share link to open a "who are you" dialog that allows to pick or create a member or say "I'm not part of the group"
