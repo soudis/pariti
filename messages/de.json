@@ -74,6 +74,13 @@
 			"description": "Die gesuchte Gruppe existiert nicht oder wurde entfernt.",
 			"goHome": "Zur Startseite",
 			"createNew": "Neue Gruppe erstellen"
+		},
+		"menuItems": {
+			"navigation": "Navigation",
+			"home": "Startseite",
+			"otherGroups": "Andere Gruppen",
+			"actions": "Aktionen",
+			"theme": "Design"
 		}
 	},
 	"members": {

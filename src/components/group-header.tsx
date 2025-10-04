@@ -2,6 +2,7 @@
 
 import type { Group } from "@prisma/client";
 import { Home, Menu, Share2, Users } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -80,17 +81,43 @@ export function GroupHeader({ group }: GroupHeaderProps) {
 		<Card className="py-2">
 			<CardHeader className="items-center flex w-full">
 				<div className="flex items-center justify-between gap-3 w-full">
-					<div className="min-w-0">
-						<h1 className="text-lg sm:text-2xl font-bold  word-break-break-all">
-							{group.name}
-						</h1>
-						{group.description && (
-							<p className="text-xs sm:text-base text-gray-600 dark:text-gray-300 mt-1 line-clamp-1 sm:line-clamp-2">
-								{group.description}
-							</p>
-						)}
+					<div className="flex items-center gap-3 min-w-0">
+						<button
+							type="button"
+							onClick={navigateToHome}
+							className="flex-shrink-0 hover:opacity-50 transition-opacity cursor-pointer"
+							title={t("menuItems.home")}
+						>
+							<Image
+								src="/logo.png"
+								alt="Pariti"
+								width={32}
+								height={32}
+								className="w-8 h-8"
+							/>
+						</button>
+						<div className="min-w-0">
+							<h1 className="text-lg sm:text-2xl font-bold  word-break-break-all">
+								{group.name}
+							</h1>
+							{group.description && (
+								<p className="text-xs sm:text-base text-gray-600 dark:text-gray-300 mt-1 line-clamp-1 sm:line-clamp-2">
+									{group.description}
+								</p>
+							)}
+						</div>
 					</div>
-					<div className="ml-auto">
+					<div className="ml-auto flex items-center gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							className="p-2"
+							onClick={copyToClipboard}
+							title={t("shareGroup")}
+						>
+							<Share2 className="w-4 h-4" />
+							<span className="sr-only">{t("shareGroup")}</span>
+						</Button>
 						<Popover>
 							<PopoverTrigger asChild>
 								<Button
@@ -107,27 +134,32 @@ export function GroupHeader({ group }: GroupHeaderProps) {
 								<div className="space-y-4">
 									{/* Navigation Section */}
 									<div>
-										<h4 className="font-medium text-sm text-gray-900 dark:text-gray-100 mb-2">
-											Navigation
-										</h4>
-										<div className="space-y-1">
-											<Button
-												variant="ghost"
-												size="sm"
-												onClick={navigateToHome}
-												className="w-full justify-start"
-											>
-												<Home className="w-4 h-4 mr-2" />
-												Home
-											</Button>
-										</div>
+										<Button
+											variant="ghost"
+											size="sm"
+											onClick={navigateToHome}
+											className="w-full justify-start"
+										>
+											<Home className="w-4 h-4 mr-2" />
+											{t("menuItems.home")}
+										</Button>
 									</div>
-
+									<div>
+										<Button
+											variant="ghost"
+											size="sm"
+											onClick={copyToClipboard}
+											className="w-full justify-start"
+										>
+											<Share2 className="w-4 h-4 mr-2" />
+											{t("shareGroup")}
+										</Button>
+									</div>
 									{/* Other Groups Section */}
 									{!loading && visitedGroups.length > 0 && (
 										<div>
 											<h4 className="font-medium text-sm text-gray-900 dark:text-gray-100 mb-2">
-												Other Groups
+												{t("menuItems.otherGroups")}
 											</h4>
 											<div className="space-y-1">
 												{visitedGroups.map((visitedGroup) => (
@@ -147,30 +179,10 @@ export function GroupHeader({ group }: GroupHeaderProps) {
 											</div>
 										</div>
 									)}
-
-									{/* Actions Section */}
-									<div>
-										<h4 className="font-medium text-sm text-gray-900 dark:text-gray-100 mb-2">
-											Actions
-										</h4>
-										<div className="space-y-1">
-											<Button
-												variant="ghost"
-												size="sm"
-												onClick={copyToClipboard}
-												className="w-full justify-start"
-											>
-												<Share2 className="w-4 h-4 mr-2" />
-												{t("shareGroup")}
-											</Button>
-											<div className="flex items-center justify-between">
-												<span className="text-sm text-gray-600 dark:text-gray-400">
-													Theme
-												</span>
-												<ThemeToggle />
-											</div>
-										</div>
-									</div>
+									<div className="flex items-center justify-between">
+										<span className="text-sm ">{t("menuItems.theme")}</span>
+										<ThemeToggle />
+									</div>{" "}
 								</div>
 							</PopoverContent>
 						</Popover>

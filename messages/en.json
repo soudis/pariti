@@ -74,6 +74,13 @@
 			"description": "The group you're looking for doesn't exist or has been removed.",
 			"goHome": "Go Home",
 			"createNew": "Create New Group"
+		},
+		"menuItems": {
+			"navigation": "Navigation",
+			"home": "Home",
+			"otherGroups": "Other Groups",
+			"actions": "Actions",
+			"theme": "Theme"
 		}
 	},
 	"members": {
