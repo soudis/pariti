@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 import { Label } from "@/components/ui/label";
+import { MemberSplitDisplay } from "@/components/ui/member-split-display";
 import { Switch } from "@/components/ui/switch";
 import { formatCurrency } from "@/lib/currency";
 import { handleActionErrors } from "@/lib/utils";
@@ -456,34 +457,13 @@ export function ResourcesSection({
 																</div>
 															</div>
 
-															<div className="space-y-1">
-																<p className="text-sm font-medium text-gray-700 dark:text-gray-200">
-																	{t("splitBetween")}:
-																</p>
-																<div className="flex flex-wrap gap-2">
-																	{consumption.calculatedConsumptionMembers.map(
-																		(consumptionMember) => (
-																			<Badge
-																				key={consumptionMember.memberId}
-																				variant="outline"
-																				className="text-xs"
-																			>
-																				{
-																					group.members.find(
-																						(m) =>
-																							m.id ===
-																							consumptionMember.memberId,
-																					)?.name
-																				}
-																				: €
-																				{Number(
-																					consumptionMember.amount,
-																				).toFixed(2)}
-																			</Badge>
-																		),
-																	)}
-																</div>
-															</div>
+															<MemberSplitDisplay
+																group={group}
+																sharingMethod={consumption.sharingMethod}
+																calculatedMembers={
+																	consumption.calculatedConsumptionMembers
+																}
+															/>
 														</div>
 													))}
 												</div>

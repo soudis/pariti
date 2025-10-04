@@ -1,11 +1,6 @@
 # TODOS
 
 - make sure to secure the app against group id guessing attacks
-- check how to scan th qr code on the phone if you have the app on the phone and add that info to the app somewhere
-- implement delete restrictions after settlements are completed (do not delete completed settlements, do not delete expenses or consumption before the cutoff date, ...)
-- implement delete confirm dialog 
-- implement edit restrictions on group (restrict deletion of weight types, changing of weights enabled, currency?)
-- include weight type on expense / consumption item in lists
 - make sure all dates are stored with same time (00:00)
 - Layout bug with "Default" badge for defualt weight type on create group dialog and section (exceeds row). Also Add weight type button too large. Unifiy group settings and group dialog. 
 - language sometimes falls back to english (even though german was manually picked by url). E.g when adding a member

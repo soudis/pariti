@@ -26,6 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MemberSplitDisplay } from "@/components/ui/member-split-display";
 import { Switch } from "@/components/ui/switch";
 import { formatCurrency } from "@/lib/currency";
 import { handleActionErrors } from "@/lib/utils";
@@ -271,68 +272,14 @@ export function ExpensesSection({
 									</div>
 								</div>
 
-								<div className="space-y-2">
-									<p className="text-sm font-medium text-gray-700 dark:text-gray-200">
-										{t("splitBetween")}:
-									</p>
-									<div className="flex flex-wrap gap-2">
-										{expense.splitAll ? (
-											expense.calculatedExpenseMembers &&
-											expense.calculatedExpenseMembers.length > 0 ? (
-												expense.calculatedExpenseMembers.map((member) => (
-													<Badge
-														key={member.memberId}
-														variant="outline"
-														className="text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300"
-													>
-														{
-															group.members.find(
-																(m) => m.id === member.memberId,
-															)?.name
-														}
-														: {formatCurrency(member.amount, group.currency)}
-													</Badge>
-												))
-											) : (
-												<Badge
-													variant="secondary"
-													className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-												>
-													{t("allActiveMembers")}: $
-													{(
-														Number(expense.amount) / group.members.length
-													).toFixed(2)}{" "}
-													{t("each")}
-												</Badge>
-											)
-										) : (
-											expense.calculatedExpenseMembers.map((expenseMember) => (
-												<Badge
-													key={expenseMember.memberId}
-													variant="outline"
-													className="text-xs"
-												>
-													{
-														group.members.find(
-															(m) => m.id === expenseMember.memberId,
-														)?.name
-													}
-													: ${Number(expenseMember.amount).toFixed(2)}
-												</Badge>
-											))
-										)}
-									</div>
-									{expense.splitAll && (
-										<p className="text-xs text-blue-600 dark:text-blue-400">
-											{t("includesActiveMembers", {
-												count:
-													expense.calculatedExpenseMembers?.length ||
-													group.members.length,
-												date: new Date(expense.date).toLocaleDateString(),
-											})}
-										</p>
-									)}
-								</div>
+								<MemberSplitDisplay
+									group={group}
+									sharingMethod={expense.sharingMethod}
+									splitAll={expense.splitAll}
+									calculatedMembers={expense.calculatedExpenseMembers}
+									totalAmount={Number(expense.amount)}
+									date={expense.date}
+								/>
 							</div>
 						))}
 					</div>

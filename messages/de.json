@@ -97,6 +97,8 @@
 		"noExpensesDescription": "Füge Ausgaben hinzu, um geteilte Kosten zu verfolgen",
 		"paidBy": "Bezahlt von",
 		"splitBetween": "Aufgeteilt zwischen",
+		"splitEquallyBetween": "Gleichmäßig aufgeteilt zwischen",
+		"splitByWeightTypeBetween": "Nach {weightType} aufgeteilt zwischen",
 		"allActiveMembers": "Alle aktiven Mitglieder",
 		"each": "je",
 		"includesActiveMembers": "Beinhaltet alle {count} aktiven Mitglieder vom {date}",

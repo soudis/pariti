@@ -97,6 +97,8 @@
 		"noExpensesDescription": "Add expenses to start tracking shared costs",
 		"paidBy": "Paid by",
 		"splitBetween": "Split between",
+		"splitEquallyBetween": "Split equally between",
+		"splitByWeightTypeBetween": "Split by {weightType} between",
 		"allActiveMembers": "All Active Members",
 		"each": "each",
 		"includesActiveMembers": "Includes all {count} active members on {date}",

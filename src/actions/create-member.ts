@@ -1,5 +1,6 @@
 "use server";
 
+import { startOfDay } from "date-fns";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { actionClient } from "@/lib/safe-action";
@@ -18,8 +19,8 @@ async function createMember(groupId: string, data: MemberFormData) {
 			iban: data.iban,
 			weights: data.weights || {}, // New multiple weights field
 			groupId: groupId,
-			activeFrom: data.activeFrom || new Date(),
-			activeTo: data.activeTo,
+			activeFrom: startOfDay(data.activeFrom || new Date()),
+			activeTo: data.activeTo ? startOfDay(data.activeTo) : null,
 		},
 	});
 

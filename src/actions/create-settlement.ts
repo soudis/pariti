@@ -118,9 +118,6 @@ function generateSettlementTransactions(
 		}
 	}
 
-	console.log("creditors", creditors);
-	console.log("debtors", debtors);
-
 	if (settlementType === "optimized") {
 		// Optimized settlement: minimize number of transactions
 		creditors.sort((a, b) => b.amount - a.amount);
