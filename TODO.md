@@ -11,7 +11,6 @@
 - add default weight type when creating a resource
 - allow to link a resource to a member (to include the resource in the member balance)
 - when creating settlemetns allow to specify special transactions (person A pays person B) which then ignores person A in the settlements an creates this settelment transaction like specified
-- consumption: autoselect resource (if only 1)
 - add view to see all payments / consumptsion of a member
 - in the "split between" on consumptions and expenses view, highlight the name (its hard to read), also do not show 0 amounts
 - add select all to member editor

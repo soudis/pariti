@@ -115,8 +115,13 @@ export function ConsumptionDialog({
 	useEffect(() => {
 		if (open) {
 			form.reset();
+
+			// Auto-select resource if there's only one available
+			if (!consumption && resources.length === 1) {
+				form.setValue("resourceId", resources[0].id);
+			}
 		}
-	}, [open, form]);
+	}, [open, form, consumption, resources]);
 
 	const onSubmit = async (data: ConsumptionFormData) => {
 		setLoading(true);
@@ -158,6 +163,7 @@ export function ConsumptionDialog({
 			setLoading(false);
 		}
 	};
+	const isUnitAmount = form.watch("isUnitAmount");
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
@@ -205,7 +211,9 @@ export function ConsumptionDialog({
 								<>
 									<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
 										<div className="space-y-2">
-											<Label>{t("amountLabel")}</Label>
+											<Label>
+												{isUnitAmount ? t("amountLabel") : t("totalCostLabel")}
+											</Label>
 											<div className="flex items-center space-x-2">
 												<TextField
 													control={form.control}
@@ -221,7 +229,6 @@ export function ConsumptionDialog({
 													const selectedResource = resources.find(
 														(r) => r.id === form.getValues("resourceId"),
 													);
-													const isUnitAmount = form.watch("isUnitAmount");
 													return (
 														selectedResource?.unit && (
 															<span className="text-sm text-gray-500 whitespace-nowrap">
