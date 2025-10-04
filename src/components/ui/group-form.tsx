@@ -130,16 +130,6 @@ export function GroupForm({
 					<h4 className="font-medium text-sm text-gray-900 dark:text-gray-100">
 						{t("weightTypes.title")}
 					</h4>
-					<Button
-						type="button"
-						variant="outline"
-						size="sm"
-						onClick={addWeightType}
-						className="flex items-center gap-2"
-					>
-						<Plus className="w-4 h-4" />
-						{t("weightTypes.addButton")}
-					</Button>
 				</div>
 				<div className="space-y-2">
 					{weightTypes.map((weightType) => (
@@ -199,6 +189,16 @@ export function GroupForm({
 								))}
 						</div>
 					))}
+					<Button
+						type="button"
+						variant="outline"
+						size="lg"
+						onClick={addWeightType}
+						className="flex items-center gap-2 w-full"
+					>
+						<Plus className="w-4 h-4" />
+						{t("weightTypes.addButton")}
+					</Button>
 				</div>
 				<p className="text-xs text-gray-500 dark:text-gray-400">
 					{t("weightTypes.description")}
