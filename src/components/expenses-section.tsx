@@ -23,6 +23,7 @@ import { ExpenseDialog } from "@/components/expense-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -195,48 +196,58 @@ export function ExpensesSection({
 									</div>
 									{/* Action buttons - aligned to top right */}
 									<div className="flex items-start gap-2 flex-shrink-0 ml-2">
-										<ExpenseDialog
-											group={group}
-											expense={{
-												...expense,
-												amount: Number(expense.amount),
-												sharingMethod:
-													(expense.sharingMethod as "equal" | "weights") ||
-													"equal",
-												recurringType: expense.recurringType as
-													| "weekly"
-													| "monthly"
-													| "yearly"
-													| undefined,
-												recurringStartDate:
-													expense.recurringStartDate ?? undefined,
-												selectedMembers: expense.splitAll
-													? []
-													: expense.expenseMembers.map((em) => em.memberId),
-												memberAmounts: expense.expenseMembers.map((em) => ({
-													memberId: em.memberId,
-													amount: Number(em.amount),
-													weight: Number(em.weight),
-												})),
-											}}
-										>
-											<Button
-												variant="ghost"
-												size="sm"
-												className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+										{(!cutoffDate || new Date(expense.date) >= cutoffDate) && (
+											<ExpenseDialog
+												group={group}
+												expense={{
+													...expense,
+													amount: Number(expense.amount),
+													sharingMethod:
+														(expense.sharingMethod as "equal" | "weights") ||
+														"equal",
+													recurringType: expense.recurringType as
+														| "weekly"
+														| "monthly"
+														| "yearly"
+														| undefined,
+													recurringStartDate:
+														expense.recurringStartDate ?? undefined,
+													selectedMembers: expense.splitAll
+														? []
+														: expense.expenseMembers.map((em) => em.memberId),
+													memberAmounts: expense.expenseMembers.map((em) => ({
+														memberId: em.memberId,
+														amount: Number(em.amount),
+														weight: Number(em.weight),
+													})),
+												}}
 											>
-												<Edit className="w-4 h-4" />
-											</Button>
-										</ExpenseDialog>
-										<Button
-											variant="ghost"
-											size="sm"
-											onClick={() => handleDeleteExpense(expense.id)}
-											disabled={deletingId === expense.id}
-											className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
-										>
-											<Trash2 className="w-4 h-4" />
-										</Button>
+												<Button
+													variant="ghost"
+													size="sm"
+													className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+												>
+													<Edit className="w-4 h-4" />
+												</Button>
+											</ExpenseDialog>
+										)}
+										{(!cutoffDate || new Date(expense.date) >= cutoffDate) && (
+											<ConfirmDeleteDialog
+												title={t("deleteExpense")}
+												description={t("deleteExpenseDescription")}
+												itemName={expense.title}
+												onConfirm={() => handleDeleteExpense(expense.id)}
+											>
+												<Button
+													variant="ghost"
+													size="sm"
+													disabled={deletingId === expense.id}
+													className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+												>
+													<Trash2 className="w-4 h-4" />
+												</Button>
+											</ConfirmDeleteDialog>
+										)}
 									</div>
 								</div>
 

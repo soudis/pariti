@@ -86,7 +86,9 @@
 		"ongoing": "(laufend)",
 		"edit": "Bearbeiten",
 		"delete": "Löschen",
-		"balance": "Saldo"
+		"balance": "Saldo",
+		"deleteMember": "Mitglied löschen",
+		"deleteMemberDescription": "Dies wird das Mitglied und alle zugehörigen Daten dauerhaft aus der Gruppe entfernen."
 	},
 	"expenses": {
 		"title": "Ausgaben",
@@ -101,6 +103,8 @@
 		"automaticallyIncludes": "Diese Ausgabe wird automatisch alle neuen Mitglieder der Gruppe einbeziehen",
 		"showHidden": "Abgerechnete anzeigen",
 		"searchPlaceholder": "Suchen...",
+		"deleteExpense": "Ausgabe löschen",
+		"deleteExpenseDescription": "Dies wird die Ausgabe und alle zugehörigen Daten dauerhaft aus der Gruppe entfernen.",
 		"recurring": {
 			"weekly": "wöchentlich",
 			"monthly": "monatlich",
@@ -121,7 +125,12 @@
 		"balance": "Saldo",
 		"showHidden": "Abgerechnete anzeigen",
 		"showDetails": "Details anzeigen",
-		"hideDetails": "Details ausblenden"
+		"hideDetails": "Details ausblenden",
+		"deleteResource": "Ressource löschen",
+		"deleteResourceDescription": "Dies wird die Ressource und alle zugehörigen Nutzungen dauerhaft aus der Gruppe entfernen.",
+		"deleteConsumption": "Nutzung löschen",
+		"deleteConsumptionDescription": "Dies wird den Nutzungsdatensatz dauerhaft aus der Gruppe entfernen.",
+		"units": "Einheiten"
 	},
 	"settlements": {
 		"title": "Abrechnungen",
@@ -138,7 +147,9 @@
 		"copyIban": "IBAN kopieren",
 		"failedToCopyLink": "Link konnte nicht kopiert werden",
 		"menu": "Menü",
-		"copied": "IBAN in die Zwischenablage kopiert"
+		"copied": "IBAN in die Zwischenablage kopiert",
+		"deleteSettlement": "Abrechnung löschen",
+		"deleteSettlementDescription": "Dies wird die Abrechnung und alle zugehörigen Zahlungsdatensätze dauerhaft aus der Gruppe entfernen."
 	},
 	"forms": {
 		"group": {
@@ -176,7 +187,9 @@
 				"addButton": "Gewichtungstyp hinzufügen",
 				"namePlaceholder": "Name des Gewichtungstyps",
 				"defaultLabel": "Standard",
-				"description": "Gewichtungstypen ermöglichen es, verschiedene Arten der Verteilung von Ausgaben und Verbräuchen zu definieren. Mitglieder können verschiedene Gewichtungen für jeden Typ haben."
+				"description": "Gewichtungstypen ermöglichen es, verschiedene Arten der Verteilung von Ausgaben und Verbräuchen zu definieren. Mitglieder können verschiedene Gewichtungen für jeden Typ haben.",
+				"deleteDisabledTooltip": "Gewichtungstyp kann nicht gelöscht werden, da er derzeit von Mitgliedern, Ausgaben oder Verbräuchen verwendet wird",
+				"weightsDisabledTooltip": "Mitglieder-Gewichtungen können nicht deaktiviert werden, solange Gewichtungstypen in Verwendung sind"
 			},
 			"updateSettings": "Einstellungen aktualisieren",
 			"updating": "Aktualisiere...",
@@ -360,9 +373,11 @@
 		"save": "Speichern",
 		"edit": "Bearbeiten",
 		"delete": "Löschen",
+		"deleting": "Lösche...",
 		"close": "Schließen",
 		"confirm": "Bestätigen",
 		"yes": "Ja",
-		"no": "Nein"
+		"no": "Nein",
+		"deleteConfirmation": "Bist du sicher, dass du \"{item}\" löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden."
 	}
 }

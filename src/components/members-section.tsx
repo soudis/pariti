@@ -10,6 +10,7 @@ import { MemberDialog } from "@/components/member-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 import { formatCurrency } from "@/lib/currency";
 import { handleActionErrors } from "@/lib/utils";
 
@@ -140,15 +141,21 @@ export function MembersSection({ group }: MembersSectionProps) {
 												<Edit className="w-4 h-4" />
 											</Button>
 										</MemberDialog>
-										<Button
-											variant="ghost"
-											size="sm"
-											onClick={() => handleDeleteMember(member.id)}
-											disabled={deletingId === member.id}
-											className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+										<ConfirmDeleteDialog
+											title={t("deleteMember")}
+											description={t("deleteMemberDescription")}
+											itemName={member.name}
+											onConfirm={() => handleDeleteMember(member.id)}
 										>
-											<Trash2 className="w-4 h-4" />
-										</Button>
+											<Button
+												variant="ghost"
+												size="sm"
+												disabled={deletingId === member.id}
+												className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+											>
+												<Trash2 className="w-4 h-4" />
+											</Button>
+										</ConfirmDeleteDialog>
 									</div>
 								</div>
 

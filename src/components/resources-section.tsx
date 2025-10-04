@@ -26,6 +26,7 @@ import { ResourceDialog } from "@/components/resource-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { formatCurrency } from "@/lib/currency";
@@ -263,15 +264,21 @@ export function ResourcesSection({
 													<Edit className="w-4 h-4" />
 												</Button>
 											</ResourceDialog>
-											<Button
-												variant="ghost"
-												size="sm"
-												onClick={() => handleDeleteResource(resource.id)}
-												disabled={deletingResourceId === resource.id}
-												className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+											<ConfirmDeleteDialog
+												title={t("deleteResource")}
+												description={t("deleteResourceDescription")}
+												itemName={resource.name}
+												onConfirm={() => handleDeleteResource(resource.id)}
 											>
-												<Trash2 className="w-4 h-4" />
-											</Button>
+												<Button
+													variant="ghost"
+													size="sm"
+													disabled={deletingResourceId === resource.id}
+													className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+												>
+													<Trash2 className="w-4 h-4" />
+												</Button>
+											</ConfirmDeleteDialog>
 										</div>
 									</div>
 
@@ -368,53 +375,70 @@ export function ResourcesSection({
 																	)}
 																</div>
 																<div className="flex items-center gap-2">
-																	<ConsumptionDialog
-																		group={group}
-																		consumption={{
-																			...consumption,
-																			amount: Number(consumption.amount),
-																			sharingMethod:
-																				(consumption.sharingMethod as
-																					| "equal"
-																					| "weights") || "equal",
-																			selectedMembers:
-																				consumption.consumptionMembers.map(
-																					(cm) => cm.memberId,
-																				),
-																			memberAmounts:
-																				consumption.consumptionMembers.map(
-																					(cm) => ({
-																						memberId: cm.memberId,
-																						amount: Number(cm.amount),
-																						weight: Number(cm.weight),
-																					}),
-																				),
-																		}}
-																		onConsumptionUpdated={() =>
-																			window.location.reload()
-																		}
-																	>
-																		<Button
-																			variant="ghost"
-																			size="sm"
-																			className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+																	{(!cutoffDate ||
+																		new Date(consumption.date) >=
+																			cutoffDate) && (
+																		<ConsumptionDialog
+																			group={group}
+																			consumption={{
+																				...consumption,
+																				amount: Number(consumption.amount),
+																				sharingMethod:
+																					(consumption.sharingMethod as
+																						| "equal"
+																						| "weights") || "equal",
+																				selectedMembers:
+																					consumption.consumptionMembers.map(
+																						(cm) => cm.memberId,
+																					),
+																				memberAmounts:
+																					consumption.consumptionMembers.map(
+																						(cm) => ({
+																							memberId: cm.memberId,
+																							amount: Number(cm.amount),
+																							weight: Number(cm.weight),
+																						}),
+																					),
+																			}}
+																			onConsumptionUpdated={() =>
+																				window.location.reload()
+																			}
 																		>
-																			<Edit className="w-4 h-4" />
-																		</Button>
-																	</ConsumptionDialog>
-																	<Button
-																		variant="ghost"
-																		size="sm"
-																		onClick={() =>
-																			handleDeleteConsumption(consumption.id)
-																		}
-																		disabled={
-																			deletingConsumptionId === consumption.id
-																		}
-																		className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
-																	>
-																		<Trash2 className="w-4 h-4" />
-																	</Button>
+																			<Button
+																				variant="ghost"
+																				size="sm"
+																				className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+																			>
+																				<Edit className="w-4 h-4" />
+																			</Button>
+																		</ConsumptionDialog>
+																	)}
+																	{(!cutoffDate ||
+																		new Date(consumption.date) >=
+																			cutoffDate) && (
+																		<ConfirmDeleteDialog
+																			title={t("deleteConsumption")}
+																			description={t(
+																				"deleteConsumptionDescription",
+																			)}
+																			itemName={`${consumption.amount} ${resource.unit || t("units")}`}
+																			onConfirm={() =>
+																				handleDeleteConsumption(consumption.id)
+																			}
+																		>
+																			<Button
+																				variant="ghost"
+																				size="sm"
+																				disabled={
+																					deletingConsumptionId ===
+																					consumption.id
+																				}
+																				className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+																			>
+																				<Trash2 className="w-4 h-4" />
+																			</Button>
+																		</ConfirmDeleteDialog>
+																	)}
 																</div>
 															</div>
 

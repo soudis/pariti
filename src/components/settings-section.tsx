@@ -7,6 +7,7 @@ import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { updateGroupAction } from "@/actions";
+import type { getCalculatedGroup } from "@/actions/get-group";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
@@ -16,6 +17,16 @@ import {
 	TextField,
 } from "@/components/ui/form-field";
 import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+	isAnyWeightTypeInUse,
+	isWeightTypeInUse,
+} from "@/lib/check-weight-type-usage";
+import {
 	type GroupFormData,
 	getDefaultWeightTypes,
 	groupSchema,
@@ -24,14 +35,7 @@ import {
 import { handleActionErrors } from "@/lib/utils";
 
 interface SettingsSectionProps {
-	group: {
-		id: string;
-		name: string;
-		description: string | null;
-		currency: string;
-		weightsEnabled: boolean;
-		weightTypes?: WeightType[];
-	};
+	group: Awaited<ReturnType<typeof getCalculatedGroup>>;
 }
 
 export function SettingsSection({ group }: SettingsSectionProps) {
@@ -150,12 +154,26 @@ export function SettingsSection({ group }: SettingsSectionProps) {
 								required
 							/>
 
-							<CheckboxField
-								control={form.control}
-								name="weightsEnabled"
-								label={t("weightsEnabled")}
-								description={t("weightsEnabledDescription")}
-							/>
+							<TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<div>
+											<CheckboxField
+												control={form.control}
+												name="weightsEnabled"
+												label={t("weightsEnabled")}
+												description={t("weightsEnabledDescription")}
+												disabled={isAnyWeightTypeInUse(weightTypes, group)}
+											/>
+										</div>
+									</TooltipTrigger>
+									{isAnyWeightTypeInUse(weightTypes, group) && (
+										<TooltipContent side="top" align="start">
+											<p>{t("weightTypes.weightsDisabledTooltip")}</p>
+										</TooltipContent>
+									)}
+								</Tooltip>
+							</TooltipProvider>
 
 							{/* Weight Types Management */}
 							{!!form.watch("weightsEnabled") && (
@@ -196,15 +214,36 @@ export function SettingsSection({ group }: SettingsSectionProps) {
 													</span>
 												)}
 												{!weightType.isDefault && (
-													<Button
-														type="button"
-														variant="ghost"
-														size="sm"
-														onClick={() => removeWeightType(weightType.id)}
-														className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
-													>
-														<Trash2 className="w-4 h-4" />
-													</Button>
+													<TooltipProvider>
+														<Tooltip>
+															<TooltipTrigger asChild>
+																<div>
+																	<Button
+																		type="button"
+																		variant="ghost"
+																		size="sm"
+																		onClick={() =>
+																			removeWeightType(weightType.id)
+																		}
+																		disabled={isWeightTypeInUse(
+																			weightType.id,
+																			group,
+																		)}
+																		className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+																	>
+																		<Trash2 className="w-4 h-4" />
+																	</Button>
+																</div>
+															</TooltipTrigger>
+															{isWeightTypeInUse(weightType.id, group) && (
+																<TooltipContent side="left" align="start">
+																	<p>
+																		{t("weightTypes.deleteDisabledTooltip")}
+																	</p>
+																</TooltipContent>
+															)}
+														</Tooltip>
+													</TooltipProvider>
 												)}
 											</div>
 										))}
