@@ -389,6 +389,28 @@
 		},
 		"close": "Schließen"
 	},
+	"form": {
+		"error": {
+			"weightTypeNameRequired": "Name des Gewichtungstyps ist erforderlich",
+			"titleRequired": "Titel ist erforderlich",
+			"amountGreaterThanZero": "Betrag muss größer als 0 sein",
+			"selectWhoPaid": "Bitte wähle aus, wer bezahlt hat",
+			"selectAtLeastOneMember": "Bitte wähle mindestens ein Mitglied aus",
+			"selectStartDateForRecurring": "Bitte wähle ein Startdatum für wiederkehrende Ausgaben aus",
+			"nameRequired": "Name ist erforderlich",
+			"unitAndPriceRequired": "Einheit und Einheitspreis sind erforderlich, wenn Einheiten verwendet werden",
+			"selectResource": "Bitte wähle eine Ressource aus",
+			"weightNonNegative": "Gewichtung muss nicht-negativ sein",
+			"currencyRequired": "Währung ist erforderlich",
+			"groupIdRequired": "Gruppen-ID ist erforderlich",
+			"memberIdRequired": "Mitglieds-ID ist erforderlich",
+			"expenseIdRequired": "Ausgaben-ID ist erforderlich",
+			"resourceIdRequired": "Ressourcen-ID ist erforderlich",
+			"consumptionIdRequired": "Nutzungs-ID ist erforderlich",
+			"settlementMemberIdRequired": "Abrechnungs-Mitglieds-ID ist erforderlich",
+			"settlementIdRequired": "Abrechnungs-ID ist erforderlich"
+		}
+	},
 	"common": {
 		"loading": "Lade...",
 		"error": "Ein Fehler ist aufgetreten",

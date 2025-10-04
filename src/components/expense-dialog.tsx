@@ -180,7 +180,7 @@ export function ExpenseDialog({
 								placeholder={t("descriptionPlaceholder")}
 							/>
 
-							<div className="grid grid-cols-2 gap-4">
+							<div className="grid grid-cols-2 gap-4 items-start">
 								<TextField
 									control={form.control}
 									name="amount"

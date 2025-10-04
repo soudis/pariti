@@ -3,7 +3,7 @@ import { z } from "zod";
 // Weight type definition
 export const weightTypeSchema = z.object({
 	id: z.string(),
-	name: z.string().min(1, "Weight type name is required"),
+	name: z.string().min(1, "form.error.weightTypeNameRequired"),
 	isDefault: z.boolean().default(false),
 });
 
@@ -57,10 +57,10 @@ export const memberAmountSchema = z.object({
 
 export const expenseSchema = z
 	.object({
-		title: z.string().min(1, "Title is required"),
+		title: z.string().min(1, "form.error.titleRequired"),
 		description: z.string().nullish(),
-		amount: z.coerce.number().min(0.01, "Amount must be greater than 0"),
-		paidById: z.string().min(1, "Please select who paid"),
+		amount: z.coerce.number().min(0.01, "form.error.amountGreaterThanZero"),
+		paidById: z.string().min(1, "form.error.selectWhoPaid"),
 		date: z.coerce.date(),
 		splitAll: z.coerce.boolean(),
 		selectedMembers: z.array(z.string()),
@@ -79,7 +79,7 @@ export const expenseSchema = z
 			return true;
 		},
 		{
-			message: "Please select at least one member",
+			message: "form.error.selectAtLeastOneMember",
 			path: ["selectedMembers"],
 		},
 	)
@@ -92,14 +92,14 @@ export const expenseSchema = z
 			return true;
 		},
 		{
-			message: "Please select a start date for recurring expenses",
+			message: "form.error.selectStartDateForRecurring",
 			path: ["recurringStartDate"],
 		},
 	);
 
 export const resourceSchema = z
 	.object({
-		name: z.string().min(1, "Name is required"),
+		name: z.string().min(1, "form.error.nameRequired"),
 		description: z.string().nullish(),
 		hasUnit: z.coerce.boolean().optional(),
 		unit: z.string().nullish(),
@@ -114,15 +114,15 @@ export const resourceSchema = z
 			return true;
 		},
 		{
-			message: "Unit and unit price are required when using units",
+			message: "form.error.unitAndPriceRequired",
 			path: ["unit"],
 		},
 	);
 
 export const consumptionSchema = z.object({
-	resourceId: z.string().min(1, "Please select a resource"),
+	resourceId: z.string().min(1, "form.error.selectResource"),
 	description: z.string().nullish(),
-	amount: z.coerce.number().min(0.01, "Amount must be greater than 0"),
+	amount: z.coerce.number().min(0.01, "form.error.amountGreaterThanZero"),
 	isUnitAmount: z.coerce.boolean().nullish(),
 	date: z.coerce.date(),
 	splitAll: z.coerce.boolean(),
@@ -132,12 +132,15 @@ export const consumptionSchema = z.object({
 });
 
 export const memberSchema = z.object({
-	name: z.string().min(1, "Name is required"),
+	name: z.string().min(1, "form.error.nameRequired"),
 	email: z.email().nullish().or(z.literal("")),
 	iban: z.string().nullish(),
-	weight: z.coerce.number().min(0, "Weight must be non-negative").optional(), // Legacy field for backward compatibility
+	weight: z.coerce.number().min(0, "form.error.weightNonNegative").optional(), // Legacy field for backward compatibility
 	weights: z
-		.record(z.string(), z.coerce.number().min(0, "Weight must be non-negative"))
+		.record(
+			z.string(),
+			z.coerce.number().min(0, "form.error.weightNonNegative"),
+		)
 		.optional(), // Object with weight type IDs as keys
 	activeFrom: z.coerce.date(),
 	activeTo: z.coerce.date().nullish(),
@@ -146,9 +149,9 @@ export const memberSchema = z.object({
 
 // Group schemas
 export const groupSchema = z.object({
-	name: z.string().min(1, "Name is required"),
+	name: z.string().min(1, "form.error.nameRequired"),
 	description: z.string().nullish(),
-	currency: z.string().min(1, "Currency is required"),
+	currency: z.string().min(1, "form.error.currencyRequired"),
 	weightsEnabled: z.coerce.boolean(),
 	weightTypes: z.array(weightTypeSchema).optional(),
 	memberActiveDurationsEnabled: z.coerce.boolean(),
@@ -164,7 +167,7 @@ export const createGroupReturnSchema = z.object({
 });
 
 export const updateGroupInputSchema = z.object({
-	groupId: z.string().min(1, "Group ID is required"),
+	groupId: z.string().min(1, "form.error.groupIdRequired"),
 	group: groupSchema,
 });
 
@@ -174,7 +177,7 @@ export const updateGroupReturnSchema = z.object({
 
 // Member schemas
 export const addMemberInputSchema = z.object({
-	groupId: z.string().min(1, "Group ID is required"),
+	groupId: z.string().min(1, "form.error.groupIdRequired"),
 	member: memberSchema,
 });
 
@@ -183,7 +186,7 @@ export const addMemberReturnSchema = z.object({
 });
 
 export const updateMemberInputSchema = z.object({
-	memberId: z.string().min(1, "Member ID is required"),
+	memberId: z.string().min(1, "form.error.memberIdRequired"),
 	member: memberSchema,
 });
 
@@ -192,7 +195,7 @@ export const updateMemberReturnSchema = z.object({
 });
 
 export const removeMemberInputSchema = z.object({
-	memberId: z.string().min(1, "Member ID is required"),
+	memberId: z.string().min(1, "form.error.memberIdRequired"),
 });
 
 export const removeMemberReturnSchema = z.object({
@@ -201,7 +204,7 @@ export const removeMemberReturnSchema = z.object({
 
 // Expense schemas
 export const createExpenseInputSchema = z.object({
-	groupId: z.string().min(1, "Group ID is required"),
+	groupId: z.string().min(1, "form.error.groupIdRequired"),
 	expense: expenseSchema,
 });
 
@@ -210,7 +213,7 @@ export const createExpenseReturnSchema = z.object({
 });
 
 export const removeExpenseInputSchema = z.object({
-	expenseId: z.string().min(1, "Expense ID is required"),
+	expenseId: z.string().min(1, "form.error.expenseIdRequired"),
 });
 
 export const removeExpenseReturnSchema = z.object({
@@ -218,7 +221,7 @@ export const removeExpenseReturnSchema = z.object({
 });
 
 export const editExpenseInputSchema = z.object({
-	expenseId: z.string().min(1, "Expense ID is required"),
+	expenseId: z.string().min(1, "form.error.expenseIdRequired"),
 	expense: expenseSchema,
 });
 
@@ -228,7 +231,7 @@ export const editExpenseReturnSchema = z.object({
 
 // Resource schemas
 export const createResourceInputSchema = z.object({
-	groupId: z.string().min(1, "Group ID is required"),
+	groupId: z.string().min(1, "form.error.groupIdRequired"),
 	resource: resourceSchema,
 });
 
@@ -237,7 +240,7 @@ export const createResourceReturnSchema = z.object({
 });
 
 export const updateResourceInputSchema = z.object({
-	resourceId: z.string().min(1, "Resource ID is required"),
+	resourceId: z.string().min(1, "form.error.resourceIdRequired"),
 	resource: resourceSchema,
 });
 
@@ -246,7 +249,7 @@ export const updateResourceReturnSchema = z.object({
 });
 
 export const removeResourceInputSchema = z.object({
-	resourceId: z.string().min(1, "Resource ID is required"),
+	resourceId: z.string().min(1, "form.error.resourceIdRequired"),
 });
 
 export const removeResourceReturnSchema = z.object({
@@ -254,7 +257,7 @@ export const removeResourceReturnSchema = z.object({
 });
 
 export const editResourceInputSchema = z.object({
-	resourceId: z.string().min(1, "Resource ID is required"),
+	resourceId: z.string().min(1, "form.error.resourceIdRequired"),
 	resource: resourceSchema,
 });
 
@@ -272,7 +275,7 @@ export const createConsumptionReturnSchema = z.object({
 });
 
 export const removeConsumptionInputSchema = z.object({
-	consumptionId: z.string().min(1, "Consumption ID is required"),
+	consumptionId: z.string().min(1, "form.error.consumptionIdRequired"),
 });
 
 export const removeConsumptionReturnSchema = z.object({
@@ -280,7 +283,7 @@ export const removeConsumptionReturnSchema = z.object({
 });
 
 export const editConsumptionInputSchema = z.object({
-	consumptionId: z.string().min(1, "Consumption ID is required"),
+	consumptionId: z.string().min(1, "form.error.consumptionIdRequired"),
 	consumption: consumptionSchema,
 });
 
@@ -290,14 +293,14 @@ export const editConsumptionReturnSchema = z.object({
 
 // Settlement schemas
 export const settlementSchema = z.object({
-	title: z.string().min(1, "Title is required"),
+	title: z.string().min(1, "form.error.titleRequired"),
 	description: z.string().nullish(),
 	settlementType: z.enum(["optimized", "around_member", "around_resource"]),
 	centerId: z.string().optional(),
 });
 
 export const createSettlementInputSchema = z.object({
-	groupId: z.string().min(1, "Group ID is required"),
+	groupId: z.string().min(1, "form.error.groupIdRequired"),
 	settlement: settlementSchema,
 });
 
@@ -306,7 +309,9 @@ export const createSettlementReturnSchema = z.object({
 });
 
 export const updateSettlementMemberStatusInputSchema = z.object({
-	settlementMemberId: z.string().min(1, "Settlement Member ID is required"),
+	settlementMemberId: z
+		.string()
+		.min(1, "form.error.settlementMemberIdRequired"),
 	status: z.enum(["open", "completed"]),
 });
 
@@ -315,7 +320,7 @@ export const updateSettlementMemberStatusReturnSchema = z.object({
 });
 
 export const removeSettlementInputSchema = z.object({
-	settlementId: z.string().min(1, "Settlement ID is required"),
+	settlementId: z.string().min(1, "form.error.settlementIdRequired"),
 });
 
 export const removeSettlementReturnSchema = z.object({

@@ -388,6 +388,28 @@
 		},
 		"close": "Close"
 	},
+	"form": {
+		"error": {
+			"weightTypeNameRequired": "Weight type name is required",
+			"titleRequired": "Title is required",
+			"amountGreaterThanZero": "Amount must be greater than 0",
+			"selectWhoPaid": "Please select who paid",
+			"selectAtLeastOneMember": "Please select at least one member",
+			"selectStartDateForRecurring": "Please select a start date for recurring expenses",
+			"nameRequired": "Name is required",
+			"unitAndPriceRequired": "Unit and unit price are required when using units",
+			"selectResource": "Please select a resource",
+			"weightNonNegative": "Weight must be non-negative",
+			"currencyRequired": "Currency is required",
+			"groupIdRequired": "Group ID is required",
+			"memberIdRequired": "Member ID is required",
+			"expenseIdRequired": "Expense ID is required",
+			"resourceIdRequired": "Resource ID is required",
+			"consumptionIdRequired": "Consumption ID is required",
+			"settlementMemberIdRequired": "Settlement Member ID is required",
+			"settlementIdRequired": "Settlement ID is required"
+		}
+	},
 	"common": {
 		"loading": "Loading...",
 		"error": "An error occurred",
