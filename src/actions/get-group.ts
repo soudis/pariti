@@ -240,11 +240,13 @@ export async function getCalculatedGroup(id: string) {
 		...calculatedGroup,
 		members: calculatedGroup.members.map((member) => ({
 			...member,
-			balance: balances.get(member.id) || 0,
+			balance: Math.round((balances.get(member.id) || 0) * 100) / 100,
 		})),
 		resources: calculatedGroup.resources.map((resource) => ({
 			...resource,
-			balance: resource.linkedMemberId ? 0 : balances.get(resource.id) || 0,
+			balance: resource.linkedMemberId
+				? 0
+				: Math.round((balances.get(resource.id) || 0) * 100) / 100,
 		})),
 	});
 }
