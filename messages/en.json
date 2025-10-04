@@ -80,7 +80,8 @@
 			"home": "Home",
 			"otherGroups": "Other Groups",
 			"actions": "Actions",
-			"theme": "Theme"
+			"theme": "Theme",
+			"createNewGroup": "Create New Group"
 		}
 	},
 	"members": {

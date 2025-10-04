@@ -80,7 +80,8 @@
 			"home": "Startseite",
 			"otherGroups": "Andere Gruppen",
 			"actions": "Aktionen",
-			"theme": "Design"
+			"theme": "Design",
+			"createNewGroup": "Neue Gruppe erstellen"
 		}
 	},
 	"members": {

@@ -1,12 +1,13 @@
 "use client";
 
 import type { Group } from "@prisma/client";
-import { Home, Menu, Share2, Users } from "lucide-react";
+import { Home, Menu, Plus, Share2, Users } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { GroupDialog } from "@/components/group-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -154,6 +155,18 @@ export function GroupHeader({ group }: GroupHeaderProps) {
 											<Share2 className="w-4 h-4 mr-2" />
 											{t("shareGroup")}
 										</Button>
+									</div>
+									<div>
+										<GroupDialog>
+											<Button
+												variant="ghost"
+												size="sm"
+												className="w-full justify-start"
+											>
+												<Plus className="w-4 h-4 mr-2" />
+												{t("menuItems.createNewGroup")}
+											</Button>
+										</GroupDialog>
 									</div>
 									{/* Other Groups Section */}
 									{!loading && visitedGroups.length > 0 && (
