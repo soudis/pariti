@@ -48,7 +48,9 @@
 			"justNow": "Just now",
 			"hoursAgo": "{hours}h ago",
 			"yesterday": "Yesterday",
-			"daysAgo": "{days}d ago"
+			"daysAgo": "{days}d ago",
+			"removeFromMenu": "Remove from Recent Groups",
+			"removeFromMenuDescription": "This will only remove the group from your recent groups menu. The group and all its data will remain unchanged."
 		}
 	},
 	"group": {

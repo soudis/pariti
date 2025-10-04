@@ -1,11 +1,13 @@
 "use client";
 
-import { ExternalLink, Trash2, Users } from "lucide-react";
+import { ExternalLink, Share2, Trash2, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 
 interface VisitedGroup {
 	id: string;
@@ -20,6 +22,7 @@ export function VisitedGroupsSection() {
 	const [visitedGroups, setVisitedGroups] = useState<VisitedGroup[]>([]);
 	const [loading, setLoading] = useState(true);
 	const t = useTranslations("home.visitedGroups");
+	const tGroup = useTranslations("group");
 
 	// Load visited groups from localStorage
 	useEffect(() => {
@@ -56,6 +59,18 @@ export function VisitedGroupsSection() {
 	// Function to navigate to a group
 	const navigateToGroup = (groupId: string) => {
 		window.location.href = `/group/${groupId}`;
+	};
+
+	// Function to copy group URL to clipboard
+	const copyGroupUrl = async (groupId: string) => {
+		const shareUrl = `${window.location.origin}/group/${groupId}`;
+		try {
+			await navigator.clipboard.writeText(shareUrl);
+			toast.success(tGroup("copied"));
+		} catch (error) {
+			console.error("Failed to copy:", error);
+			toast.error(tGroup("failedToCopyLink"));
+		}
 	};
 
 	// Format last visited date
@@ -120,19 +135,34 @@ export function VisitedGroupsSection() {
 								<Button
 									variant="ghost"
 									size="sm"
+									onClick={() => copyGroupUrl(group.id)}
+									title={tGroup("shareGroup")}
+									className="text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/20"
+								>
+									<Share2 className="w-4 h-4" />
+								</Button>
+								<Button
+									variant="ghost"
+									size="sm"
 									onClick={() => navigateToGroup(group.id)}
 									className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
 								>
 									<ExternalLink className="w-4 h-4" />
 								</Button>
-								<Button
-									variant="ghost"
-									size="sm"
-									onClick={() => removeVisitedGroup(group.id)}
-									className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+								<ConfirmDeleteDialog
+									title={t("removeFromMenu")}
+									description={t("removeFromMenuDescription")}
+									itemName={group.name}
+									onConfirm={() => removeVisitedGroup(group.id)}
 								>
-									<Trash2 className="w-4 h-4" />
-								</Button>
+									<Button
+										variant="ghost"
+										size="sm"
+										className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+									>
+										<Trash2 className="w-4 h-4" />
+									</Button>
+								</ConfirmDeleteDialog>
 							</div>
 						</div>
 					))}

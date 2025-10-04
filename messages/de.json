@@ -48,7 +48,9 @@
 			"justNow": "Gerade eben",
 			"hoursAgo": "vor {hours}h",
 			"yesterday": "Gestern",
-			"daysAgo": "vor {days}d"
+			"daysAgo": "vor {days}d",
+			"removeFromMenu": "Aus den zuletzt besuchten Gruppen entfernen",
+			"removeFromMenuDescription": "Dies entfernt die Gruppe nur aus deinem Menü der zuletzt besuchten Gruppen. Die Gruppe und alle ihre Daten bleiben unverändert."
 		}
 	},
 	"group": {

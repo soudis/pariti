@@ -132,14 +132,14 @@ export function OverviewSection({
 						{/* Primary Actions - Most Used */}
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 							<ExpenseDialog group={group}>
-								<Button variant="default" size="sm" className="w-full text-sm">
+								<Button variant="default" size="lg" className="w-full text-sm">
 									<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
 									<span className="truncate">{t("addExpense")}</span>
 								</Button>
 							</ExpenseDialog>
 
 							<ConsumptionDialog group={group}>
-								<Button variant="default" size="sm" className="w-full text-sm">
+								<Button variant="default" size="lg" className="w-full text-sm">
 									<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
 									<span className="truncate">{t("addConsumption")}</span>
 								</Button>
@@ -153,14 +153,14 @@ export function OverviewSection({
 								weightsEnabled={group.weightsEnabled}
 								weightTypes={group.weightTypes}
 							>
-								<Button variant="outline" size="sm" className="w-full text-sm">
+								<Button variant="outline" size="lg" className="w-full text-sm">
 									<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
 									<span className="truncate">{t("addMember")}</span>
 								</Button>
 							</MemberDialog>
 
 							<ResourceDialog groupId={group.id}>
-								<Button variant="outline" size="sm" className="w-full text-sm">
+								<Button variant="outline" size="lg" className="w-full text-sm">
 									<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
 									<span className="truncate">{t("addResource")}</span>
 								</Button>
@@ -171,7 +171,7 @@ export function OverviewSection({
 								members={group.members}
 								resources={resources}
 							>
-								<Button variant="outline" size="sm" className="w-full text-sm">
+								<Button variant="outline" size="lg" className="w-full text-sm">
 									<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
 									<span className="truncate">{t("generateSettlement")}</span>
 								</Button>

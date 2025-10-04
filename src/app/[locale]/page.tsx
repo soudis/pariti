@@ -20,7 +20,7 @@ export default function Home() {
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
 			<div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-				<div className="max-w-4xl mx-auto">
+				<div className="max-w-6xl mx-auto">
 					{/* Theme Toggle */}
 					<div className="flex justify-end mb-4">
 						<ThemeToggle />
@@ -46,88 +46,41 @@ export default function Home() {
 						</p>
 					</div>
 
-					{/* Main Content */}
-					<div className="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-2">
+					{/* Main Content - Create Group and Visited Groups */}
+					<div className="grid gap-6 sm:gap-8 grid-cols-1 lg:grid-cols-2">
 						{/* Create New Group */}
-						<Card className="border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 transition-colors">
-							<CardHeader className="text-center">
-								<div className="mx-auto w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-4">
-									<Plus className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-								</div>
-								<CardTitle className="text-lg sm:text-xl">
-									{t("home.createGroup.title")}
-								</CardTitle>
-								<CardDescription className="text-sm sm:text-base">
-									{t("home.createGroup.description")}
-								</CardDescription>
-							</CardHeader>
-							<CardContent className="text-center">
-								<GroupDialog>
-									<Button size="lg" className="w-full text-sm sm:text-base">
-										<Plus className="w-4 h-4 mr-2" />
-										<span className="truncate">
-											{t("home.createGroup.button")}
-										</span>
-									</Button>
-								</GroupDialog>
-							</CardContent>
-						</Card>
+						<div className="w-full">
+							<Card className="border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 transition-colors h-full">
+								<CardHeader className="text-center">
+									<div className="mx-auto w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-4">
+										<Plus className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+									</div>
+									<CardTitle className="text-lg sm:text-xl">
+										{t("home.createGroup.title")}
+									</CardTitle>
+									<CardDescription className="text-sm sm:text-base">
+										{t("home.createGroup.description")}
+									</CardDescription>
+								</CardHeader>
+								<CardContent className="text-center">
+									<GroupDialog>
+										<Button size="lg" className="w-full text-sm sm:text-base">
+											<Plus className="w-4 h-4 mr-2" />
+											<span className="truncate">
+												{t("home.createGroup.button")}
+											</span>
+										</Button>
+									</GroupDialog>
+								</CardContent>
+							</Card>
+						</div>
 
-						{/* Join Existing Group */}
-						<Card className="border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-green-400 dark:hover:border-green-500 transition-colors">
-							<CardHeader className="text-center">
-								<div className="mx-auto w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-4">
-									<svg
-										className="w-6 h-6 text-green-600 dark:text-green-400"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<title>Join Group</title>
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											strokeWidth={2}
-											d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-										/>
-									</svg>
-								</div>
-								<CardTitle className="text-lg sm:text-xl">
-									{t("home.joinGroup.title")}
-								</CardTitle>
-								<CardDescription className="text-sm sm:text-base">
-									{t("home.joinGroup.description")}
-								</CardDescription>
-							</CardHeader>
-							<CardContent className="text-center">
-								<Button
-									variant="outline"
-									size="lg"
-									className="w-full text-sm sm:text-base"
-								>
-									<svg
-										className="w-4 h-4 mr-2 flex-shrink-0"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<title>Join Group</title>
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											strokeWidth={2}
-											d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-										/>
-									</svg>
-									<span className="truncate">{t("home.joinGroup.button")}</span>
-								</Button>
-							</CardContent>
-						</Card>
-					</div>
-
-					{/* Visited Groups Section */}
-					<div className="mt-8 sm:mt-12">
-						<VisitedGroupsSection />
+						{/* Visited Groups Section */}
+						<div className="flex justify-center lg:justify-end">
+							<div className="w-full max-w-md lg:max-w-none">
+								<VisitedGroupsSection />
+							</div>
+						</div>
 					</div>
 
 					{/* Features */}
