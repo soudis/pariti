@@ -2,8 +2,6 @@
 
 - make sure to secure the app against group id guessing attacks
 - Layout bug with "Default" badge for defualt weight type on create group dialog and section (exceeds row). Also Add weight type button too large. Unifiy group settings and group dialog. 
-- include language switcher in burger menu
-- reorganize burger menu (get rid of sections, fix layout of theme switcher which is off), add option to create new group
 - implement join group dialog / and change share link to open a "who are you" dialog that allows to pick or create a member or say "I'm not part of the group"
   - if there is an identity default paid by in expenses to that person and show name with "(Me)" whereever it appears
 - make layout of home page same width as group view and add top bar

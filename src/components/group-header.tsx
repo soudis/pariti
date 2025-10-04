@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { GroupDialog } from "@/components/group-dialog";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -195,7 +196,11 @@ export function GroupHeader({ group }: GroupHeaderProps) {
 									<div className="flex items-center justify-between">
 										<span className="text-sm ">{t("menuItems.theme")}</span>
 										<ThemeToggle />
-									</div>{" "}
+									</div>
+									<div className="flex items-center justify-between">
+										<span className="text-sm ">{t("menuItems.language")}</span>
+										<LanguageSwitcher />
+									</div>
 								</div>
 							</PopoverContent>
 						</Popover>
