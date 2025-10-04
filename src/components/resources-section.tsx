@@ -306,12 +306,14 @@ export function ResourcesSection({
 														{formatCurrency(totalConsumption, group.currency)}{" "}
 														{t("total")}
 													</Badge>
-													<Badge
-														variant="outline"
-														className={`text-xs sm:text-sm ${getBalanceColor(resource.balance)}`}
-													>
-														{formatBalance(resource.balance)} {t("balance")}
-													</Badge>
+													{resource.balance !== 0 && (
+														<Badge
+															variant="outline"
+															className={`text-xs sm:text-sm ${getBalanceColor(resource.balance)}`}
+														>
+															{formatBalance(resource.balance)} {t("balance")}
+														</Badge>
+													)}
 												</div>
 												<Button
 													variant="ghost"
