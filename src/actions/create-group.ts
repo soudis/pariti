@@ -21,6 +21,8 @@ async function createGroup(data: GroupFormData) {
 			currency: data.currency,
 			weightsEnabled: data.weightsEnabled,
 			weightTypes: data.weightTypes || getDefaultWeightTypes(),
+			memberActiveDurationsEnabled: data.memberActiveDurationsEnabled,
+			recurringExpensesEnabled: data.recurringExpensesEnabled,
 		},
 	});
 	revalidatePath("/");
