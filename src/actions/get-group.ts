@@ -62,10 +62,13 @@ export async function getGroup(id: string) {
 	return convertToPlainObject({
 		...group,
 		weightTypes: z.array(weightTypeSchema).parse(group.weightTypes),
-		members: group.members.map((member) => ({
-			...member,
-			weights: z.record(z.string(), z.number()).parse(member.weights),
-		})),
+		members: group.members
+			.map((member) => ({
+				...member,
+				weights: z.record(z.string(), z.number()).parse(member.weights),
+			}))
+			.sort((a, b) => a.name.localeCompare(b.name)),
+		resources: group.resources.sort((a, b) => a.name.localeCompare(b.name)),
 	});
 }
 
