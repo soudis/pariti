@@ -123,7 +123,10 @@ export function MemberDialog({
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent className="sm:max-w-[425px] h-full flex flex-col">
+			<DialogContent
+				className="sm:max-w-[425px] h-full flex flex-col"
+				onOpenAutoFocus={member ? (e) => e.preventDefault() : undefined}
+			>
 				<DialogHeader className="flex-shrink-0">
 					<DialogTitle>{member ? t("title") : t("title")}</DialogTitle>
 					<DialogDescription>

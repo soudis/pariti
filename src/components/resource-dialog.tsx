@@ -109,7 +109,10 @@ export function ResourceDialog({
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent className="sm:max-w-[425px] h-full flex flex-col">
+			<DialogContent
+				className="sm:max-w-[425px] h-full flex flex-col"
+				onOpenAutoFocus={resource ? (e) => e.preventDefault() : undefined}
+			>
 				<DialogHeader className="flex-shrink-0">
 					<DialogTitle>{resource ? t("editTitle") : t("title")}</DialogTitle>
 					<DialogDescription>

@@ -177,7 +177,10 @@ export function ConsumptionDialog({
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent className="sm:max-w-[500px] h-full flex flex-col">
+			<DialogContent
+				className="sm:max-w-[500px] h-full flex flex-col"
+				onOpenAutoFocus={consumption ? (e) => e.preventDefault() : undefined}
+			>
 				<DialogHeader className="flex-shrink-0">
 					<DialogTitle>{consumption ? t("editTitle") : t("title")}</DialogTitle>
 					<DialogDescription>

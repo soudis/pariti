@@ -40,7 +40,7 @@ interface ResourcesSectionProps {
 
 export function ResourcesSection({
 	group,
-	group: { resources, id: groupId },
+	group: { resources },
 	cutoffDate,
 }: ResourcesSectionProps) {
 	const [deletingResourceId, setDeletingResourceId] = useState<string | null>(
