@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { createConsumptionAction, editConsumptionAction } from "@/actions";
 import type { getCalculatedGroup } from "@/actions/get-group";
@@ -76,8 +76,8 @@ export function ConsumptionDialog({
 				description: consumption.description || "",
 				amount: consumption.amount,
 				isUnitAmount:
-					consumption.isUnitAmount ??
-					(resource?.unit && resource?.unitPrice) ??
+					consumption.isUnitAmount ||
+					(!!resource?.unit && !!resource?.unitPrice) ||
 					false,
 				date: new Date(consumption.date),
 				splitAll: consumption.splitAll,
@@ -106,7 +106,7 @@ export function ConsumptionDialog({
 			const resource = resources.find((r) => r.id === resourceId);
 			form.setValue(
 				"isUnitAmount",
-				(resource?.unit && resource?.unitPrice) ?? false,
+				Boolean((resource?.unit && resource?.unitPrice) ?? false),
 			);
 
 			// Auto-select default weight type from resource if available
@@ -115,6 +115,11 @@ export function ConsumptionDialog({
 			}
 		}
 	}, [resourceId, form, resources]);
+
+	const selectedResource = useMemo(
+		() => resources.find((r) => r.id === resourceId),
+		[resources, resourceId],
+	);
 
 	// Initialize active members when dialog opens
 	useEffect(() => {
@@ -172,8 +177,8 @@ export function ConsumptionDialog({
 			setLoading(false);
 		}
 	};
-	const isUnitAmount = form.watch("isUnitAmount");
 
+	const isUnitAmount = form.watch("isUnitAmount");
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
@@ -201,7 +206,7 @@ export function ConsumptionDialog({
 								required
 								options={resources.map((resource) => ({
 									value: resource.id,
-									label: `${resource.name}${resource.unit && resource.unitPrice ? ` (${Number(resource.unitPrice)}€/${resource.unit})` : ""}`,
+									label: `${resource.name}${resource.billingType === "byUsage" && resource.unit && resource.unitPrice ? ` (${Number(resource.unitPrice)}€/${resource.unit})` : ""}${resource.billingType === "byMember" && resource.usagePrice ? ` (${Number(resource.usagePrice)}€/${t("user")})` : ""}`,
 								}))}
 							/>
 
@@ -221,60 +226,67 @@ export function ConsumptionDialog({
 
 							{resourceId && (
 								<>
-									<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-										<div className="space-y-2">
-											<Label>
-												{isUnitAmount ? t("amountLabel") : t("totalCostLabel")}
-											</Label>
-											<div className="flex items-center space-x-2">
-												<TextField
-													control={form.control}
-													name="amount"
-													type="number"
-													step="1"
-													min={0}
-													placeholder="0.00"
-													required
-													className="flex-1"
-												/>
-												{(() => {
-													const selectedResource = resources.find(
-														(r) => r.id === form.getValues("resourceId"),
-													);
-													return (
-														selectedResource?.unit && (
-															<span className="text-sm text-gray-500 whitespace-nowrap">
-																{isUnitAmount ? selectedResource.unit : "€"}
-															</span>
-														)
-													);
-												})()}
-											</div>
-										</div>
-
-										{(() => {
-											const selectedResource = resources.find(
-												(r) => r.id === form.getValues("resourceId"),
-											);
-											return (
-												selectedResource?.unit &&
-												selectedResource?.unitPrice && (
-													<CheckboxField
+									{selectedResource?.billingType === "byUsage" && (
+										<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+											<div className="space-y-2">
+												<Label>
+													{isUnitAmount
+														? t("amountLabel")
+														: t("totalCostLabel")}
+												</Label>
+												<div className="flex items-center space-x-2">
+													<TextField
 														control={form.control}
-														name="isUnitAmount"
-														text={t("isUnitAmount", {
-															unit: selectedResource.unit,
-														})}
+														name="amount"
+														type="number"
+														step="1"
+														min={0}
+														placeholder="0.00"
+														required
+														className="flex-1"
 													/>
-												)
-											);
-										})()}
-									</div>
+													{(() => {
+														const selectedResource = resources.find(
+															(r) => r.id === form.getValues("resourceId"),
+														);
+														return (
+															selectedResource?.unit && (
+																<span className="text-sm text-gray-500 whitespace-nowrap">
+																	{isUnitAmount ? selectedResource.unit : "€"}
+																</span>
+															)
+														);
+													})()}
+												</div>
+											</div>
+
+											{(() => {
+												return (
+													selectedResource?.unit &&
+													selectedResource?.unitPrice && (
+														<CheckboxField
+															control={form.control}
+															name="isUnitAmount"
+															text={t("isUnitAmount", {
+																unit: selectedResource.unit,
+															})}
+														/>
+													)
+												);
+											})()}
+										</div>
+									)}
 
 									<MemberEditor
 										group={group}
 										expenseDate={form.watch("date") as Date}
-										isUnitBased={form.watch("isUnitAmount") as boolean}
+										isUnitBased={Boolean(form.watch("isUnitAmount"))}
+										byMember={selectedResource?.billingType === "byMember"}
+										usagePrice={
+											selectedResource?.usagePrice
+												? Number(selectedResource.usagePrice)
+												: 0
+										}
 										unitPrice={(() => {
 											const selectedResource = resources.find(
 												(r) => r.id === form.getValues("resourceId"),

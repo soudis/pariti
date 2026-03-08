@@ -122,6 +122,11 @@
 			"weekly": "wöchentlich",
 			"monthly": "monatlich",
 			"yearly": "jährlich"
+		},
+		"recurringDescription": {
+			"weekly": "Diese Ausgabe wird für jede Woche ab dem Startdatum generiert.",
+			"monthly": "Diese Ausgabe wird für jeden Monat ab dem Startdatum generiert.",
+			"yearly": "Diese Ausgabe wird für jedes Jahr ab dem Startdatum generiert."
 		}
 	},
 	"resources": {
@@ -230,7 +235,9 @@
 			"ibanPlaceholder": "z.B. DE89 3704 0044 0532 0130 00",
 			"weight": "Gewichtung",
 			"weights": "Gewichtungen",
+			"weightsDescription": "Gewichtungen bestimmen den Anteil des Mitglieds an jeweiligen Ausgaben und Verbräuchen. 0 bedeutet kein Anteil, 1 bedeutet voller Anteil.",
 			"weightPlaceholder": "z.B. 1,5",
+			"weightPlaceholderForType": "Gewichtung für {weightType}",
 			"weightDescription": "Gewichtung bestimmt den Anteil des Mitglieds an Ausgaben (Standard: 1,0)",
 			"activeFrom": "Aktiv ab",
 			"activeFromPlaceholder": "Startdatum auswählen",
@@ -267,20 +274,26 @@
 				"monthly": "Monatlich",
 				"yearly": "Jährlich",
 				"startDate": "Startdatum",
-				"startDatePlaceholder": "Startdatum auswählen",
+				"startDatePlaceholder": "Startdatum",
 				"description": "Diese Ausgabe wird automatisch für jeden {type} Zeitraum ab dem Startdatum generiert."
 			},
 			"splitBetween": "Aufteilen zwischen allen aktiven Mitgliedern",
 			"splitBetweenAllMembers": "Aufteilen zwischen allen Mitgliedern",
+			"usedBy": "Genutzt von allen aktiven Mitgliedern",
+			"usedByAllMembers": "Genutzt von allen Mitglieder",
 			"allMembers": "Alle Mitglieder (einschließlich zukünftiger Mitglieder)",
 			"shareEqually": "Gleichmäßig",
 			"shareByWeights": "Nach Gewichtung",
 			"byWeightType": "Nach {weightType}",
 			"noActiveMembers": "Keine aktiven Mitglieder an diesem Datum",
 			"amountPerPerson": "Betrag pro Person: {amount}€",
-			"includesActiveMembers": "Diese Ausgabe wird alle {count} aktiven Mitglieder vom {date} einbeziehen",
+			"includesActiveMembers": {
+				"recurring": "Diese Ausgabe wird alle zum jeweiligen Datum aktiven Mitglieder einbeziehen, am {date} sind das {count} Mitglieder",
+				"nonRecurring": "Diese Ausgabe wird alle {count} aktiven Mitglieder vom {date} einbeziehen"
+			},
 			"includesAllMembers": "Diese Ausgabe wird alle {count} Mitglieder einbeziehen",
 			"selectMembersAndAmounts": "Aufteilung",
+			"selectMembersAndUsage": "Genutzt von",
 			"resetToDefaults": "Auf Standard zurücksetzen",
 			"weight": "Gewicht",
 			"inactive": "Inaktiv",
@@ -323,13 +336,21 @@
 			"defaultWeightTypePlaceholder": "Gewichtstyp auswählen",
 			"defaultWeightTypeDescription": "Dieser Gewichtstyp wird automatisch ausgewählt, wenn Nutzungen für diese Ressource erstellt werden.",
 			"equalDefault": "Gleichmäßig (Standard)",
-			"linkedMemberLabel": "Mit Mitglied verknüpfen (optional)",
+			"linkedMemberLabel": "Über Mitglied abrechnen (optional)",
 			"linkedMemberPlaceholder": "Mitglied auswählen",
-			"linkedMemberDescription": "Wenn mit einem Mitglied verknüpft, wird das Ressourcen-Guthaben zum Guthaben des Mitglieds hinzugefügt, anstatt separat verfolgt zu werden.",
+			"linkedMemberDescription": "Wenn über ein Mitglied abgerechnet wird, wird das Ressourcen-Guthaben zum Guthaben des Mitglieds hinzugefügt.",
 			"cancel": "Abbrechen",
 			"create": "Ressource hinzufügen",
 			"creating": "Füge hinzu...",
-			"noMemberLinked": "Kein Mitglied verknüpft"
+			"noMemberLinked": "Kein Mitglied verknüpft",
+			"billingTypeLabel": "Abrechnungstyp",
+			"billingTypePlaceholder": "Abrechnungstyp auswählen",
+			"billingTypeOptions": {
+				"byUsage": "Nach Verbrauch",
+				"byMember": "Fixpreis pro Nutzer*in"
+			},
+			"usagePriceLabel": "Preis pro Nutzer*in",
+			"usagePricePlaceholder": "z.B. 10,00"
 		},
 		"consumption": {
 			"title": "Nutzung erfassen",
@@ -357,7 +378,8 @@
 				"selectResource": "Bitte wähle eine Ressource aus",
 				"selectMembers": "Bitte wähle mindestens ein Mitglied aus",
 				"noUnitPrice": "Diese Ressource hat keinen Einheitspreis festgelegt"
-			}
+			},
+			"user": "Nutzer*in"
 		},
 		"settlement": {
 			"title": "Abrechnung erstellen",
@@ -419,7 +441,8 @@
 			"resourceIdRequired": "Ressourcen-ID ist erforderlich",
 			"consumptionIdRequired": "Nutzungs-ID ist erforderlich",
 			"settlementMemberIdRequired": "Abrechnungs-Mitglieds-ID ist erforderlich",
-			"settlementIdRequired": "Abrechnungs-ID ist erforderlich"
+			"settlementIdRequired": "Abrechnungs-ID ist erforderlich",
+			"usagePriceRequired": "Preis pro Nutzer*in ist erforderlich"
 		}
 	},
 	"common": {

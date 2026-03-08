@@ -6,9 +6,7 @@ import { GroupVisitTracker } from "@/components/group-visit-tracker";
 import { getSettlementCutoffDate } from "@/lib/get-settlement-cutoff-date";
 
 interface GroupPageProps {
-	params: {
-		id: string;
-	};
+	params: Promise<{ id: string }>;
 }
 
 export default async function GroupPage({ params }: GroupPageProps) {

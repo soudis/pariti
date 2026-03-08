@@ -1,6 +1,6 @@
 "use client";
 
-import type { Member } from "@prisma/client";
+import type { Member } from "@generated/prisma";
 import Decimal from "decimal.js";
 import { Check, Edit3, Lock, Undo2, Unlock, User, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -35,6 +35,9 @@ interface MemberEditorProps {
 	// For unit-based consumptions
 	isUnitBased?: boolean;
 	unitPrice?: number;
+	isRecurring?: boolean;
+	byMember?: boolean;
+	usagePrice?: number;
 }
 
 export function MemberEditor({
@@ -50,6 +53,9 @@ export function MemberEditor({
 	className,
 	isUnitBased = false,
 	unitPrice = 1,
+	isRecurring = false,
+	byMember = false,
+	usagePrice = 0,
 }: MemberEditorProps) {
 	const splitAllId = useId();
 	const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
@@ -94,6 +100,7 @@ export function MemberEditor({
 				date: expenseDate,
 			},
 			isUnitBased ? unitPrice : undefined,
+			byMember ? usagePrice : undefined,
 		);
 	}, [
 		group,
@@ -104,6 +111,8 @@ export function MemberEditor({
 		expenseDate,
 		isUnitBased,
 		unitPrice,
+		byMember,
+		usagePrice,
 	]);
 
 	const totalCurrentAmount = useMemo(
@@ -134,7 +143,11 @@ export function MemberEditor({
 			),
 			...updatedSelectedMembers
 				.filter((id) => !memberAmounts.some((ma) => ma.memberId === id))
-				.map((id) => ({ memberId: id, amount: null, weight: null })),
+				.map((id) => ({
+					memberId: id,
+					amount: byMember ? usagePrice : null,
+					weight: null,
+				})),
 		]);
 	};
 
@@ -155,6 +168,15 @@ export function MemberEditor({
 	};
 
 	const handleAmountInputBlur = (memberId: string) => {
+		const amount = parseFloat(tempAmountValue);
+		if (!Number.isNaN(amount) && amount >= 0) {
+			handleAmountChange(memberId, amount);
+		}
+		setEditingMemberId(null);
+		setTempAmountValue("");
+	};
+
+	const handleAmountInputSubmit = (memberId: string) => {
 		const amount = parseFloat(tempAmountValue);
 		if (!Number.isNaN(amount) && amount >= 0) {
 			handleAmountChange(memberId, amount);
@@ -244,7 +266,7 @@ export function MemberEditor({
 
 	return (
 		<div className={cn("space-y-4", className)}>
-			{weightsEnabled && (
+			{weightsEnabled && !byMember && (
 				<div className="">
 					<Label className="text-sm font-medium mb-2 block">
 						{t("distributionMethod")}
@@ -277,24 +299,34 @@ export function MemberEditor({
 						checked={splitAll}
 						onCheckedChange={handleSplitAllToggle}
 					/>
-					<Label htmlFor={splitAllId} className="text-sm font-medium">
-						{memberActiveDurationsEnabled
-							? t("splitBetween")
-							: t("splitBetweenAllMembers")}
-					</Label>
+					{!byMember && (
+						<Label htmlFor={splitAllId} className="text-sm font-medium">
+							{memberActiveDurationsEnabled
+								? t("splitBetween")
+								: t("splitBetweenAllMembers")}
+						</Label>
+					)}
+					{byMember && (
+						<Label htmlFor={splitAllId} className="text-sm font-medium">
+							{memberActiveDurationsEnabled
+								? t("usedBy")
+								: t("usedByAllMembers")}
+						</Label>
+					)}
 				</div>
 				{activeMembersAtDate.length > 0 && (
 					<p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
 						{memberActiveDurationsEnabled
-							? t("includesActiveMembers", {
-									count: activeMembersAtDate.length,
-									date: expenseDate.toLocaleDateString(),
-								})
+							? t(
+									`includesActiveMembers.${isRecurring ? "recurring" : "nonRecurring"}`,
+									{
+										count: activeMembersAtDate.length,
+										date: expenseDate.toLocaleDateString(),
+									},
+								)
 							: t("includesAllMembers", { count: members.length })}
 					</p>
 				)}
-
-				{/* Weight Type Selection for Split All */}
 			</div>
 
 			{/* Individual Member Selection with Amount Editing */}
@@ -304,7 +336,9 @@ export function MemberEditor({
 						<div className="flex items-center gap-2">
 							<Users className="w-4 h-4" />
 							<Label className="text-sm font-medium">
-								{t("selectMembersAndAmounts")}
+								{byMember
+									? t("selectMembersAndUsage")
+									: t("selectMembersAndAmounts")}
 							</Label>
 						</div>
 						<div className="flex items-center gap-2">
@@ -363,48 +397,6 @@ export function MemberEditor({
 												<span className="font-medium text-sm truncate">
 													{member.name}
 												</span>
-												{weightsEnabled && isSelected && (
-													<span className="text-xs text-gray-500">
-														({t("weight")}:{" "}
-														{calculatedMemberAmount?.weight ?? 0})
-													</span>
-												)}
-												{sharingMethod === "weights" && !isManuallyEdited && (
-													<div className="flex items-center gap-1">
-														<span className="text-xs text-gray-500">
-															({t("weight")}:
-														</span>
-														<Input
-															type="number"
-															step="0.1"
-															min="0"
-															value={
-																editingWeightMemberId === member.id
-																	? tempWeightValue
-																	: calculatedMemberAmount?.weight.toString() ||
-																		"1"
-															}
-															onChange={(e) =>
-																handleWeightInputChange(
-																	member.id,
-																	e.target.value,
-																)
-															}
-															onFocus={() => handleWeightInputFocus(member.id)}
-															onBlur={() => handleWeightInputBlur(member.id)}
-															onKeyDown={(e) => {
-																if (e.key === "Enter") {
-																	handleWeightInputBlur(member.id);
-																}
-															}}
-															className="w-12 h-5 text-xs text-center no-spinner"
-														/>
-														<span className="text-xs text-gray-500">)</span>
-													</div>
-												)}
-												{isManuallyEdited && (
-													<Edit3 className="w-3 h-3 text-blue-500" />
-												)}
 												{!isActive && (
 													<Badge variant="outline" className="text-xs">
 														{t("inactive")}
@@ -415,6 +407,15 @@ export function MemberEditor({
 
 										{isSelected && (
 											<div className="flex items-center gap-2">
+												{weightsEnabled &&
+													isSelected &&
+													!isManuallyEdited &&
+													!isEditing && (
+														<span className="text-xs text-gray-500">
+															({t("weight")}:{" "}
+															{calculatedMemberAmount?.weight ?? 0})
+														</span>
+													)}
 												{isEditing ? (
 													<div className="flex items-center gap-2">
 														<Input
@@ -447,7 +448,11 @@ export function MemberEditor({
 															type="button"
 															variant="ghost"
 															size="sm"
-															onClick={() => handleAmountInputBlur(member.id)}
+															onClick={(e) => {
+																e.preventDefault();
+																e.stopPropagation();
+																handleAmountInputSubmit(member.id);
+															}}
 															className="text-xs h-8"
 														>
 															<Check className="w-3 h-3" />
@@ -508,7 +513,17 @@ export function MemberEditor({
 					</div>
 
 					{/* Total and Difference */}
-					{selectedMembersIds.length > 0 && (
+					{selectedMembersIds.length > 0 && byMember && (
+						<div className="pt-3 border-t space-y-2">
+							<div className="flex justify-between text-sm">
+								<span>{t("totalAmount")}:</span>
+								<span className="font-mono">
+									{formatCurrency(totalCurrentAmount, currency)}
+								</span>
+							</div>
+						</div>
+					)}
+					{selectedMembersIds.length > 0 && !byMember && (
 						<div className="pt-3 border-t space-y-2">
 							<div className="flex justify-between text-sm">
 								<span>{t("totalAmount")}:</span>
@@ -533,8 +548,8 @@ export function MemberEditor({
 								>
 									<span>{t("difference")}:</span>
 									<span className="font-mono">
-										{difference > 0 ? "+" : ""}
-										{formatCurrency(difference, currency)}
+										{difference < 0 ? "+" : ""}
+										{formatCurrency(-difference, currency)}
 									</span>
 								</div>
 							)}

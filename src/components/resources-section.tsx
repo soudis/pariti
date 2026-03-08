@@ -255,6 +255,7 @@ export function ResourcesSection({
 												resource={{
 													...resource,
 													unitPrice: Number(resource.unitPrice),
+													usagePrice: Number(resource.usagePrice),
 												}}
 											>
 												<Button

@@ -1,3 +1,4 @@
+import { isAfter, isBefore, isEqual } from "date-fns";
 import type { getGroup } from "@/actions/get-group";
 
 export interface MemberAmount {
@@ -32,11 +33,16 @@ export function getCalculatedMemberAmounts(
 		"amount" | "sharingMethod" | "splitAll" | "date"
 	>,
 	unitPrice?: number,
+	usagePrice?: number,
 ): CalculatedMemberAmount[] {
 	const getWeight = (memberId: string) => {
 		if (sharingMethod === "equal") {
 			return 1;
 		}
+		if (usagePrice) {
+			return 1;
+		}
+
 		return (
 			group.members.find((m) => m.id === memberId)?.weights?.[sharingMethod] ??
 			1
@@ -53,8 +59,12 @@ export function getCalculatedMemberAmounts(
 			}
 			// Otherwise, check active duration
 			return (
-				(!member.activeFrom || member.activeFrom <= date) &&
-				(!member.activeTo || member.activeTo >= date)
+				(!member.activeFrom ||
+					isEqual(member.activeFrom, date) ||
+					isBefore(member.activeFrom, date)) &&
+				(!member.activeTo ||
+					isEqual(member.activeTo, date) ||
+					isAfter(member.activeTo, date))
 			);
 		});
 		const weights = activeMembers.map((member) => getWeight(member.id));
@@ -63,7 +73,7 @@ export function getCalculatedMemberAmounts(
 			const weight = getWeight(member.id);
 			return {
 				memberId: member.id,
-				amount: (Number(totalAmount) / totalWeight) * weight,
+				amount: usagePrice ?? (Number(totalAmount) / totalWeight) * weight,
 				weight: weight,
 			};
 		});
@@ -98,10 +108,15 @@ export function getCalculatedMemberAmounts(
 
 	const calculatedMemberAmounts = automaticAmounts.map((ma) => {
 		const weight = ma.weight ?? getWeight(ma.memberId);
-		const amount =
-			totalWeight > 0
-				? (remainingAmount * weight) / totalWeight
-				: remainingAmount / automaticAmounts.length;
+		let amount = 0;
+		if (usagePrice) {
+			amount = usagePrice * weight;
+		} else {
+			amount =
+				totalWeight > 0
+					? (remainingAmount * weight) / totalWeight
+					: remainingAmount / automaticAmounts.length;
+		}
 		return {
 			...ma,
 			amount: amount,

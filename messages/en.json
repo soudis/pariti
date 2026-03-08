@@ -122,6 +122,11 @@
 			"weekly": "weekly",
 			"monthly": "monthly",
 			"yearly": "yearly"
+		},
+		"recurringDescription": {
+			"weekly": "This expense will be automatically generated for each week from the start date.",
+			"monthly": "This expense will be automatically generated for each month from the start date.",
+			"yearly": "This expense will be automatically generated for each year from the start date."
 		}
 	},
 	"resources": {
@@ -230,7 +235,9 @@
 			"ibanPlaceholder": "e.g., DE89 3704 0044 0532 0130 00",
 			"weight": "Weight",
 			"weights": "Weights",
+			"weightsDescription": "Weights determine the member's share of expenses and consumptions. 0 means no share, 1 means full share.",
 			"weightPlaceholder": "e.g., 1.5",
+			"weightPlaceholderForType": "Weight for {weightType}",
 			"weightDescription": "Weight determines the member's share of expenses (default: 1.0)",
 			"activeFrom": "Active from",
 			"activeFromPlaceholder": "Select start date",
@@ -266,17 +273,20 @@
 				"monthly": "Monthly",
 				"yearly": "Yearly",
 				"startDate": "Start Date",
-				"startDatePlaceholder": "Select start date",
+				"startDatePlaceholder": "Start Date",
 				"description": "This expense will be automatically generated for each {type} period from the start date."
 			},
 			"splitBetween": "Split between all active members",
 			"splitBetweenAllMembers": "Split between all members",
+			"usedBy": "Used by all active members",
+			"usedByAllMembers": "Used by all members",
 			"allMembers": "All Members (including future members)",
 			"noActiveMembers": "No active members on this date",
 			"amountPerPerson": "Amount per person: ${amount}",
 			"includesActiveMembers": "This expense will include all {count} active members on {date}",
 			"includesAllMembers": "This expense will include all {count} members",
 			"selectMembersAndAmounts": "Shares",
+			"selectMembersAndUsage": "Used by",
 			"resetToDefaults": "Reset to Defaults",
 			"weight": "weight",
 			"shareEqually": "Equally",
@@ -322,13 +332,21 @@
 			"defaultWeightTypePlaceholder": "Select default weight type",
 			"defaultWeightTypeDescription": "This weight type will be automatically selected when creating consumptions for this resource.",
 			"equalDefault": "Equally (default)",
-			"linkedMemberLabel": "Link to Member (optional)",
+			"linkedMemberLabel": "Bill through Member (optional)",
 			"linkedMemberPlaceholder": "Select a member",
-			"linkedMemberDescription": "If linked to a member, the resource balance will be added to the member's balance instead of being tracked separately.",
+			"linkedMemberDescription": "If billed through a member, the resource balance will be added to the member's balance.",
 			"cancel": "Cancel",
 			"create": "Add Resource",
 			"creating": "Adding...",
-			"noMemberLinked": "No member linked"
+			"noMemberLinked": "No member linked",
+			"billingTypeLabel": "Billing Type",
+			"billingTypePlaceholder": "Select billing type",
+			"billingTypeOptions": {
+				"byUsage": "By Usage",
+				"byMember": "Fixed Price per User"
+			},
+			"usagePriceLabel": "Price per User",
+			"usagePricePlaceholder": "e.g., 10.00"
 		},
 		"consumption": {
 			"title": "Log Consumption",
@@ -356,7 +374,8 @@
 				"selectResource": "Please select a resource",
 				"selectMembers": "Please select at least one member",
 				"noUnitPrice": "This resource has no unit price set"
-			}
+			},
+			"user": "User"
 		},
 		"settlement": {
 			"title": "Generate Settlement",
@@ -418,7 +437,8 @@
 			"resourceIdRequired": "Resource ID is required",
 			"consumptionIdRequired": "Consumption ID is required",
 			"settlementMemberIdRequired": "Settlement Member ID is required",
-			"settlementIdRequired": "Settlement ID is required"
+			"settlementIdRequired": "Settlement ID is required",
+			"usagePriceRequired": "Usage price is required"
 		}
 	},
 	"common": {

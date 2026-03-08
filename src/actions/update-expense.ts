@@ -23,7 +23,6 @@ async function updateExpense(expenseId: string, data: ExpenseFormData) {
 			sharingMethod: data.sharingMethod || "equal",
 			isRecurring: data.isRecurring,
 			recurringType: data.recurringType,
-			recurringStartDate: data.recurringStartDate,
 		},
 	});
 

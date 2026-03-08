@@ -284,7 +284,7 @@ export function DateField<TFormValues extends FieldValues = FieldValues>({
 					{label && <FormLabel>{label}</FormLabel>}
 					<FormControl>
 						<DatePicker
-							value={field.value}
+							value={new Date(field.value)}
 							onChange={field.onChange}
 							placeholder={placeholder}
 							disabled={disabled}

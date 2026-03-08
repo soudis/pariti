@@ -68,7 +68,6 @@ export const expenseSchema = z
 		memberAmounts: z.array(memberAmountSchema).optional(),
 		isRecurring: z.coerce.boolean(),
 		recurringType: z.enum(["weekly", "monthly", "yearly"]).nullish(),
-		recurringStartDate: z.coerce.date().nullish(),
 	})
 	.refine(
 		(data) => {
@@ -82,19 +81,6 @@ export const expenseSchema = z
 			message: "form.error.selectAtLeastOneMember",
 			path: ["selectedMembers"],
 		},
-	)
-	.refine(
-		(data) => {
-			// If isRecurring is true, recurringStartDate must be provided
-			if (data.isRecurring && !data.recurringStartDate) {
-				return false;
-			}
-			return true;
-		},
-		{
-			message: "form.error.selectStartDateForRecurring",
-			path: ["recurringStartDate"],
-		},
 	);
 
 export const resourceSchema = z
@@ -104,13 +90,19 @@ export const resourceSchema = z
 		hasUnit: z.coerce.boolean().optional(),
 		unit: z.string().nullish(),
 		unitPrice: z.coerce.number().min(0).nullish(),
+		usagePrice: z.coerce.number().min(0).nullish(),
 		defaultWeightType: z.string().nullish(),
 		linkedMemberId: z.string().nullish(),
+		billingType: z.enum(["byUsage", "byMember"]).default("byUsage"),
 	})
 	.refine(
 		(data) => {
 			// If hasUnit is true, unit and unitPrice must be provided
-			if (data.hasUnit && (!data.unit || !data.unitPrice)) {
+			if (
+				data.billingType === "byUsage" &&
+				data.hasUnit &&
+				(!data.unit || !data.unitPrice)
+			) {
 				return false;
 			}
 			return true;
@@ -119,19 +111,50 @@ export const resourceSchema = z
 			message: "form.error.unitAndPriceRequired",
 			path: ["unit"],
 		},
+	)
+	.refine(
+		(data) => {
+			if (data.billingType === "byMember" && !data.usagePrice) {
+				return false;
+			}
+			return true;
+		},
+		{
+			message: "form.error.usagePriceRequired",
+			path: ["usagePrice"],
+		},
 	);
 
-export const consumptionSchema = z.object({
-	resourceId: z.string().min(1, "form.error.selectResource"),
-	description: z.string().nullish(),
-	amount: z.coerce.number().min(0.01, "form.error.amountGreaterThanZero"),
-	isUnitAmount: z.coerce.boolean().nullish(),
-	date: z.coerce.date(),
-	splitAll: z.coerce.boolean(),
-	selectedMembers: z.array(z.string()),
-	sharingMethod: z.string(),
-	memberAmounts: z.array(memberAmountSchema).optional(),
-});
+export const consumptionSchema = z
+	.object({
+		resourceId: z.string().min(1, "form.error.selectResource"),
+		description: z.string().nullish(),
+		amount: z.coerce.number(),
+		isUnitAmount: z.coerce.boolean().nullish(),
+		date: z.coerce.date(),
+		splitAll: z.coerce.boolean(),
+		selectedMembers: z.array(z.string()),
+		sharingMethod: z.string(),
+		memberAmounts: z.array(memberAmountSchema).optional(),
+	})
+	.refine(
+		(data) => {
+			// If amount is less than 0 and no member amounts are set, return false
+			if (
+				data.amount <= 0 &&
+				!data.memberAmounts?.some(
+					(ma) => ma.amount !== null && (ma.amount ?? 0) > 0,
+				)
+			) {
+				return false;
+			}
+			return true;
+		},
+		{
+			message: "form.error.amountGreaterThanZero",
+			path: ["amount"],
+		},
+	);
 
 export const memberSchema = z.object({
 	name: z.string().min(1, "form.error.nameRequired"),

@@ -16,20 +16,6 @@ async function createSettlement(groupId: string, data: SettlementFormData) {
 
 	if (!group) throw new Error("Group not found");
 
-	console.log(
-		"balances",
-		new Map([
-			...group.members.reduce((acc, member) => {
-				acc.set(member.id, member.balance);
-				return acc;
-			}, new Map<string, number>()),
-			...group.resources.reduce((acc, resource) => {
-				acc.set(resource.id, resource.balance);
-				return acc;
-			}, new Map<string, number>()),
-		]),
-	);
-
 	// Generate settlement transactions based on type
 	const transactions = generateSettlementTransactions(
 		new Map([

@@ -1,5 +1,6 @@
 "use client";
 
+import { isBefore } from "date-fns";
 import {
 	Calendar,
 	DollarSign,
@@ -66,11 +67,14 @@ export function ExpensesSection({
 			effectiveMembers: [],
 		}));
 
+	console.log("cutoffDate", cutoffDate);
+
 	// Filter expenses based on cutoff date, toggle, and search text
 	const filteredExpenses = allExpenses.filter((expense) => {
 		// Apply cutoff date filter
+		console.log("expense.date", expense.date);
 		if (cutoffDate && showHiddenExpenses !== "true") {
-			if (new Date(expense.date) < cutoffDate) {
+			if (isBefore(new Date(expense.date), cutoffDate)) {
 				return false;
 			}
 		}
@@ -203,6 +207,7 @@ export function ExpensesSection({
 												expense={{
 													...expense,
 													amount: Number(expense.amount),
+													date: new Date(expense.originalDate ?? expense.date),
 													sharingMethod:
 														(expense.sharingMethod as "equal" | "weights") ||
 														"equal",
@@ -211,8 +216,6 @@ export function ExpensesSection({
 														| "monthly"
 														| "yearly"
 														| undefined,
-													recurringStartDate:
-														expense.recurringStartDate ?? undefined,
 													selectedMembers: expense.splitAll
 														? []
 														: expense.expenseMembers.map((em) => em.memberId),

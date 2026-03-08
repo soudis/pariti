@@ -1,17 +1,13 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl"]
+  provider = "prisma-client"
+  output   = "../generated"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Group {
@@ -71,7 +67,6 @@ model Expense {
   sharingMethod      String    
   isRecurring        Boolean   @default(false)
   recurringType      String? // 'weekly', 'monthly', 'yearly'
-  recurringStartDate DateTime?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
@@ -103,8 +98,10 @@ model Resource {
   id                String   @id @default(cuid())
   name              String
   description       String?
+  billingType       BillingType @default(byUsage)
   unit              String?  // e.g., "hours", "rolls", "km"
   unitPrice         Decimal? @db.Decimal(10, 2) // price per unit
+  usagePrice        Decimal? @db.Decimal(10, 2) // price per usage
   defaultWeightType String?  // Default weight type ID for this resource
   linkedMemberId    String?  // Optional link to a member - if set, resource balance is added to member balance
   groupId           String
@@ -192,3 +189,7 @@ model SettlementMember {
 
   @@map("settlement_members")
 }
+ enum BillingType {
+  byUsage
+  byMember
+ }

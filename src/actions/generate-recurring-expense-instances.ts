@@ -1,5 +1,10 @@
 "use server";
 
+import {
+	eachMonthOfInterval,
+	eachWeekOfInterval,
+	eachYearOfInterval,
+} from "date-fns";
 import type { getGroup } from "@/actions/get-group";
 
 // Helper function to generate recurring expense instances
@@ -13,40 +18,34 @@ export async function generateRecurringExpenseInstances(
 ) {
 	// If recurring expenses are disabled for the group, don't generate recurring instances
 	if (group && !group.recurringExpensesEnabled) {
-		return [expense];
+		return [{ ...expense, originalDate: expense.date }];
 	}
 
-	if (expense.recurringStartDate && expense.isRecurring) {
+	if (expense.isRecurring) {
 		const instances = [];
-		const startDate = new Date(expense.recurringStartDate);
-		const currentInstanceDate = new Date(startDate);
-
-		while (currentInstanceDate <= currentDate) {
-			if (currentInstanceDate >= startDate) {
-				instances.push({
-					...expense,
-					id: expense.id,
-					date: new Date(currentInstanceDate),
-				});
-			}
-
-			// Calculate next occurrence
-			switch (expense.recurringType) {
-				case "weekly":
-					currentInstanceDate.setDate(currentInstanceDate.getDate() + 7);
-					break;
-				case "monthly":
-					currentInstanceDate.setMonth(currentInstanceDate.getMonth() + 1);
-					break;
-				case "yearly":
-					currentInstanceDate.setFullYear(
-						currentInstanceDate.getFullYear() + 1,
-					);
-					break;
-			}
+		switch (expense.recurringType) {
+			case "weekly":
+				instances.push(
+					...eachWeekOfInterval({ start: expense.date, end: currentDate }),
+				);
+				break;
+			case "monthly":
+				instances.push(
+					...eachMonthOfInterval({ start: expense.date, end: currentDate }),
+				);
+				break;
+			case "yearly":
+				instances.push(
+					...eachYearOfInterval({ start: expense.date, end: currentDate }),
+				);
+				break;
 		}
-		return instances;
+		return instances.map((date) => ({
+			...expense,
+			date: date,
+			originalDate: expense.date,
+		}));
 	}
 
-	return [expense];
+	return [{ ...expense, originalDate: expense.date }];
 }

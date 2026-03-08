@@ -1,6 +1,6 @@
 "use server";
 
-import type { Member } from "@prisma/client";
+import type { Member } from "@generated/prisma";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { actionClient } from "@/lib/safe-action";

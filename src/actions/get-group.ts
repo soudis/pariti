@@ -1,5 +1,6 @@
 "use server";
 
+import { Decimal } from "@prisma/client/runtime/client";
 import z from "zod";
 import { generateRecurringExpenseInstances } from "@/actions/generate-recurring-expense-instances";
 import { db } from "@/lib/db";
@@ -115,7 +116,12 @@ export async function getCalculatedGroup(id: string) {
 						amount: ma.amount ? Number(ma.amount) : null,
 					})),
 					consumption,
-					resource.unitPrice ? Number(resource.unitPrice) : undefined,
+					resource.billingType === "byUsage" && resource.unitPrice
+						? Number(resource.unitPrice)
+						: undefined,
+					resource.billingType === "byMember" && resource.usagePrice
+						? Number(resource.usagePrice)
+						: undefined,
 				),
 			})),
 		})),
@@ -168,8 +174,12 @@ export async function getCalculatedGroup(id: string) {
 
 		filteredConsumptions.forEach((consumption) => {
 			// Calculate the resource balance from this consumption
+			const amount = consumption.calculatedConsumptionMembers.reduce(
+				(sum, ma) => sum + ma.amount,
+				0,
+			);
 			const resourceBalance =
-				Number(consumption.amount) *
+				Number(amount) *
 				(resource.unitPrice && resource.unit ? Number(resource.unitPrice) : 1);
 
 			// If resource is linked to a member, add balance to that member
@@ -244,6 +254,16 @@ export async function getCalculatedGroup(id: string) {
 		})),
 		resources: calculatedGroup.resources.map((resource) => ({
 			...resource,
+			consumptions: resource.consumptions.map((consumption) => ({
+				...consumption,
+				amount:
+					new Decimal(
+						consumption.calculatedConsumptionMembers.reduce(
+							(sum, ma) => sum + ma.amount,
+							0,
+						),
+					) ?? new Decimal(0),
+			})),
 			balance: resource.linkedMemberId
 				? 0
 				: Math.round((balances.get(resource.id) || 0) * 100) / 100,

@@ -39,7 +39,6 @@ CREATE TABLE "expenses" (
     "splitAll" BOOLEAN NOT NULL DEFAULT false,
     "isRecurring" BOOLEAN NOT NULL DEFAULT false,
     "recurringType" TEXT,
-    "recurringStartDate" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

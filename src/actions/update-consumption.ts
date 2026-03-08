@@ -14,6 +14,13 @@ async function updateConsumption(
 	consumptionId: string,
 	data: ConsumptionFormData,
 ) {
+	const resource = await db.resource.findUnique({
+		where: { id: data.resourceId },
+		include: { group: true },
+	});
+
+	if (!resource) throw new Error("Resource not found");
+
 	const updatedConsumption = await db.consumption.update({
 		where: { id: consumptionId },
 		data: {
@@ -29,7 +36,6 @@ async function updateConsumption(
 					member: true,
 				},
 			},
-			resource: true,
 		},
 	});
 
@@ -52,7 +58,7 @@ async function updateConsumption(
 		});
 	}
 
-	revalidatePath(`/group/${updatedConsumption.resource.groupId}`);
+	revalidatePath(`/group/${resource.groupId}`);
 	return { consumption: convertToPlainObject(updatedConsumption) };
 }
 

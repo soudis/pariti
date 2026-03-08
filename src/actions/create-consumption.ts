@@ -6,7 +6,6 @@ import { actionClient } from "@/lib/safe-action";
 import {
 	type ConsumptionFormData,
 	createConsumptionInputSchema,
-	createConsumptionReturnSchema,
 } from "@/lib/schemas";
 import { convertToPlainObject } from "@/lib/utils";
 
@@ -45,7 +44,6 @@ async function createConsumption(data: ConsumptionFormData) {
 
 export const createConsumptionAction = actionClient
 	.inputSchema(createConsumptionInputSchema)
-	.outputSchema(createConsumptionReturnSchema)
 	.action(async ({ parsedInput }) =>
 		createConsumption(parsedInput.consumption),
 	);

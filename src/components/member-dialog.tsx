@@ -178,16 +178,23 @@ export function MemberDialog({
 									) : (
 										// Multiple weight types
 										<div className="space-y-4">
-											<h4 className="font-medium text-sm text-gray-900 dark:text-gray-100">
-												{t("weights")}
-											</h4>
+											<div>
+												<h4 className="font-medium text-sm text-gray-900 dark:text-gray-100">
+													{t("weights")}
+												</h4>
+												<p className="text-xs text-gray-600 dark:text-gray-400">
+													{t("weightsDescription")}
+												</p>
+											</div>
 											{availableWeightTypes.map((weightType) => (
 												<NumberField
 													key={weightType.id}
 													control={form.control}
 													name={`weights.${weightType.id}`}
 													label={weightType.name}
-													placeholder={`Weight for ${weightType.name}`}
+													placeholder={t("weightPlaceholderForType", {
+														weightType: weightType.name,
+													})}
 													min={0}
 													step="0.1"
 													required

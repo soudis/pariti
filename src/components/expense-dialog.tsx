@@ -47,6 +47,7 @@ export function ExpenseDialog({
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const t = useTranslations("forms.expense");
+	const tExpenses = useTranslations("expenses");
 	const { executeAsync: createExpense } = useAction(createExpenseAction);
 	const { executeAsync: editExpense } = useAction(editExpenseAction);
 	const router = useRouter();
@@ -64,7 +65,6 @@ export function ExpenseDialog({
 			sharingMethod: getDefaultSharingMethod(group),
 			isRecurring: false,
 			recurringType: "monthly",
-			recurringStartDate: undefined,
 			memberAmounts: [],
 		},
 	});
@@ -83,9 +83,6 @@ export function ExpenseDialog({
 				sharingMethod: expense.sharingMethod || getDefaultSharingMethod(group),
 				isRecurring: expense.isRecurring,
 				recurringType: expense.recurringType || "monthly",
-				recurringStartDate: expense.recurringStartDate
-					? new Date(expense.recurringStartDate)
-					: undefined,
 				memberAmounts: expense.memberAmounts || [],
 			});
 		} else {
@@ -100,7 +97,6 @@ export function ExpenseDialog({
 				sharingMethod: getDefaultSharingMethod(group),
 				isRecurring: false,
 				recurringType: "monthly",
-				recurringStartDate: undefined,
 				memberAmounts: [],
 			});
 		}
@@ -211,7 +207,11 @@ export function ExpenseDialog({
 							<DateField
 								control={form.control}
 								name="date"
-								label={t("date")}
+								label={
+									form.watch("isRecurring")
+										? t("recurring.startDate")
+										: t("date")
+								}
 								placeholder={t("datePlaceholder")}
 							/>
 
@@ -225,31 +225,22 @@ export function ExpenseDialog({
 									/>
 
 									{(form.watch("isRecurring") as boolean) && (
-										<div className="space-y-4 pl-6">
-											<div className="grid grid-cols-2 gap-4">
-												<SelectField
-													control={form.control}
-													name="recurringType"
-													label={t("recurring.frequency")}
-													options={[
-														{ value: "weekly", label: t("recurring.weekly") },
-														{ value: "monthly", label: t("recurring.monthly") },
-														{ value: "yearly", label: t("recurring.yearly") },
-													]}
-												/>
-
-												<DateField
-													control={form.control}
-													name="recurringStartDate"
-													label={t("recurring.startDate")}
-													placeholder={t("recurring.startDatePlaceholder")}
-												/>
-											</div>
+										<div className="space-y-4 mt-4">
+											<SelectField
+												control={form.control}
+												name="recurringType"
+												label={t("recurring.frequency")}
+												options={[
+													{ value: "weekly", label: t("recurring.weekly") },
+													{ value: "monthly", label: t("recurring.monthly") },
+													{ value: "yearly", label: t("recurring.yearly") },
+												]}
+											/>
 
 											<p className="text-xs text-gray-600 dark:text-gray-400">
-												{t("recurring.description", {
-													type: form.watch("recurringType") || "monthly",
-												})}
+												{tExpenses(
+													`recurringDescription.${form.watch("recurringType") || "monthly"}`,
+												)}
 											</p>
 										</div>
 									)}
@@ -257,6 +248,7 @@ export function ExpenseDialog({
 							)}
 
 							<MemberEditor
+								isRecurring={!!form.watch("isRecurring")}
 								group={group}
 								expenseDate={form.watch("date") as Date}
 							/>

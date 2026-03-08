@@ -60,6 +60,7 @@ export function ResourceDialog({
 			unitPrice: 0,
 			defaultWeightType: "",
 			linkedMemberId: "",
+			billingType: "byUsage",
 		},
 	});
 
@@ -74,6 +75,8 @@ export function ResourceDialog({
 				unitPrice: resource.unitPrice || 0,
 				defaultWeightType: resource.defaultWeightType || "equal",
 				linkedMemberId: resource.linkedMemberId || "_none",
+				billingType: resource.billingType || "byUsage",
+				usagePrice: resource.usagePrice || 0,
 			});
 		} else {
 			form.reset({
@@ -84,6 +87,8 @@ export function ResourceDialog({
 				unitPrice: 0,
 				defaultWeightType: "equal",
 				linkedMemberId: "_none",
+				billingType: "byUsage",
+				usagePrice: 0,
 			});
 		}
 	}, [resource, form]);
@@ -140,55 +145,87 @@ export function ResourceDialog({
 								placeholder={t("descriptionPlaceholder")}
 							/>
 
-							{weightsEnabled && weightTypes && weightTypes.length > 1 && (
-								<SelectField
-									control={form.control}
-									name="defaultWeightType"
-									label={t("defaultWeightTypeLabel")}
-									placeholder={t("defaultWeightTypePlaceholder")}
-									options={[
-										{ value: "equal", label: t("equalDefault") },
-										...weightTypes.map((weightType: WeightType) => ({
-											value: weightType.id,
-											label: weightType.name,
-										})),
-									]}
-								/>
+							<SelectField
+								control={form.control}
+								name="billingType"
+								label={t("billingTypeLabel")}
+								placeholder={t("billingTypePlaceholder")}
+								options={[
+									{ value: "byUsage", label: t("billingTypeOptions.byUsage") },
+									{
+										value: "byMember",
+										label: t("billingTypeOptions.byMember"),
+									},
+								]}
+							/>
+
+							{form.watch("billingType") === "byUsage" && (
+								<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+									{weightsEnabled &&
+										weightTypes &&
+										weightTypes.length > 1 &&
+										form.watch("billingType") === "byUsage" && (
+											<SelectField
+												control={form.control}
+												name="defaultWeightType"
+												label={t("defaultWeightTypeLabel")}
+												placeholder={t("defaultWeightTypePlaceholder")}
+												options={[
+													{ value: "equal", label: t("equalDefault") },
+													...weightTypes.map((weightType: WeightType) => ({
+														value: weightType.id,
+														label: weightType.name,
+													})),
+												]}
+											/>
+										)}
+									<CheckboxField
+										control={form.control}
+										name="hasUnit"
+										label={t("hasUnit")}
+									/>
+
+									{(form.watch("hasUnit") as boolean) && (
+										<div className="space-y-4 pl-6">
+											<div className="grid grid-cols-2 gap-4">
+												<TextField
+													control={form.control}
+													name="unit"
+													label={t("unitLabel")}
+													placeholder={t("unitPlaceholder")}
+												/>
+
+												<TextField
+													control={form.control}
+													name="unitPrice"
+													label={t("unitPriceLabel")}
+													type="number"
+													step="0.01"
+													min={0}
+													placeholder="0.00"
+												/>
+											</div>
+											<p className="text-xs text-gray-600 dark:text-gray-400">
+												{t("unitInfo")}
+											</p>
+										</div>
+									)}
+								</div>
 							)}
 
-							<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-								<CheckboxField
-									control={form.control}
-									name="hasUnit"
-									label={t("hasUnit")}
-								/>
-
-								{(form.watch("hasUnit") as boolean) && (
-									<div className="space-y-4 pl-6">
-										<div className="grid grid-cols-2 gap-4">
-											<TextField
-												control={form.control}
-												name="unit"
-												label={t("unitLabel")}
-												placeholder={t("unitPlaceholder")}
-											/>
-
-											<TextField
-												control={form.control}
-												name="unitPrice"
-												label={t("unitPriceLabel")}
-												type="number"
-												step="0.01"
-												min={0}
-												placeholder="0.00"
-											/>
-										</div>
-										<p className="text-xs text-gray-600 dark:text-gray-400">
-											{t("unitInfo")}
-										</p>
-									</div>
-								)}
-							</div>
+							{form.watch("billingType") === "byMember" && (
+								<div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+									<TextField
+										control={form.control}
+										name="usagePrice"
+										label={t("usagePriceLabel")}
+										placeholder={t("usagePricePlaceholder")}
+										type="number"
+										step="0.01"
+										min={0}
+									/>
+								</div>
+							)}
 							<SelectField
 								control={form.control}
 								name="linkedMemberId"
