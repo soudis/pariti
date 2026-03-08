@@ -99,13 +99,20 @@
 		"delete": "Löschen",
 		"balance": "Saldo",
 		"deleteMember": "Mitglied löschen",
-		"deleteMemberDescription": "Dies wird das Mitglied und alle zugehörigen Daten dauerhaft aus der Gruppe entfernen."
+		"deleteMemberDescription": "Dies wird das Mitglied und alle zugehörigen Daten dauerhaft aus der Gruppe entfernen.",
+		"details": {
+			"ownExpenses": "Eigene Ausgaben",
+			"partOfExpenses": "Beteiligt an Ausgaben",
+			"partOfConsumptions": "Beteiligt an Nutzungen"
+		}
 	},
 	"expenses": {
 		"title": "Ausgaben",
 		"addExpense": "Ausgabe hinzufügen",
 		"noExpenses": "Noch keine Ausgaben",
 		"noExpensesDescription": "Füge Ausgaben hinzu, um geteilte Kosten zu verfolgen",
+		"noExpensesDescriptionOwn": "Dieses Mitglied hat keine Ausgaben bezahlt.",
+		"noExpensesDescriptionPartOf": "Dieses Mitglied ist an keiner Ausgabe beteiligt.",
 		"paidBy": "Bezahlt von",
 		"splitBetween": "Aufgeteilt zwischen",
 		"splitEquallyBetween": "Gleichmäßig aufgeteilt zwischen",
@@ -135,6 +142,7 @@
 		"logConsumption": "Nutzung erfassen",
 		"noResources": "Noch keine Ressourcen",
 		"noResourcesDescription": "Füge Ressourcen hinzu, um geteilte Nutzung zu verfolgen",
+		"noResourcesDescriptionMemberConsumptions": "Dieses Mitglied ist an keiner Nutzung beteiligt.",
 		"noConsumptions": "Noch keine Nutzungen",
 		"consumptions": "Nutzungen",
 		"splitBetween": "Aufgeteilt zwischen",

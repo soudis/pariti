@@ -99,13 +99,20 @@
 		"delete": "Delete",
 		"balance": "Balance",
 		"deleteMember": "Delete Member",
-		"deleteMemberDescription": "This will permanently remove the member and all their associated data from the group."
+		"deleteMemberDescription": "This will permanently remove the member and all their associated data from the group.",
+		"details": {
+			"ownExpenses": "Own Expenses",
+			"partOfExpenses": "Part of Expenses",
+			"partOfConsumptions": "Part of Consumptions"
+		}
 	},
 	"expenses": {
 		"title": "Expenses",
 		"addExpense": "Add Expense",
 		"noExpenses": "No expenses yet",
 		"noExpensesDescription": "Add expenses to start tracking shared costs",
+		"noExpensesDescriptionOwn": "This member has not paid any expenses.",
+		"noExpensesDescriptionPartOf": "This member is not part of any expenses.",
 		"paidBy": "Paid by",
 		"splitBetween": "Split between",
 		"splitEquallyBetween": "Split equally between",
@@ -135,6 +142,7 @@
 		"logConsumption": "Log Consumption",
 		"noResources": "No resources yet",
 		"noResourcesDescription": "Add resources to track shared consumption",
+		"noResourcesDescriptionMemberConsumptions": "This member is not part of any consumptions.",
 		"noConsumptions": "No consumptions yet",
 		"consumptions": "Consumptions",
 		"splitBetween": "Split between",

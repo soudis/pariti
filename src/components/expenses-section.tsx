@@ -35,12 +35,18 @@ import { handleActionErrors } from "@/lib/utils";
 interface ExpensesSectionProps {
 	group: Awaited<ReturnType<typeof getCalculatedGroup>>;
 	cutoffDate: Date | null;
+	/** When true, hides add, edit, and delete buttons (e.g. when embedded in member details dialog). */
+	readOnly?: boolean;
+	/** Override empty state description for dialog context. */
+	emptyStateVariant?: "default" | "ownExpenses" | "partOfExpenses";
 }
 
 export function ExpensesSection({
 	group,
 	group: { expenses },
 	cutoffDate,
+	readOnly = false,
+	emptyStateVariant = "default",
 }: ExpensesSectionProps) {
 	const [deletingId, setDeletingId] = useState<string | null>(null);
 	const [filterText, setFilterText] = useState("");
@@ -67,12 +73,9 @@ export function ExpensesSection({
 			effectiveMembers: [],
 		}));
 
-	console.log("cutoffDate", cutoffDate);
-
 	// Filter expenses based on cutoff date, toggle, and search text
 	const filteredExpenses = allExpenses.filter((expense) => {
 		// Apply cutoff date filter
-		console.log("expense.date", expense.date);
 		if (cutoffDate && showHiddenExpenses !== "true") {
 			if (isBefore(new Date(expense.date), cutoffDate)) {
 				return false;
@@ -97,6 +100,13 @@ export function ExpensesSection({
 
 	const displayExpenses = filteredExpenses;
 
+	const noExpensesDescriptionKey =
+		emptyStateVariant === "ownExpenses"
+			? "noExpensesDescriptionOwn"
+			: emptyStateVariant === "partOfExpenses"
+				? "noExpensesDescriptionPartOf"
+				: "noExpensesDescription";
+
 	const handleDeleteExpense = async (expenseId: string) => {
 		setDeletingId(expenseId);
 		await handleActionErrors(await removeExpense({ expenseId }));
@@ -120,7 +130,7 @@ export function ExpensesSection({
 						{t("title")}
 					</CardTitle>
 					<div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
-						{cutoffDate && (
+						{cutoffDate && !readOnly && (
 							<div className="flex items-center gap-2">
 								<Label htmlFor={showHiddenId} className="text-sm">
 									{showHiddenExpenses ? (
@@ -142,12 +152,14 @@ export function ExpensesSection({
 								</span>
 							</div>
 						)}
-						<ExpenseDialog group={group}>
-							<Button size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
-								<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
-								<span className="truncate">{t("addExpense")}</span>
-							</Button>
-						</ExpenseDialog>
+						{!readOnly && (
+							<ExpenseDialog group={group}>
+								<Button size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
+									<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
+									<span className="truncate">{t("addExpense")}</span>
+								</Button>
+							</ExpenseDialog>
+						)}
 					</div>
 				</div>
 				{/* Search Filter */}
@@ -169,7 +181,7 @@ export function ExpensesSection({
 					<div className="text-center py-8 text-gray-500 dark:text-gray-400">
 						<DollarSign className="w-12 h-12 mx-auto mb-4 opacity-50" />
 						<p>{t("noExpenses")}</p>
-						<p className="text-sm">{t("noExpensesDescription")}</p>
+						<p className="text-sm">{t(noExpensesDescriptionKey)}</p>
 					</div>
 				) : (
 					<div className="space-y-4">
@@ -201,57 +213,59 @@ export function ExpensesSection({
 									</div>
 									{/* Action buttons - aligned to top right */}
 									<div className="flex items-start gap-2 flex-shrink-0 ml-2">
-										{(!cutoffDate || new Date(expense.date) >= cutoffDate) && (
-											<ExpenseDialog
-												group={group}
-												expense={{
-													...expense,
-													amount: Number(expense.amount),
-													date: new Date(expense.originalDate ?? expense.date),
-													sharingMethod:
-														(expense.sharingMethod as "equal" | "weights") ||
-														"equal",
-													recurringType: expense.recurringType as
-														| "weekly"
-														| "monthly"
-														| "yearly"
-														| undefined,
-													selectedMembers: expense.splitAll
-														? []
-														: expense.expenseMembers.map((em) => em.memberId),
-													memberAmounts: expense.expenseMembers.map((em) => ({
-														memberId: em.memberId,
-														amount: Number(em.amount),
-														weight: Number(em.weight),
-													})),
-												}}
-											>
-												<Button
-													variant="ghost"
-													size="sm"
-													className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+										{!readOnly &&
+											(!cutoffDate || new Date(expense.date) >= cutoffDate) && (
+												<ExpenseDialog
+													group={group}
+													expense={{
+														...expense,
+														amount: Number(expense.amount),
+														date: new Date(expense.originalDate ?? expense.date),
+														sharingMethod:
+															(expense.sharingMethod as "equal" | "weights") ||
+															"equal",
+														recurringType: expense.recurringType as
+															| "weekly"
+															| "monthly"
+															| "yearly"
+															| undefined,
+														selectedMembers: expense.splitAll
+															? []
+															: expense.expenseMembers.map((em) => em.memberId),
+														memberAmounts: expense.expenseMembers.map((em) => ({
+															memberId: em.memberId,
+															amount: Number(em.amount),
+															weight: Number(em.weight),
+														})),
+													}}
 												>
-													<Edit className="w-4 h-4" />
-												</Button>
-											</ExpenseDialog>
-										)}
-										{(!cutoffDate || new Date(expense.date) >= cutoffDate) && (
-											<ConfirmDeleteDialog
-												title={t("deleteExpense")}
-												description={t("deleteExpenseDescription")}
-												itemName={expense.title}
-												onConfirm={() => handleDeleteExpense(expense.id)}
-											>
-												<Button
-													variant="ghost"
-													size="sm"
-													disabled={deletingId === expense.id}
-													className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+													<Button
+														variant="ghost"
+														size="sm"
+														className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+													>
+														<Edit className="w-4 h-4" />
+													</Button>
+												</ExpenseDialog>
+											)}
+										{!readOnly &&
+											(!cutoffDate || new Date(expense.date) >= cutoffDate) && (
+												<ConfirmDeleteDialog
+													title={t("deleteExpense")}
+													description={t("deleteExpenseDescription")}
+													itemName={expense.title}
+													onConfirm={() => handleDeleteExpense(expense.id)}
 												>
-													<Trash2 className="w-4 h-4" />
-												</Button>
-											</ConfirmDeleteDialog>
-										)}
+													<Button
+														variant="ghost"
+														size="sm"
+														disabled={deletingId === expense.id}
+														className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+													>
+														<Trash2 className="w-4 h-4" />
+													</Button>
+												</ConfirmDeleteDialog>
+											)}
 									</div>
 								</div>
 

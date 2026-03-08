@@ -1,11 +1,12 @@
 "use client";
 
-import { Edit, Plus, Trash2, User, Users } from "lucide-react";
+import { Edit, Eye, Plus, Trash2, User, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import { removeMemberAction } from "@/actions";
 import type { getCalculatedGroup } from "@/actions/get-group";
+import { MemberDetailsDialog } from "@/components/member-details-dialog";
 import { MemberDialog } from "@/components/member-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,9 +17,10 @@ import { handleActionErrors } from "@/lib/utils";
 
 interface MembersSectionProps {
 	group: Awaited<ReturnType<typeof getCalculatedGroup>>;
+	cutoffDate?: Date | null;
 }
 
-export function MembersSection({ group }: MembersSectionProps) {
+export function MembersSection({ group, cutoffDate = null }: MembersSectionProps) {
 	const [deletingId, setDeletingId] = useState<string | null>(null);
 	const t = useTranslations("members");
 
@@ -127,6 +129,19 @@ export function MembersSection({ group }: MembersSectionProps) {
 									</div>
 									{/* Action buttons - aligned to top right */}
 									<div className="flex items-start gap-2 flex-shrink-0 ml-2">
+										<MemberDetailsDialog
+											group={group}
+											member={member}
+											cutoffDate={cutoffDate}
+										>
+											<Button
+												variant="ghost"
+												size="sm"
+												className="text-gray-600 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700/20"
+											>
+												<Eye className="w-4 h-4" />
+											</Button>
+										</MemberDetailsDialog>
 										<MemberDialog
 											group={group}
 											member={member}

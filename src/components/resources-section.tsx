@@ -36,12 +36,18 @@ import { handleActionErrors } from "@/lib/utils";
 interface ResourcesSectionProps {
 	group: Awaited<ReturnType<typeof getCalculatedGroup>>;
 	cutoffDate: Date | null;
+	/** When true, hides add, edit, and delete buttons (e.g. when embedded in member details dialog). */
+	readOnly?: boolean;
+	/** Override empty state description for dialog context. */
+	emptyStateVariant?: "default" | "memberConsumptions";
 }
 
 export function ResourcesSection({
 	group,
 	group: { resources },
 	cutoffDate,
+	readOnly = false,
+	emptyStateVariant = "default",
 }: ResourcesSectionProps) {
 	const [deletingResourceId, setDeletingResourceId] = useState<string | null>(
 		null,
@@ -64,6 +70,11 @@ export function ResourcesSection({
 	);
 	const t = useTranslations("resources");
 	const showHiddenId = useId();
+
+	const noResourcesDescriptionKey =
+		emptyStateVariant === "memberConsumptions"
+			? "noResourcesDescriptionMemberConsumptions"
+			: "noResourcesDescription";
 
 	const { executeAsync: removeResource } = useAction(removeResourceAction);
 	const { executeAsync: removeConsumption } = useAction(
@@ -157,7 +168,7 @@ export function ResourcesSection({
 						{t("title")}
 					</CardTitle>
 					<div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
-						{cutoffDate && (
+						{cutoffDate && !readOnly && (
 							<div className="flex items-center gap-2">
 								<Label htmlFor={showHiddenId} className="text-sm">
 									{showHiddenConsumptions ? (
@@ -179,27 +190,29 @@ export function ResourcesSection({
 								</span>
 							</div>
 						)}
-						<div className="grid grid-cols-1 sm:flex sm:gap-2 gap-2">
-							<ConsumptionDialog group={group}>
-								<Button
-									size="sm"
-									className="w-full sm:w-auto text-xs sm:text-sm"
-								>
-									<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
-									<span className="truncate">{t("logConsumption")}</span>
-								</Button>
-							</ConsumptionDialog>
-							<ResourceDialog group={group}>
-								<Button
-									size="sm"
-									variant="outline"
-									className="w-full sm:w-auto text-xs sm:text-sm"
-								>
-									<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
-									<span className="truncate">{t("addResource")}</span>
-								</Button>
-							</ResourceDialog>
-						</div>
+						{!readOnly && (
+							<div className="grid grid-cols-1 sm:flex sm:gap-2 gap-2">
+								<ConsumptionDialog group={group}>
+									<Button
+										size="sm"
+										className="w-full sm:w-auto text-xs sm:text-sm"
+									>
+										<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
+										<span className="truncate">{t("logConsumption")}</span>
+									</Button>
+								</ConsumptionDialog>
+								<ResourceDialog group={group}>
+									<Button
+										size="sm"
+										variant="outline"
+										className="w-full sm:w-auto text-xs sm:text-sm"
+									>
+										<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
+										<span className="truncate">{t("addResource")}</span>
+									</Button>
+								</ResourceDialog>
+							</div>
+						)}
 					</div>
 				</div>
 			</CardHeader>
@@ -208,7 +221,7 @@ export function ResourcesSection({
 					<div className="text-center py-8 text-gray-500 dark:text-gray-400">
 						<Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
 						<p>{t("noResources")}</p>
-						<p className="text-sm">{t("noResourcesDescription")}</p>
+						<p className="text-sm">{t(noResourcesDescriptionKey)}</p>
 					</div>
 				) : (
 					<div className="space-y-6">
@@ -250,37 +263,41 @@ export function ResourcesSection({
 											)}
 										</div>
 										<div className="flex items-center gap-2 flex-shrink-0">
-											<ResourceDialog
-												group={group}
-												resource={{
-													...resource,
-													unitPrice: Number(resource.unitPrice),
-													usagePrice: Number(resource.usagePrice),
-												}}
-											>
-												<Button
-													variant="ghost"
-													size="sm"
-													className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
-												>
-													<Edit className="w-4 h-4" />
-												</Button>
-											</ResourceDialog>
-											<ConfirmDeleteDialog
-												title={t("deleteResource")}
-												description={t("deleteResourceDescription")}
-												itemName={resource.name}
-												onConfirm={() => handleDeleteResource(resource.id)}
-											>
-												<Button
-													variant="ghost"
-													size="sm"
-													disabled={deletingResourceId === resource.id}
-													className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
-												>
-													<Trash2 className="w-4 h-4" />
-												</Button>
-											</ConfirmDeleteDialog>
+											{!readOnly && (
+												<>
+													<ResourceDialog
+														group={group}
+														resource={{
+															...resource,
+															unitPrice: Number(resource.unitPrice),
+															usagePrice: Number(resource.usagePrice),
+														}}
+													>
+														<Button
+															variant="ghost"
+															size="sm"
+															className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+														>
+															<Edit className="w-4 h-4" />
+														</Button>
+													</ResourceDialog>
+													<ConfirmDeleteDialog
+														title={t("deleteResource")}
+														description={t("deleteResourceDescription")}
+														itemName={resource.name}
+														onConfirm={() => handleDeleteResource(resource.id)}
+													>
+														<Button
+															variant="ghost"
+															size="sm"
+															disabled={deletingResourceId === resource.id}
+															className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+														>
+															<Trash2 className="w-4 h-4" />
+														</Button>
+													</ConfirmDeleteDialog>
+												</>
+											)}
 										</div>
 									</div>
 
@@ -379,70 +396,72 @@ export function ResourcesSection({
 																	)}
 																</div>
 																<div className="flex items-center gap-2">
-																	{(!cutoffDate ||
-																		new Date(consumption.date) >=
-																			cutoffDate) && (
-																		<ConsumptionDialog
-																			group={group}
-																			consumption={{
-																				...consumption,
-																				amount: Number(consumption.amount),
-																				sharingMethod:
-																					(consumption.sharingMethod as
-																						| "equal"
-																						| "weights") || "equal",
-																				selectedMembers:
-																					consumption.consumptionMembers.map(
-																						(cm) => cm.memberId,
-																					),
-																				memberAmounts:
-																					consumption.consumptionMembers.map(
-																						(cm) => ({
-																							memberId: cm.memberId,
-																							amount: Number(cm.amount),
-																							weight: Number(cm.weight),
-																						}),
-																					),
-																			}}
-																			onConsumptionUpdated={() =>
-																				window.location.reload()
-																			}
-																		>
-																			<Button
-																				variant="ghost"
-																				size="sm"
-																				className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
-																			>
-																				<Edit className="w-4 h-4" />
-																			</Button>
-																		</ConsumptionDialog>
-																	)}
-																	{(!cutoffDate ||
-																		new Date(consumption.date) >=
-																			cutoffDate) && (
-																		<ConfirmDeleteDialog
-																			title={t("deleteConsumption")}
-																			description={t(
-																				"deleteConsumptionDescription",
-																			)}
-																			itemName={`${consumption.amount} ${resource.unit || t("units")}`}
-																			onConfirm={() =>
-																				handleDeleteConsumption(consumption.id)
-																			}
-																		>
-																			<Button
-																				variant="ghost"
-																				size="sm"
-																				disabled={
-																					deletingConsumptionId ===
-																					consumption.id
+																	{!readOnly &&
+																		(!cutoffDate ||
+																			new Date(consumption.date) >=
+																				cutoffDate) && (
+																			<ConsumptionDialog
+																				group={group}
+																				consumption={{
+																					...consumption,
+																					amount: Number(consumption.amount),
+																					sharingMethod:
+																						(consumption.sharingMethod as
+																							| "equal"
+																							| "weights") || "equal",
+																					selectedMembers:
+																						consumption.consumptionMembers.map(
+																							(cm) => cm.memberId,
+																						),
+																					memberAmounts:
+																						consumption.consumptionMembers.map(
+																							(cm) => ({
+																								memberId: cm.memberId,
+																								amount: Number(cm.amount),
+																								weight: Number(cm.weight),
+																							}),
+																						),
+																				}}
+																				onConsumptionUpdated={() =>
+																					window.location.reload()
 																				}
-																				className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
 																			>
-																				<Trash2 className="w-4 h-4" />
-																			</Button>
-																		</ConfirmDeleteDialog>
-																	)}
+																				<Button
+																					variant="ghost"
+																					size="sm"
+																					className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+																				>
+																					<Edit className="w-4 h-4" />
+																				</Button>
+																			</ConsumptionDialog>
+																		)}
+																	{!readOnly &&
+																		(!cutoffDate ||
+																			new Date(consumption.date) >=
+																				cutoffDate) && (
+																			<ConfirmDeleteDialog
+																				title={t("deleteConsumption")}
+																				description={t(
+																					"deleteConsumptionDescription",
+																				)}
+																				itemName={`${consumption.amount} ${resource.unit || t("units")}`}
+																				onConfirm={() =>
+																					handleDeleteConsumption(consumption.id)
+																				}
+																			>
+																				<Button
+																					variant="ghost"
+																					size="sm"
+																					disabled={
+																						deletingConsumptionId ===
+																						consumption.id
+																					}
+																					className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+																				>
+																					<Trash2 className="w-4 h-4" />
+																				</Button>
+																			</ConfirmDeleteDialog>
+																		)}
 																</div>
 															</div>
 

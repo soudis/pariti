@@ -65,7 +65,7 @@ export function GroupTabs({ group, cutoffDate }: GroupTabsProps) {
 			</TabsContent>
 
 			<TabsContent value="members" className="mt-4">
-				<MembersSection group={group} />
+				<MembersSection group={group} cutoffDate={cutoffDate} />
 			</TabsContent>
 
 			<TabsContent value="expenses" className="mt-4">
