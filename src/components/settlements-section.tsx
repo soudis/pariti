@@ -33,12 +33,13 @@ import { handleActionErrors } from "@/lib/utils";
 interface SettlementsSectionProps {
 	currency: string;
 	group: Awaited<ReturnType<typeof getCalculatedGroup>>;
+	isCreator?: boolean;
 }
 
 export function SettlementsSection({
 	group: { settlements, members, resources, id: groupId },
-
 	currency,
+	isCreator = false,
 }: SettlementsSectionProps) {
 	const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 	const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -100,16 +101,18 @@ export function SettlementsSection({
 						<Scale className="w-5 h-5" />
 						{t("title")}
 					</CardTitle>
-					<SettlementDialog
-						groupId={groupId}
-						members={members}
-						resources={resources}
-					>
-						<Button size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
-							<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
-							<span className="truncate">{t("generateSettlement")}</span>
-						</Button>
-					</SettlementDialog>
+					{isCreator && (
+						<SettlementDialog
+							groupId={groupId}
+							members={members}
+							resources={resources}
+						>
+							<Button size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
+								<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
+								<span className="truncate">{t("generateSettlement")}</span>
+							</Button>
+						</SettlementDialog>
+					)}
 				</div>
 			</CardHeader>
 			<CardContent>
@@ -156,23 +159,25 @@ export function SettlementsSection({
 														</div>
 													</div>
 												</div>
-												<ConfirmDeleteDialog
-													title={t("deleteSettlement")}
-													description={t("deleteSettlementDescription")}
-													itemName={settlement.title}
-													onConfirm={() =>
-														handleDeleteSettlement(settlement.id)
-													}
-												>
-													<Button
-														variant="ghost"
-														size="sm"
-														disabled={deletingId === settlement.id}
-														className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+												{isCreator && (
+													<ConfirmDeleteDialog
+														title={t("deleteSettlement")}
+														description={t("deleteSettlementDescription")}
+														itemName={settlement.title}
+														onConfirm={() =>
+															handleDeleteSettlement(settlement.id)
+														}
 													>
-														<Trash2 className="w-4 h-4" />
-													</Button>
-												</ConfirmDeleteDialog>
+														<Button
+															variant="ghost"
+															size="sm"
+															disabled={deletingId === settlement.id}
+															className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+														>
+															<Trash2 className="w-4 h-4" />
+														</Button>
+													</ConfirmDeleteDialog>
+												)}
 											</div>
 
 											<div className="space-y-3">
@@ -330,23 +335,25 @@ export function SettlementsSection({
 														</div>
 													</div>
 												</div>
-												<ConfirmDeleteDialog
-													title={t("deleteSettlement")}
-													description={t("deleteSettlementDescription")}
-													itemName={settlement.title}
-													onConfirm={() =>
-														handleDeleteSettlement(settlement.id)
-													}
-												>
-													<Button
-														variant="ghost"
-														size="sm"
-														disabled={deletingId === settlement.id}
-														className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+												{isCreator && (
+													<ConfirmDeleteDialog
+														title={t("deleteSettlement")}
+														description={t("deleteSettlementDescription")}
+														itemName={settlement.title}
+														onConfirm={() =>
+															handleDeleteSettlement(settlement.id)
+														}
 													>
-														<Trash2 className="w-4 h-4" />
-													</Button>
-												</ConfirmDeleteDialog>
+														<Button
+															variant="ghost"
+															size="sm"
+															disabled={deletingId === settlement.id}
+															className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+														>
+															<Trash2 className="w-4 h-4" />
+														</Button>
+													</ConfirmDeleteDialog>
+												)}
 											</div>
 
 											<div className="space-y-2">

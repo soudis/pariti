@@ -3,6 +3,7 @@ import { getCalculatedGroup } from "@/actions/get-group";
 import { GroupHeader } from "@/components/group-header";
 import { GroupTabs } from "@/components/group-tabs";
 import { GroupVisitTracker } from "@/components/group-visit-tracker";
+import { getCurrentUser } from "@/lib/auth";
 import { getSettlementCutoffDate } from "@/lib/get-settlement-cutoff-date";
 
 interface GroupPageProps {
@@ -17,8 +18,9 @@ export default async function GroupPage({ params }: GroupPageProps) {
 		notFound();
 	}
 
-	// Get the settlement cutoff date for filtering
 	const cutoffDate = getSettlementCutoffDate(group);
+	const user = await getCurrentUser();
+	const isCreator = !!user && group.createdByUserId === user.id;
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
@@ -27,7 +29,11 @@ export default async function GroupPage({ params }: GroupPageProps) {
 				<div className="max-w-6xl mx-auto space-y-4">
 					<GroupHeader group={group} />
 
-					<GroupTabs group={group} cutoffDate={cutoffDate} />
+					<GroupTabs
+						group={group}
+						cutoffDate={cutoffDate}
+						isCreator={isCreator}
+					/>
 				</div>
 			</div>
 		</div>

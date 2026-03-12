@@ -22,18 +22,28 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 interface GroupTabsProps {
 	group: Awaited<ReturnType<typeof getCalculatedGroup>>;
 	cutoffDate: Date | null;
+	isCreator?: boolean;
 }
 
-export function GroupTabs({ group, cutoffDate }: GroupTabsProps) {
+export function GroupTabs({
+	group,
+	cutoffDate,
+	isCreator = false,
+}: GroupTabsProps) {
 	const t = useTranslations("group");
 	const [activeTab, setActiveTab] = useQueryState("tab", {
 		defaultValue: "overview",
 		shallow: false,
 	});
 
+	const tabCount = isCreator ? 6 : 5;
+
 	return (
 		<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-			<TabsList className="grid w-full grid-cols-6 min-h-12">
+			<TabsList
+				className={`grid w-full min-h-12`}
+				style={{ gridTemplateColumns: `repeat(${tabCount}, minmax(0, 1fr))` }}
+			>
 				<TabsTrigger value="overview" className="flex items-center gap-2">
 					<BarChart3 className="w-4 h-4" />
 					<span className="hidden sm:inline">{t("overview")}</span>
@@ -54,10 +64,12 @@ export function GroupTabs({ group, cutoffDate }: GroupTabsProps) {
 					<Scale className="w-4 h-4" />
 					<span className="hidden sm:inline">{t("settlements")}</span>
 				</TabsTrigger>
-				<TabsTrigger value="settings" className="flex items-center gap-2">
-					<Settings className="w-4 h-4" />
-					<span className="hidden sm:inline">{t("settings")}</span>
-				</TabsTrigger>
+				{isCreator && (
+					<TabsTrigger value="settings" className="flex items-center gap-2">
+						<Settings className="w-4 h-4" />
+						<span className="hidden sm:inline">{t("settings")}</span>
+					</TabsTrigger>
+				)}
 			</TabsList>
 
 			<TabsContent value="overview" className="mt-4">
@@ -77,12 +89,18 @@ export function GroupTabs({ group, cutoffDate }: GroupTabsProps) {
 			</TabsContent>
 
 			<TabsContent value="settlements" className="mt-4">
-				<SettlementsSection group={group} currency={group.currency} />
+				<SettlementsSection
+					group={group}
+					currency={group.currency}
+					isCreator={isCreator}
+				/>
 			</TabsContent>
 
-			<TabsContent value="settings" className="mt-4">
-				<SettingsSection group={group} />
-			</TabsContent>
+			{isCreator && (
+				<TabsContent value="settings" className="mt-4">
+					<SettingsSection group={group} />
+				</TabsContent>
+			)}
 		</Tabs>
 	);
 }

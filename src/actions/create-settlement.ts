@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getCalculatedGroup } from "@/actions/get-group";
+import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { actionClient } from "@/lib/safe-action";
 import {
@@ -12,11 +13,21 @@ import {
 import { convertToPlainObject } from "@/lib/utils";
 
 async function createSettlement(groupId: string, data: SettlementFormData) {
+	const user = await requireUser();
+
+	const groupRecord = await db.group.findUnique({
+		where: { id: groupId },
+		select: { createdByUserId: true },
+	});
+
+	if (!groupRecord || groupRecord.createdByUserId !== user.id) {
+		throw new Error("Only the group creator can create settlements");
+	}
+
 	const group = await getCalculatedGroup(groupId);
 
 	if (!group) throw new Error("Group not found");
 
-	// Generate settlement transactions based on type
 	const transactions = generateSettlementTransactions(
 		new Map([
 			...group.members.reduce((acc, member) => {
@@ -36,7 +47,6 @@ async function createSettlement(groupId: string, data: SettlementFormData) {
 		throw new Error("No settlements needed - all balances are zero");
 	}
 
-	// Create settlement record
 	const settlement = await db.settlement.create({
 		data: {
 			groupId: groupId,
@@ -78,7 +88,6 @@ export const createSettlementAction = actionClient
 		createSettlement(parsedInput.groupId, parsedInput.settlement),
 	);
 
-// Helper function to generate settlement transactions
 function generateSettlementTransactions(
 	balances: Map<string, number>,
 	settlementType: "optimized" | "around_member" | "around_resource",
@@ -92,7 +101,6 @@ function generateSettlementTransactions(
 		amount: number;
 	}> = [];
 
-	// Separate positive and negative balances
 	const creditors: Array<{ key: string; amount: number }> = [];
 	const debtors: Array<{ key: string; amount: number }> = [];
 
@@ -105,7 +113,6 @@ function generateSettlementTransactions(
 	}
 
 	if (settlementType === "optimized") {
-		// Optimized settlement: minimize number of transactions
 		creditors.sort((a, b) => b.amount - a.amount);
 		debtors.sort((a, b) => b.amount - a.amount);
 
@@ -138,10 +145,8 @@ function generateSettlementTransactions(
 			if (debtor.amount < 0.01) debtorIndex++;
 		}
 	} else if (settlementType === "around_member" && centerId) {
-		// All transactions go through one member
 		const centerKey = `member_${centerId}`;
 
-		// First, all debtors pay the center member
 		for (const debtor of debtors) {
 			if (debtor.key !== centerKey) {
 				const [fromType, fromId] = parseKey(debtor.key);
@@ -155,7 +160,6 @@ function generateSettlementTransactions(
 			}
 		}
 
-		// Then, the center member pays all creditors
 		for (const creditor of creditors) {
 			if (creditor.key !== centerKey) {
 				const [toType, toId] = parseKey(creditor.key);
@@ -169,10 +173,8 @@ function generateSettlementTransactions(
 			}
 		}
 	} else if (settlementType === "around_resource" && centerId) {
-		// All transactions go through one resource
 		const centerKey = `resource_${centerId}`;
 
-		// First, all debtors pay the center resource
 		for (const debtor of debtors) {
 			if (debtor.key !== centerKey) {
 				const [fromType, fromId] = parseKey(debtor.key);
@@ -186,7 +188,6 @@ function generateSettlementTransactions(
 			}
 		}
 
-		// Then, the center resource pays all creditors
 		for (const creditor of creditors) {
 			if (creditor.key !== centerKey) {
 				const [toType, toId] = parseKey(creditor.key);
@@ -204,7 +205,6 @@ function generateSettlementTransactions(
 	return transactions;
 }
 
-// Helper function to parse balance key
 function parseKey(key: string): ["member" | "resource", string] {
 	const [type, id] = key.split("_");
 	return [type as "member" | "resource", id];

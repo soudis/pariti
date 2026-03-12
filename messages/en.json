@@ -7,7 +7,8 @@
 		"signIn": "Sign in with SSO",
 		"signOut": "Sign out",
 		"signInTitle": "Sign In",
-		"signInDescription": "Sign in to create and manage expense groups"
+		"signInDescription": "Sign in to create and manage expense groups",
+		"redirecting": "Redirecting to sign in…"
 	},
 	"app": {
 		"title": "Pariti - Money Sharing Made Simple",

@@ -7,7 +7,8 @@
 		"signIn": "Mit SSO anmelden",
 		"signOut": "Abmelden",
 		"signInTitle": "Anmelden",
-		"signInDescription": "Melde dich an, um Ausgaben-Gruppen zu erstellen und zu verwalten"
+		"signInDescription": "Melde dich an, um Ausgaben-Gruppen zu erstellen und zu verwalten",
+		"redirecting": "Weiterleitung zur Anmeldung…"
 	},
 	"app": {
 		"title": "Pariti - Teilen leicht gemacht",
