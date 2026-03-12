@@ -4,6 +4,7 @@ import {
 	eachMonthOfInterval,
 	eachWeekOfInterval,
 	eachYearOfInterval,
+	isAfter,
 } from "date-fns";
 import type { getGroup } from "@/actions/get-group";
 
@@ -17,7 +18,10 @@ export async function generateRecurringExpenseInstances(
 	>,
 ) {
 	// If recurring expenses are disabled for the group, don't generate recurring instances
-	if (group && !group.recurringExpensesEnabled) {
+	if (
+		(group && !group.recurringExpensesEnabled) ||
+		isAfter(expense.date, currentDate)
+	) {
 		return [{ ...expense, originalDate: expense.date }];
 	}
 
