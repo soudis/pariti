@@ -31,6 +31,8 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED=1
 
+ENV DATABASE_URL=postgresql://dummy:dummy@dummy:5432/dummy
+
 RUN pnpm prisma generate && pnpm run build; 
 
 
