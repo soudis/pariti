@@ -73,7 +73,11 @@ export function GroupTabs({
 			</TabsList>
 
 			<TabsContent value="overview" className="mt-4">
-				<OverviewSection group={group} cutoffDate={cutoffDate} />
+				<OverviewSection
+					group={group}
+					cutoffDate={cutoffDate}
+					isCreator={isCreator}
+				/>
 			</TabsContent>
 
 			<TabsContent value="members" className="mt-4">

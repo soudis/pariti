@@ -15,11 +15,13 @@ import { formatCurrency } from "@/lib/currency";
 
 interface OverviewSectionProps {
 	group: Awaited<ReturnType<typeof getCalculatedGroup>>;
+	isCreator: boolean;
 	cutoffDate: Date | null;
 }
 
 export function OverviewSection({
 	group,
+	isCreator,
 	group: { resources },
 	cutoffDate,
 }: OverviewSectionProps) {
@@ -147,7 +149,9 @@ export function OverviewSection({
 						</div>
 
 						{/* Secondary Actions */}
-						<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+						<div
+							className={`grid grid-cols-1 sm:grid-cols-${isCreator ? 3 : 2} gap-3`}
+						>
 							<MemberDialog
 								group={group}
 								weightsEnabled={group.weightsEnabled}
@@ -166,16 +170,22 @@ export function OverviewSection({
 								</Button>
 							</ResourceDialog>
 
-							<SettlementDialog
-								groupId={group.id}
-								members={group.members}
-								resources={resources}
-							>
-								<Button variant="outline" size="lg" className="w-full text-sm">
-									<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
-									<span className="truncate">{t("generateSettlement")}</span>
-								</Button>
-							</SettlementDialog>
+							{isCreator && (
+								<SettlementDialog
+									groupId={group.id}
+									members={group.members}
+									resources={resources}
+								>
+									<Button
+										variant="outline"
+										size="lg"
+										className="w-full text-sm"
+									>
+										<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
+										<span className="truncate">{t("generateSettlement")}</span>
+									</Button>
+								</SettlementDialog>
+							)}
 						</div>
 					</div>
 				</CardContent>
