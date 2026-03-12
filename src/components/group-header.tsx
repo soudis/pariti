@@ -17,6 +17,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import { useSession } from "@/lib/auth-client";
 
 interface GroupHeaderProps {
 	group: Group;
@@ -35,6 +36,8 @@ export function GroupHeader({ group }: GroupHeaderProps) {
 	const router = useRouter();
 	const [visitedGroups, setVisitedGroups] = useState<VisitedGroup[]>([]);
 	const [loading, setLoading] = useState(true);
+	const { data: session } = useSession();
+	const isAuthenticated = !!session?.user;
 
 	const shareUrl =
 		typeof window !== "undefined"
@@ -157,8 +160,9 @@ export function GroupHeader({ group }: GroupHeaderProps) {
 											{t("shareGroup")}
 										</Button>
 									</div>
+									{isAuthenticated && (
 									<div>
-										<GroupDialog>
+										<GroupDialog isAuthenticated={isAuthenticated}>
 											<Button
 												variant="ghost"
 												size="sm"
@@ -169,6 +173,7 @@ export function GroupHeader({ group }: GroupHeaderProps) {
 											</Button>
 										</GroupDialog>
 									</div>
+								)}
 									{/* Other Groups Section */}
 									{!loading && visitedGroups.length > 0 && (
 										<div>

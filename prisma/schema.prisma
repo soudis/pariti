@@ -10,6 +10,86 @@ datasource db {
   provider = "postgresql"
 }
 
+// ── Better Auth tables ──────────────────────────────────────────────────────
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  samlGroups    String    @default("[]")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions      Session[]
+  accounts      Account[]
+  createdGroups Group[]   @relation("GroupCreator")
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken               String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verification")
+}
+
+model SsoProvider {
+  id             String  @id
+  issuer         String
+  domain         String
+  oidcConfig     String?
+  samlConfig     String?
+  userId         String?
+  providerId     String
+  organizationId String?
+
+  @@map("sso_provider")
+}
+
+// ── App tables ──────────────────────────────────────────────────────────────
+
 model Group {
   id            String   @id @default(cuid())
   name          String
@@ -19,10 +99,13 @@ model Group {
   weightTypes   Json?    // Array of weight type definitions: [{id: string, name: string, isDefault: boolean}]
   memberActiveDurationsEnabled Boolean @default(false)
   recurringExpensesEnabled Boolean @default(false)
+  createdByUserId String?
+  allowedSamlGroups Json? @default("[]")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   // Relations
+  createdBy    User?    @relation("GroupCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
   members      Member[]
   expenses     Expense[]
   resources    Resource[]

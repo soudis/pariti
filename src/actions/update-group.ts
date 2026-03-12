@@ -20,6 +20,7 @@ async function updateGroup(groupId: string, data: GroupFormData) {
 			weightTypes: data.weightTypes || [],
 			memberActiveDurationsEnabled: data.memberActiveDurationsEnabled,
 			recurringExpensesEnabled: data.recurringExpensesEnabled,
+			allowedSamlGroups: data.allowedSamlGroups ?? [],
 		},
 	});
 	revalidatePath(`/group/${groupId}`);

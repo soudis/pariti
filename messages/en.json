@@ -1,6 +1,13 @@
 {
 	"error": {
-		"server": "An error occurred. Please try again."
+		"server": "An error occurred. Please try again.",
+		"authRequired": "You must be signed in to perform this action."
+	},
+	"auth": {
+		"signIn": "Sign in with SSO",
+		"signOut": "Sign out",
+		"signInTitle": "Sign In",
+		"signInDescription": "Sign in to create and manage expense groups"
 	},
 	"app": {
 		"title": "Pariti - Money Sharing Made Simple",
@@ -41,6 +48,9 @@
 				"title": "Settle Up",
 				"description": "Generate optimized settlements to balance all debts and payments"
 			}
+		},
+		"accessibleGroups": {
+			"title": "My Groups"
 		},
 		"visitedGroups": {
 			"title": "Recent Groups",
@@ -201,6 +211,12 @@
 			"memberActiveDurationsEnabledDescription": "Allow members to have start and end dates for their participation in the group",
 			"recurringExpensesEnabled": "Enable Recurring Expenses",
 			"recurringExpensesEnabledDescription": "Allow expenses to be set as recurring (weekly, monthly, yearly)",
+			"samlGroups": {
+				"title": "Access Control (Groups)",
+				"description": "Select which groups have access to this expense group. Users in these groups will see this group on their homepage.",
+				"yourGroups": "Your groups",
+				"addCustomPlaceholder": "Add custom group name..."
+			},
 			"cancel": "Cancel",
 			"create": "Create Group",
 			"creating": "Creating..."

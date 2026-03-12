@@ -29,14 +29,17 @@ import {
 	groupSchema,
 	type WeightType,
 } from "@/lib/schemas";
+import { SamlGroupSelector } from "@/components/ui/saml-group-selector";
 
 interface GroupFormProps {
-	group?: Awaited<ReturnType<typeof getCalculatedGroup>>; // For editing existing group
+	group?: Awaited<ReturnType<typeof getCalculatedGroup>>;
 	onSubmit: (data: GroupFormData) => Promise<void>;
 	loading?: boolean;
-	showTooltips?: boolean; // Whether to show tooltips for weight type usage
+	showTooltips?: boolean;
 	className?: string;
-	formId?: string; // Optional form ID to use instead of generating one
+	formId?: string;
+	userSamlGroups?: string[];
+	showSamlGroupSelector?: boolean;
 }
 
 export function GroupForm({
@@ -45,10 +48,18 @@ export function GroupForm({
 	showTooltips = false,
 	className = "",
 	formId: providedFormId,
+	userSamlGroups = [],
+	showSamlGroupSelector = false,
 }: GroupFormProps) {
 	const t = useTranslations("forms.group");
 	const generatedFormId = useId();
 	const formId = providedFormId || generatedFormId;
+
+	const existingAllowedGroups = Array.isArray(
+		(group as Record<string, unknown> | undefined)?.allowedSamlGroups,
+	)
+		? ((group as Record<string, unknown>).allowedSamlGroups as string[])
+		: [];
 
 	const form = useForm({
 		resolver: zodResolver(groupSchema),
@@ -61,6 +72,7 @@ export function GroupForm({
 			memberActiveDurationsEnabled:
 				group?.memberActiveDurationsEnabled || false,
 			recurringExpensesEnabled: group?.recurringExpensesEnabled || false,
+			allowedSamlGroups: existingAllowedGroups,
 		},
 	});
 
@@ -68,9 +80,17 @@ export function GroupForm({
 		group?.weightTypes || getDefaultWeightTypes(),
 	);
 
-	// Reset form when group changes (for editing mode)
+	const [allowedSamlGroups, setAllowedSamlGroups] = useState<string[]>(
+		existingAllowedGroups,
+	);
+
 	useEffect(() => {
 		if (group) {
+			const resetAllowed = Array.isArray(
+				(group as Record<string, unknown>).allowedSamlGroups,
+			)
+				? ((group as Record<string, unknown>).allowedSamlGroups as string[])
+				: [];
 			form.reset({
 				name: group.name,
 				description: group.description || "",
@@ -79,8 +99,10 @@ export function GroupForm({
 				weightTypes: group.weightTypes || getDefaultWeightTypes(),
 				memberActiveDurationsEnabled: group.memberActiveDurationsEnabled,
 				recurringExpensesEnabled: group.recurringExpensesEnabled,
+				allowedSamlGroups: resetAllowed,
 			});
 			setWeightTypes(group.weightTypes || getDefaultWeightTypes());
+			setAllowedSamlGroups(resetAllowed);
 		}
 	}, [group, form]);
 
@@ -117,8 +139,14 @@ export function GroupForm({
 		const submitData = {
 			...data,
 			weightTypes: weightTypes,
+			allowedSamlGroups: allowedSamlGroups,
 		};
 		await onSubmit(submitData);
+	};
+
+	const handleSamlGroupsChange = (groups: string[]) => {
+		setAllowedSamlGroups(groups);
+		form.setValue("allowedSamlGroups", groups);
 	};
 
 	const renderWeightTypesSection = () => {
@@ -300,6 +328,14 @@ export function GroupForm({
 				{renderWeightsEnabledField()}
 
 				{renderWeightTypesSection()}
+
+				{showSamlGroupSelector && (
+					<SamlGroupSelector
+						value={allowedSamlGroups}
+						onChange={handleSamlGroupsChange}
+						userGroups={userSamlGroups}
+					/>
+				)}
 			</form>
 		</Form>
 	);

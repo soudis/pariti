@@ -3,8 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createGroupAction } from "@/actions/create-group";
+import { getCurrentUserSamlGroups } from "@/actions/get-current-user-groups";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -21,16 +22,27 @@ import { handleActionErrors } from "@/lib/utils";
 
 interface GroupDialogProps {
 	children: React.ReactNode;
+	isAuthenticated?: boolean;
 }
 
-export function GroupDialog({ children }: GroupDialogProps) {
+export function GroupDialog({
+	children,
+	isAuthenticated = false,
+}: GroupDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
+	const [userSamlGroups, setUserSamlGroups] = useState<string[]>([]);
 	const router = useRouter();
 	const locale = useLocale();
 	const t = useTranslations("forms.group");
 
 	const { executeAsync: createGroup } = useAction(createGroupAction);
+
+	useEffect(() => {
+		if (open && isAuthenticated) {
+			getCurrentUserSamlGroups().then(setUserSamlGroups);
+		}
+	}, [open, isAuthenticated]);
 
 	const onSubmit = async (data: GroupFormData) => {
 		setLoading(true);
@@ -56,6 +68,8 @@ export function GroupDialog({ children }: GroupDialogProps) {
 						loading={loading}
 						className="px-4 sm:px-6 pb-4"
 						formId="group-form"
+						showSamlGroupSelector={isAuthenticated}
+						userSamlGroups={userSamlGroups}
 					/>
 				</div>
 				<DialogFooter>

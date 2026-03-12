@@ -181,6 +181,7 @@ export const groupSchema = z.object({
 	weightTypes: z.array(weightTypeSchema).optional(),
 	memberActiveDurationsEnabled: z.coerce.boolean(),
 	recurringExpensesEnabled: z.coerce.boolean(),
+	allowedSamlGroups: z.array(z.string()).optional(),
 });
 
 export const createGroupInputSchema = z.object({

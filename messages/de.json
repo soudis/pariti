@@ -1,6 +1,13 @@
 {
 	"error": {
-		"server": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
+		"server": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+		"authRequired": "Du musst angemeldet sein, um diese Aktion auszuführen."
+	},
+	"auth": {
+		"signIn": "Mit SSO anmelden",
+		"signOut": "Abmelden",
+		"signInTitle": "Anmelden",
+		"signInDescription": "Melde dich an, um Ausgaben-Gruppen zu erstellen und zu verwalten"
 	},
 	"app": {
 		"title": "Pariti - Teilen leicht gemacht",
@@ -41,6 +48,9 @@
 				"title": "Abrechnung",
 				"description": "Generiere optimierte Abrechnungen, um alle Schulden und Zahlungen auszugleichen"
 			}
+		},
+		"accessibleGroups": {
+			"title": "Meine Gruppen"
 		},
 		"visitedGroups": {
 			"title": "Zuletzt besuchte Gruppen",
@@ -201,6 +211,12 @@
 			"memberActiveDurationsEnabledDescription": "Erlaube Mitgliedern, Start- und Enddaten für ihre Teilnahme an der Gruppe zu haben",
 			"recurringExpensesEnabled": "Wiederkehrende Ausgaben aktivieren",
 			"recurringExpensesEnabledDescription": "Erlaube Ausgaben als wiederkehrend zu setzen (wöchentlich, monatlich, jährlich)",
+			"samlGroups": {
+				"title": "Zugriffskontrolle (Gruppen)",
+				"description": "Wähle aus, welche Gruppen Zugriff auf diese Ausgaben-Gruppe haben. Nutzer*innen in diesen Gruppen sehen diese Gruppe auf ihrer Startseite.",
+				"yourGroups": "Deine Gruppen",
+				"addCustomPlaceholder": "Benutzerdefinierten Gruppennamen hinzufügen..."
+			},
 			"cancel": "Abbrechen",
 			"create": "Gruppe erstellen",
 			"creating": "Erstelle..."
