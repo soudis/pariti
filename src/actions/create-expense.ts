@@ -31,6 +31,7 @@ async function createExpense(groupId: string, data: ExpenseFormData) {
 			sharingMethod: data.sharingMethod || "equal",
 			isRecurring: data.isRecurring || false,
 			recurringType: data.recurringType,
+			recurringEndDate: data.recurringEndDate ?? null,
 			expenseMembers: {
 				create: data.memberAmounts || [],
 			},

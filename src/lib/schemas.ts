@@ -68,10 +68,10 @@ export const expenseSchema = z
 		memberAmounts: z.array(memberAmountSchema).optional(),
 		isRecurring: z.coerce.boolean(),
 		recurringType: z.enum(["weekly", "monthly", "yearly"]).nullish(),
+		recurringEndDate: z.coerce.date().nullish(),
 	})
 	.refine(
 		(data) => {
-			// If splitAll is false, selectedMembers must have at least one member
 			if (!data.splitAll && data.selectedMembers.length === 0) {
 				return false;
 			}
@@ -80,6 +80,23 @@ export const expenseSchema = z
 		{
 			message: "form.error.selectAtLeastOneMember",
 			path: ["selectedMembers"],
+		},
+	)
+	.refine(
+		(data) => {
+			if (
+				data.isRecurring &&
+				data.recurringEndDate &&
+				data.date &&
+				data.recurringEndDate < data.date
+			) {
+				return false;
+			}
+			return true;
+		},
+		{
+			message: "form.error.endDateBeforeStartDate",
+			path: ["recurringEndDate"],
 		},
 	);
 

@@ -299,6 +299,8 @@
 				"yearly": "Yearly",
 				"startDate": "Start Date",
 				"startDatePlaceholder": "Start Date",
+				"endDate": "End date (optional)",
+				"endDatePlaceholder": "No end date",
 				"description": "This expense will be automatically generated for each {type} period from the start date."
 			},
 			"splitBetween": "Split between all active members",
@@ -450,6 +452,7 @@
 			"amountGreaterThanZero": "Amount must be greater than 0",
 			"selectWhoPaid": "Please select who paid",
 			"selectAtLeastOneMember": "Please select at least one member",
+			"endDateBeforeStartDate": "End date must not be before the start date",
 			"selectStartDateForRecurring": "Please select a start date for recurring expenses",
 			"nameRequired": "Name is required",
 			"unitAndPriceRequired": "Unit and unit price are required when using units",

@@ -224,12 +224,15 @@ export function ExpensesSection({
 														sharingMethod:
 															(expense.sharingMethod as "equal" | "weights") ||
 															"equal",
-														recurringType: expense.recurringType as
-															| "weekly"
-															| "monthly"
-															| "yearly"
-															| undefined,
-														selectedMembers: expense.splitAll
+													recurringType: expense.recurringType as
+														| "weekly"
+														| "monthly"
+														| "yearly"
+														| undefined,
+													recurringEndDate: expense.recurringEndDate
+														? new Date(expense.recurringEndDate)
+														: undefined,
+													selectedMembers: expense.splitAll
 															? []
 															: expense.expenseMembers.map((em) => em.memberId),
 														memberAmounts: expense.expenseMembers.map((em) => ({

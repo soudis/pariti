@@ -300,6 +300,8 @@
 				"yearly": "Jährlich",
 				"startDate": "Startdatum",
 				"startDatePlaceholder": "Startdatum",
+				"endDate": "Enddatum (optional)",
+				"endDatePlaceholder": "Kein Enddatum",
 				"description": "Diese Ausgabe wird automatisch für jeden {type} Zeitraum ab dem Startdatum generiert."
 			},
 			"splitBetween": "Aufteilen zwischen allen aktiven Mitgliedern",
@@ -454,6 +456,7 @@
 			"amountGreaterThanZero": "Betrag muss größer als 0 sein",
 			"selectWhoPaid": "Bitte wähle aus, wer bezahlt hat",
 			"selectAtLeastOneMember": "Bitte wähle mindestens ein Mitglied aus",
+			"endDateBeforeStartDate": "Enddatum darf nicht vor dem Startdatum liegen",
 			"selectStartDateForRecurring": "Bitte wähle ein Startdatum für wiederkehrende Ausgaben aus",
 			"nameRequired": "Name ist erforderlich",
 			"unitAndPriceRequired": "Einheit und Einheitspreis sind erforderlich, wenn Einheiten verwendet werden",

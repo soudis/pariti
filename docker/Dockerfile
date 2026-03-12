@@ -53,6 +53,7 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --chown=nextjs:nodejs prisma ./prisma/    
+COPY --chown=nextjs:nodejs prisma.config.ts ./prisma.config.ts
 COPY --chown=nextjs:nodejs package.json ./package.json
 COPY --chown=nextjs:nodejs pnpm-lock.yaml ./pnpm-lock.yaml
 
@@ -75,7 +76,7 @@ COPY --chown=nextjs:nodejs <<EOF /app/start.sh
 set -e
 
 echo "Running database migrations..."
-npx --yes prisma migrate deploy
+npx --yes prisma@7 migrate deploy
 
 echo "Starting application..."
 exec node server.js

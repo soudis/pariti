@@ -26,21 +26,27 @@ export async function generateRecurringExpenseInstances(
 	}
 
 	if (expense.isRecurring) {
+		const end =
+			expense.recurringEndDate &&
+			isAfter(currentDate, expense.recurringEndDate)
+				? expense.recurringEndDate
+				: currentDate;
+
 		const instances = [];
 		switch (expense.recurringType) {
 			case "weekly":
 				instances.push(
-					...eachWeekOfInterval({ start: expense.date, end: currentDate }),
+					...eachWeekOfInterval({ start: expense.date, end }),
 				);
 				break;
 			case "monthly":
 				instances.push(
-					...eachMonthOfInterval({ start: expense.date, end: currentDate }),
+					...eachMonthOfInterval({ start: expense.date, end }),
 				);
 				break;
 			case "yearly":
 				instances.push(
-					...eachYearOfInterval({ start: expense.date, end: currentDate }),
+					...eachYearOfInterval({ start: expense.date, end }),
 				);
 				break;
 		}

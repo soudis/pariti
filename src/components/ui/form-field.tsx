@@ -1,6 +1,7 @@
 "use client";
 
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
@@ -274,7 +275,8 @@ export function DateField<TFormValues extends FieldValues = FieldValues>({
 	placeholder,
 	disabled,
 	className,
-}: DateFieldProps<TFormValues>) {
+	clearable = false,
+}: DateFieldProps<TFormValues> & { clearable?: boolean }) {
 	return (
 		<FormFieldPrimitive
 			control={control}
@@ -283,12 +285,28 @@ export function DateField<TFormValues extends FieldValues = FieldValues>({
 				<FormItem className={className}>
 					{label && <FormLabel>{label}</FormLabel>}
 					<FormControl>
-						<DatePicker
-							value={new Date(field.value)}
-							onChange={field.onChange}
-							placeholder={placeholder}
-							disabled={disabled}
-						/>
+						<div className="flex gap-2 items-center">
+							<div className="flex-1 min-w-0">
+								<DatePicker
+									value={field.value ? new Date(field.value) : undefined}
+									onChange={field.onChange}
+									placeholder={placeholder}
+									disabled={disabled}
+								/>
+							</div>
+							{clearable && field.value && (
+								<Button
+									type="button"
+									variant="ghost"
+									size="icon"
+									className="shrink-0"
+									onClick={() => field.onChange(null)}
+								>
+									<span className="sr-only">Clear</span>
+									<span aria-hidden>×</span>
+								</Button>
+							)}
+						</div>
 					</FormControl>
 					{description && <FormDescription>{description}</FormDescription>}
 					<FormMessage />

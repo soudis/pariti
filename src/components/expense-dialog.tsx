@@ -65,6 +65,7 @@ export function ExpenseDialog({
 			sharingMethod: getDefaultSharingMethod(group),
 			isRecurring: false,
 			recurringType: "monthly",
+			recurringEndDate: null,
 			memberAmounts: [],
 		},
 	});
@@ -83,6 +84,9 @@ export function ExpenseDialog({
 				sharingMethod: expense.sharingMethod || getDefaultSharingMethod(group),
 				isRecurring: expense.isRecurring,
 				recurringType: expense.recurringType || "monthly",
+				recurringEndDate: expense.recurringEndDate
+					? new Date(expense.recurringEndDate)
+					: undefined,
 				memberAmounts: expense.memberAmounts || [],
 			});
 		} else {
@@ -97,6 +101,7 @@ export function ExpenseDialog({
 				sharingMethod: getDefaultSharingMethod(group),
 				isRecurring: false,
 				recurringType: "monthly",
+				recurringEndDate: null,
 				memberAmounts: [],
 			});
 		}
@@ -235,6 +240,14 @@ export function ExpenseDialog({
 													{ value: "monthly", label: t("recurring.monthly") },
 													{ value: "yearly", label: t("recurring.yearly") },
 												]}
+											/>
+
+											<DateField
+												control={form.control}
+												name="recurringEndDate"
+												label={t("recurring.endDate")}
+												placeholder={t("recurring.endDatePlaceholder")}
+												clearable
 											/>
 
 											<p className="text-xs text-gray-600 dark:text-gray-400">

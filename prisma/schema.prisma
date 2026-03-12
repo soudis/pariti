@@ -150,6 +150,7 @@ model Expense {
   sharingMethod      String    
   isRecurring        Boolean   @default(false)
   recurringType      String? // 'weekly', 'monthly', 'yearly'
+  recurringEndDate   DateTime?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
