@@ -27,15 +27,25 @@ export async function getAccessibleGroups() {
 			allowedSamlGroups: true,
 			createdByUserId: true,
 			createdAt: true,
+			_count: { select: { members: true } },
 		},
 		orderBy: { updatedAt: "desc" },
 	});
 
-	return groups.filter((group) => {
+	const filtered = groups.filter((group) => {
 		if (group.createdByUserId === user.id) return true;
 		const allowed = Array.isArray(group.allowedSamlGroups)
 			? (group.allowedSamlGroups as string[])
 			: [];
 		return groupsIntersect(userGroups, allowed);
 	});
+
+	return filtered.map((group) => ({
+		id: group.id,
+		name: group.name,
+		description: group.description,
+		currency: group.currency,
+		createdAt: group.createdAt,
+		memberCount: group._count.members,
+	}));
 }

@@ -51,7 +51,9 @@
 			}
 		},
 		"accessibleGroups": {
-			"title": "My Groups"
+			"title": "My Groups",
+			"empty": "You don't have any groups yet. Create one to get started!",
+			"members": "{count, plural, one {# member} other {# members}}"
 		},
 		"visitedGroups": {
 			"title": "Recent Groups",
