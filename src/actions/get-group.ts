@@ -129,6 +129,10 @@ export async function getCalculatedGroup(id: string) {
 
 	const settlementCutoffDate = getSettlementCutoffDate(calculatedGroup);
 
+	// End of today: only expenses/consumptions on or before this are included in balances
+	const endOfToday = new Date();
+	endOfToday.setHours(23, 59, 59, 999);
+
 	const balances = new Map<string, number>();
 
 	// Initialize all members with zero balance
@@ -141,12 +145,13 @@ export async function getCalculatedGroup(id: string) {
 		balances.set(resource.id, 0);
 	});
 
-	// Filter expenses based on cutoff date
-	const filteredExpenses = settlementCutoffDate
-		? calculatedGroup.expenses.filter(
-				(expense) => new Date(expense.date) >= settlementCutoffDate,
-			)
-		: calculatedGroup.expenses;
+	// Filter expenses for balance: cutoff date and not in the future
+	const filteredExpenses = calculatedGroup.expenses.filter((expense) => {
+		const expenseDate = new Date(expense.date);
+		const afterCutoff = !settlementCutoffDate || expenseDate >= settlementCutoffDate;
+		const notFuture = expenseDate <= endOfToday;
+		return afterCutoff && notFuture;
+	});
 
 	// Process all expenses (including virtual/recurring ones)
 	filteredExpenses.forEach((expense) => {
@@ -164,13 +169,15 @@ export async function getCalculatedGroup(id: string) {
 		});
 	});
 
-	// Process consumptions (filtered by cutoff date)
+	// Process consumptions for balance: cutoff date and not in the future
 	calculatedGroup.resources.forEach((resource) => {
-		const filteredConsumptions = settlementCutoffDate
-			? resource.consumptions.filter(
-					(consumption) => new Date(consumption.date) >= settlementCutoffDate,
-				)
-			: resource.consumptions;
+		const filteredConsumptions = resource.consumptions.filter((consumption) => {
+			const consumptionDate = new Date(consumption.date);
+			const afterCutoff =
+				!settlementCutoffDate || consumptionDate >= settlementCutoffDate;
+			const notFuture = consumptionDate <= endOfToday;
+			return afterCutoff && notFuture;
+		});
 
 		filteredConsumptions.forEach((consumption) => {
 			// Calculate the resource balance from this consumption
