@@ -191,27 +191,16 @@ export function ResourcesSection({
 							</div>
 						)}
 						{!readOnly && (
-							<div className="grid grid-cols-1 sm:flex sm:gap-2 gap-2">
-								<ConsumptionDialog group={group}>
-									<Button
-										size="sm"
-										className="w-full sm:w-auto text-xs sm:text-sm"
-									>
-										<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
-										<span className="truncate">{t("logConsumption")}</span>
-									</Button>
-								</ConsumptionDialog>
-								<ResourceDialog group={group}>
-									<Button
-										size="sm"
-										variant="outline"
-										className="w-full sm:w-auto text-xs sm:text-sm"
-									>
-										<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
-										<span className="truncate">{t("addResource")}</span>
-									</Button>
-								</ResourceDialog>
-							</div>
+							<ResourceDialog group={group}>
+								<Button
+									size="sm"
+									variant="outline"
+									className="w-full sm:w-auto text-xs sm:text-sm"
+								>
+									<Plus className="w-4 h-4 mr-2 flex-shrink-0" />
+									<span className="truncate">{t("addResource")}</span>
+								</Button>
+							</ResourceDialog>
 						)}
 					</div>
 				</div>
@@ -237,7 +226,7 @@ export function ResourcesSection({
 
 							return (
 								<div key={resource.id} className="border rounded-lg p-4">
-									<div className="flex  sm:items-start sm:justify-between gap-3 mb-4">
+									<div className=" items-start justify-between gap-3 mb-4 flex flex-col sm:flex-row">
 										<div className="flex-1 min-w-0">
 											<div className="flex flex-col sm:flex-row items-center gap-2 mb-2">
 												<h3 className="font-medium text-base sm:text-lg truncate">
@@ -265,6 +254,20 @@ export function ResourcesSection({
 										<div className="flex items-center gap-2 flex-shrink-0">
 											{!readOnly && (
 												<>
+													<ConsumptionDialog
+														group={group}
+														defaultResourceId={resource.id}
+													>
+														<Button
+															size="sm"
+															className="w-auto mr-auto text-xs sm:text-sm"
+														>
+															<Plus className="w-4 h-4 mr-1" />
+															<span className="text-xs sm:text-sm">
+																{t("logConsumption")}
+															</span>
+														</Button>
+													</ConsumptionDialog>
 													<ResourceDialog
 														group={group}
 														resource={{
@@ -446,7 +449,9 @@ export function ResourcesSection({
 																				)}
 																				itemName={`${consumption.amount} ${resource.unit || t("units")}`}
 																				onConfirm={() =>
-																					handleDeleteConsumption(consumption.id)
+																					handleDeleteConsumption(
+																						consumption.id,
+																					)
 																				}
 																			>
 																				<Button

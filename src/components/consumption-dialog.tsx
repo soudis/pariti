@@ -32,6 +32,8 @@ import { handleActionErrors } from "@/lib/utils";
 interface ConsumptionDialogProps {
 	group: Awaited<ReturnType<typeof getCalculatedGroup>>;
 	children: React.ReactNode;
+	/** When creating, pre-select this resource. */
+	defaultResourceId?: string;
 	consumption?: ConsumptionFormData & { id: string }; // For editing existing consumption
 	onConsumptionUpdated?: () => void;
 }
@@ -40,6 +42,7 @@ export function ConsumptionDialog({
 	group,
 	group: { resources },
 	children,
+	defaultResourceId,
 	consumption,
 	onConsumptionUpdated,
 }: ConsumptionDialogProps) {
@@ -126,16 +129,24 @@ export function ConsumptionDialog({
 		if (open) {
 			form.reset();
 
-			// Auto-select resource if there's only one available
-			if (!consumption && resources.length === 1) {
-				form.setValue("resourceId", resources[0].id);
-				// Also set the default weight type if available
-				if (resources[0].defaultWeightType) {
-					form.setValue("sharingMethod", resources[0].defaultWeightType);
+			// Pre-select resource: explicit default, or single resource, or leave empty
+			if (!consumption) {
+				const resourceIdToSelect =
+					defaultResourceId && resources.some((r) => r.id === defaultResourceId)
+						? defaultResourceId
+						: resources.length === 1
+							? resources[0].id
+							: "";
+				if (resourceIdToSelect) {
+					form.setValue("resourceId", resourceIdToSelect);
+					const resource = resources.find((r) => r.id === resourceIdToSelect);
+					if (resource?.defaultWeightType) {
+						form.setValue("sharingMethod", resource.defaultWeightType);
+					}
 				}
 			}
 		}
-	}, [open, form, consumption, resources]);
+	}, [open, form, consumption, resources, defaultResourceId]);
 
 	const onSubmit = async (data: ConsumptionFormData) => {
 		setLoading(true);
