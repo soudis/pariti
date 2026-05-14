@@ -32,9 +32,6 @@ export function QRCodeDialog({
 	const [open, setOpen] = useState(false);
 	const t = useTranslations("qrCode");
 
-	// Format amount for QR code (in cents)
-	const amountInCents = Math.round(amount * 100);
-
 	// Create reference for the transaction
 	const reference = description || `Payment to ${recipientName}`;
 
@@ -84,7 +81,7 @@ export function QRCodeDialog({
 					<div className="flex justify-center p-4 bg-white rounded-lg border">
 						<Girocode
 							iban={iban}
-							amount={amountInCents}
+							amount={amount}
 							text={reference}
 							recipient={recipientName}
 						/>
