@@ -60,6 +60,7 @@ COPY --chown=nextjs:nodejs pnpm-lock.yaml ./pnpm-lock.yaml
 
 # Install pnpm in the runner stage
 RUN corepack enable pnpm
+RUN pnpm install --prod --frozen-lockfile
 
 USER nextjs
 
@@ -79,7 +80,7 @@ COPY --chown=nextjs:nodejs <<EOF /app/start.sh
 set -e
 
 echo "Running database migrations..."
-npx --yes prisma@7.4.2 migrate deploy
+./node_modules/.bin/prisma migrate deploy
 
 echo "Starting application..."
 exec node server.js
