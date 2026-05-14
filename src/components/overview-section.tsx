@@ -59,7 +59,8 @@ export function OverviewSection({
 	const totalConsumptions = useMemo(
 		() =>
 			filteredConsumptions.reduce(
-				(sum, consumption) => sum + Number(consumption.amount),
+				(sum, consumption) =>
+					sum + Number(consumption.totalAmount ?? consumption.amount),
 				0,
 			),
 		[filteredConsumptions],

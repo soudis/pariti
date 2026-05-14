@@ -1,6 +1,5 @@
 "use server";
 
-import { Decimal } from "@prisma/client/runtime/client";
 import z from "zod";
 import { generateRecurringExpenseInstances } from "@/actions/generate-recurring-expense-instances";
 import { db } from "@/lib/db";
@@ -116,7 +115,10 @@ export async function getCalculatedGroup(id: string) {
 						amount: ma.amount ? Number(ma.amount) : null,
 					})),
 					consumption,
-					resource.billingType === "byUsage" && resource.unitPrice
+					resource.billingType === "byUsage" &&
+						resource.unitPrice &&
+						resource.unit &&
+						consumption.isUnitAmount
 						? Number(resource.unitPrice)
 						: undefined,
 					resource.billingType === "byMember" && resource.usagePrice
@@ -148,7 +150,8 @@ export async function getCalculatedGroup(id: string) {
 	// Filter expenses for balance: cutoff date and not in the future
 	const filteredExpenses = calculatedGroup.expenses.filter((expense) => {
 		const expenseDate = new Date(expense.date);
-		const afterCutoff = !settlementCutoffDate || expenseDate >= settlementCutoffDate;
+		const afterCutoff =
+			!settlementCutoffDate || expenseDate >= settlementCutoffDate;
 		const notFuture = expenseDate <= endOfToday;
 		return afterCutoff && notFuture;
 	});
@@ -181,13 +184,10 @@ export async function getCalculatedGroup(id: string) {
 
 		filteredConsumptions.forEach((consumption) => {
 			// Calculate the resource balance from this consumption
-			const amount = consumption.calculatedConsumptionMembers.reduce(
+			const resourceBalance = consumption.calculatedConsumptionMembers.reduce(
 				(sum, ma) => sum + ma.amount,
 				0,
 			);
-			const resourceBalance =
-				Number(amount) *
-				(resource.unitPrice && resource.unit ? Number(resource.unitPrice) : 1);
 
 			// If resource is linked to a member, add balance to that member
 			if (resource.linkedMemberId) {
@@ -263,13 +263,10 @@ export async function getCalculatedGroup(id: string) {
 			...resource,
 			consumptions: resource.consumptions.map((consumption) => ({
 				...consumption,
-				amount:
-					new Decimal(
-						consumption.calculatedConsumptionMembers.reduce(
-							(sum, ma) => sum + ma.amount,
-							0,
-						),
-					) ?? new Decimal(0),
+				totalAmount: consumption.calculatedConsumptionMembers.reduce(
+					(sum, ma) => sum + ma.amount,
+					0,
+				),
 			})),
 			balance: resource.linkedMemberId
 				? 0

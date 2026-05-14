@@ -79,9 +79,8 @@ export function ConsumptionDialog({
 				description: consumption.description || "",
 				amount: consumption.amount,
 				isUnitAmount:
-					consumption.isUnitAmount ||
-					(!!resource?.unit && !!resource?.unitPrice) ||
-					false,
+					consumption.isUnitAmount ??
+					Boolean(resource?.unit && resource?.unitPrice),
 				date: new Date(consumption.date),
 				splitAll: consumption.splitAll,
 				selectedMembers: consumption.selectedMembers,
@@ -107,17 +106,19 @@ export function ConsumptionDialog({
 	useEffect(() => {
 		if (resourceId) {
 			const resource = resources.find((r) => r.id === resourceId);
-			form.setValue(
-				"isUnitAmount",
-				Boolean((resource?.unit && resource?.unitPrice) ?? false),
-			);
+			if (!consumption) {
+				form.setValue(
+					"isUnitAmount",
+					Boolean((resource?.unit && resource?.unitPrice) ?? false),
+				);
+			}
 
 			// Auto-select default weight type from resource if available
-			if (resource?.defaultWeightType) {
+			if (!consumption && resource?.defaultWeightType) {
 				form.setValue("sharingMethod", resource.defaultWeightType);
 			}
 		}
-	}, [resourceId, form, resources]);
+	}, [resourceId, form, resources, consumption]);
 
 	const selectedResource = useMemo(
 		() => resources.find((r) => r.id === resourceId),
@@ -126,23 +127,30 @@ export function ConsumptionDialog({
 
 	// Initialize active members when dialog opens
 	useEffect(() => {
-		if (open) {
-			form.reset();
-
+		if (open && !consumption) {
+			form.reset({
+				resourceId: "",
+				description: "",
+				amount: 0,
+				isUnitAmount: true,
+				date: new Date(),
+				splitAll: false,
+				selectedMembers: [],
+				sharingMethod: "equal",
+				memberAmounts: [],
+			});
 			// Pre-select resource: explicit default, or single resource, or leave empty
-			if (!consumption) {
-				const resourceIdToSelect =
-					defaultResourceId && resources.some((r) => r.id === defaultResourceId)
-						? defaultResourceId
-						: resources.length === 1
-							? resources[0].id
-							: "";
-				if (resourceIdToSelect) {
-					form.setValue("resourceId", resourceIdToSelect);
-					const resource = resources.find((r) => r.id === resourceIdToSelect);
-					if (resource?.defaultWeightType) {
-						form.setValue("sharingMethod", resource.defaultWeightType);
-					}
+			const resourceIdToSelect =
+				defaultResourceId && resources.some((r) => r.id === defaultResourceId)
+					? defaultResourceId
+					: resources.length === 1
+						? resources[0].id
+						: "";
+			if (resourceIdToSelect) {
+				form.setValue("resourceId", resourceIdToSelect);
+				const resource = resources.find((r) => r.id === resourceIdToSelect);
+				if (resource?.defaultWeightType) {
+					form.setValue("sharingMethod", resource.defaultWeightType);
 				}
 			}
 		}

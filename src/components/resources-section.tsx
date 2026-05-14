@@ -15,11 +15,7 @@ import { useTranslations } from "next-intl";
 import { useAction } from "next-safe-action/hooks";
 import { useQueryState } from "nuqs";
 import { useId, useState } from "react";
-import {
-	type getGroup,
-	removeConsumptionAction,
-	removeResourceAction,
-} from "@/actions";
+import { removeConsumptionAction, removeResourceAction } from "@/actions";
 import type { getCalculatedGroup } from "@/actions/get-group";
 import { ConsumptionDialog } from "@/components/consumption-dialog";
 import { ResourceDialog } from "@/components/resource-dialog";
@@ -124,18 +120,11 @@ export function ResourcesSection({
 	// Helper function to calculate total consumption amount for a resource
 	const calculateTotalConsumption = (
 		consumptions: Awaited<
-			ReturnType<typeof getGroup>
+			ReturnType<typeof getCalculatedGroup>
 		>["resources"][number]["consumptions"],
 	) => {
 		return consumptions.reduce((total, consumption) => {
-			// Find the resource to get unit price
-			const resource = resources.find((r) =>
-				r.consumptions.some((c) => c.id === consumption.id),
-			);
-			if (resource?.unitPrice && resource.unit) {
-				return total + Number(consumption.amount) * Number(resource.unitPrice);
-			}
-			return total + Number(consumption.amount);
+			return total + Number(consumption.totalAmount ?? consumption.amount);
 		}, 0);
 	};
 
@@ -371,26 +360,33 @@ export function ResourcesSection({
 																			variant="secondary"
 																			className="text-sm"
 																		>
-																			{resource.unit && resource.unitPrice
+																			{resource.unit &&
+																			resource.unitPrice &&
+																			consumption.isUnitAmount
 																				? `${consumption.amount} ${resource.unit}`
 																				: formatCurrency(
 																						Number(consumption.amount),
 																						group.currency,
 																					)}
 																		</Badge>
-																		{resource.unit && resource.unitPrice && (
-																			<Badge
-																				variant="outline"
-																				className="text-xs"
-																			>
-																				{formatCurrency(
-																					Number(consumption.amount) *
-																						Number(resource.unitPrice),
-																					group.currency,
-																				)}{" "}
-																				{t("total")}
-																			</Badge>
-																		)}
+																		{resource.unit &&
+																			resource.unitPrice &&
+																			consumption.isUnitAmount && (
+																				<Badge
+																					variant="outline"
+																					className="text-xs"
+																				>
+																					{formatCurrency(
+																						Number(
+																							consumption.totalAmount ??
+																								Number(consumption.amount) *
+																									Number(resource.unitPrice),
+																						),
+																						group.currency,
+																					)}{" "}
+																					{t("total")}
+																				</Badge>
+																			)}
 																	</div>
 																	{consumption.description && (
 																		<p className="text-sm text-gray-600 dark:text-gray-300 mt-1">

@@ -6,7 +6,7 @@
 		"dev": "next dev",
 		"build": "next build",
 		"start": "next start",
-		"lint": "eslint",
+		"lint": "biome lint",
 		"db:start": "docker compose up -d postgres",
 		"db:down": "docker compose down postgres",
 		"db:stop": "docker compose down",

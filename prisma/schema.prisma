@@ -205,7 +205,8 @@ model Resource {
 model Consumption {
   id           String   @id @default(cuid())
   resourceId   String
-  amount       Decimal  @db.Decimal(10, 2) // either money amount or unit amount
+  amount       Decimal  @db.Decimal(10, 2) // money amount or unit amount, depending on isUnitAmount
+  isUnitAmount Boolean  @default(false)
   date         DateTime @default(now())
   description  String?
   sharingMethod String  

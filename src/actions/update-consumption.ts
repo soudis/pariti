@@ -25,6 +25,7 @@ async function updateConsumption(
 		where: { id: consumptionId },
 		data: {
 			amount: data.amount,
+			isUnitAmount: data.isUnitAmount ?? false,
 			date: data.date,
 			description: data.description,
 			sharingMethod: data.sharingMethod || "equal",
