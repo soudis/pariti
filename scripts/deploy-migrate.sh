@@ -103,7 +103,7 @@ deploy_application() {
     local compose_cmd="docker compose -f $compose_file --env-file $env_file"
     
     print_status "Migrating database..."
-    eval "$compose_cmd run --user root npx prisma migrate deploy"
+    eval "$compose_cmd run --rm --user root next npx prisma migrate deploy"
     
     print_success "Deployment '$deployment_name' migrated successfully!"
     

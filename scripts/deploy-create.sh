@@ -180,7 +180,6 @@ services:
     networks:
       - proxy_network
       - db_network
-    command: node server.js
 
   db:
     image: postgres:15

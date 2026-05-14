@@ -46,6 +46,7 @@ ENV NODE_ENV=production
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+RUN mkdir -p /home/nextjs/.npm && chown -R nextjs:nodejs /home/nextjs
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
@@ -65,6 +66,8 @@ USER nextjs
 EXPOSE 3000
 
 ENV PORT=3000
+ENV HOME=/home/nextjs
+ENV NPM_CONFIG_CACHE=/home/nextjs/.npm
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/config/next-config-js/output
@@ -76,7 +79,7 @@ COPY --chown=nextjs:nodejs <<EOF /app/start.sh
 set -e
 
 echo "Running database migrations..."
-npx --yes prisma@7 migrate deploy
+npx --yes prisma@7.4.2 migrate deploy
 
 echo "Starting application..."
 exec node server.js
