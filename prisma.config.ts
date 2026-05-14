@@ -1,5 +1,12 @@
-import "dotenv/config";
+import { createRequire } from "node:module";
 import { defineConfig, env } from "prisma/config";
+
+const require = createRequire(import.meta.url);
+try {
+	require("dotenv/config");
+} catch {
+	// In the production runtime image, dotenv may not be installed.
+}
 
 function buildUrlFromParts(): string {
 	const host = env("DATABASE_HOST");
