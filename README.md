@@ -34,7 +34,7 @@ A comprehensive money sharing application for groups and friends, built with Nex
 
 ### Prerequisites
 
-- Node.js 20+ (managed via Volta)
+- Node.js 22+ (managed via Volta)
 - pnpm
 - Docker and Docker Compose
 
