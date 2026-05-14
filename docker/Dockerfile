@@ -57,6 +57,7 @@ COPY --chown=nextjs:nodejs prisma ./prisma/
 COPY --chown=nextjs:nodejs prisma.config.ts ./prisma.config.ts
 COPY --chown=nextjs:nodejs package.json ./package.json
 COPY --chown=nextjs:nodejs pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --chown=nextjs:nodejs pnpm-workspace.yaml ./pnpm-workspace.yaml
 
 # Install pnpm in the runner stage
 RUN corepack enable pnpm
