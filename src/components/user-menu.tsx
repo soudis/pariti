@@ -8,7 +8,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import { authClient, useSession } from "@/lib/auth-client";
+import { signOutWithSlo, useSession } from "@/lib/auth-client";
 
 export function UserMenu() {
 	const { data: session } = useSession();
@@ -17,8 +17,7 @@ export function UserMenu() {
 	if (!session?.user) return null;
 
 	const handleSignOut = async () => {
-		await authClient.signOut();
-		window.location.reload();
+		await signOutWithSlo();
 	};
 
 	return (

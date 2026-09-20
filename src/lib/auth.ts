@@ -3,29 +3,7 @@ import { sso } from "@better-auth/sso";
 import { betterAuth } from "better-auth";
 import { headers } from "next/headers";
 import { db } from "./db";
-
-/**
- * Normalize IdP cert to the same canonical form samlify uses when comparing
- * (raw base64), then back to PEM. Ensures ERROR_UNMATCH_CERTIFICATE_DECLARATION_IN_METADATA
- * doesn't happen due to .env formatting (spaces vs newlines, etc.).
- */
-function normalizeIdpCertForSaml(cert: string): string {
-	if (!cert.trim()) return "";
-	const raw = cert
-		.replace(/\r/g, "")
-		.replace(/\n/g, "")
-		.replace(/\s/g, "")
-		.replace(/-----BEGINCERTIFICATE-----/gi, "")
-		.replace(/-----ENDCERTIFICATE-----/gi, "");
-	if (!raw) return "";
-	const lines = raw.match(/.{1,64}/g) ?? [];
-	return `-----BEGIN CERTIFICATE-----\n${lines.join("\n")}\n-----END CERTIFICATE-----`;
-}
-
-/** IdP issuer must match <Issuer> in the SAML response exactly (samlify uses !==). */
-function normalizeIdpIssuer(issuer: string): string {
-	return issuer.trim().replace(/\/+$/, "");
-}
+import { buildHabidatSamlConfig, HABIDAT_SSO_PROVIDER_ID } from "./saml-config";
 
 export const auth = betterAuth({
 	database: prismaAdapter(db, {
@@ -45,6 +23,10 @@ export const auth = betterAuth({
 	},
 	plugins: [
 		sso({
+			provisionUserOnEveryLogin: true,
+			saml: {
+				enableSingleLogout: true,
+			},
 			provisionUser: async ({ user, userInfo }) => {
 				const claimKey = process.env.SAML_GROUPS_CLAIM_KEY || "groups";
 				const raw =
@@ -74,33 +56,9 @@ export const auth = betterAuth({
 			defaultSSO: process.env.SAML_IDP_ENTRY_POINT
 				? [
 						{
-							providerId: "habidat",
+							providerId: HABIDAT_SSO_PROVIDER_ID,
 							domain: process.env.SAML_DOMAIN || "localhost",
-							samlConfig: {
-								issuer: normalizeIdpIssuer(
-									process.env.SAML_IDP_ENTITY_ID ||
-										process.env.SAML_IDP_ISSUER ||
-										process.env.SAML_IDP_ENTRY_POINT ||
-										"",
-								),
-								entryPoint: process.env.SAML_IDP_ENTRY_POINT as string,
-							cert: normalizeIdpCertForSaml(process.env.SAML_IDP_CERT || ""),
-								callbackUrl: "/",
-								spMetadata: {
-									entityID:
-										process.env.SAML_SP_ENTITY_ID ||
-										`${process.env.BETTER_AUTH_URL}/api/auth/sso/saml2/sp/metadata`,
-								},
-								mapping: {
-									id: process.env.SAML_MAPPING_ID || "nameID",
-									email: process.env.SAML_MAPPING_EMAIL || "email",
-									name: process.env.SAML_MAPPING_NAME || "displayName",
-									extraFields: {
-										[process.env.SAML_GROUPS_CLAIM_KEY || "groups"]:
-											process.env.SAML_GROUPS_CLAIM_KEY || "groups",
-									},
-								},
-							},
+							samlConfig: buildHabidatSamlConfig(),
 						},
 					]
 				: [],
