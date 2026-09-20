@@ -1,6 +1,6 @@
-import { createAuthClient } from "better-auth/react";
 import { ssoClient } from "@better-auth/sso/client";
 import { inferAdditionalFields } from "better-auth/client/plugins";
+import { createAuthClient } from "better-auth/react";
 import type { auth } from "./auth";
 import { HABIDAT_SSO_PROVIDER_ID } from "./saml-config";
 
@@ -9,6 +9,26 @@ export const authClient = createAuthClient({
 });
 
 export const { useSession, signOut } = authClient;
+
+const SSO_ATTEMPT_KEY = "pariti.sso.attempt";
+
+export function clearSsoAttempt(): void {
+	sessionStorage.removeItem(SSO_ATTEMPT_KEY);
+}
+
+export function hasSsoAttempt(): boolean {
+	return sessionStorage.getItem(SSO_ATTEMPT_KEY) === "1";
+}
+
+export async function startHabidatSso(): Promise<void> {
+	sessionStorage.setItem(SSO_ATTEMPT_KEY, "1");
+	const path = window.location.pathname || "/";
+	await authClient.signIn.sso({
+		providerId: HABIDAT_SSO_PROVIDER_ID,
+		callbackURL: path,
+		errorCallbackURL: path,
+	});
+}
 
 /**
  * End the Pariti session and send a SAML LogoutRequest to habidat-auth.

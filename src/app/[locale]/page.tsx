@@ -7,7 +7,12 @@ import { AccessibleGroupsSection } from "@/components/accessible-groups-section"
 import { HowItWorksDialog } from "@/components/how-it-works-dialog";
 import { SignInButton } from "@/components/sign-in-button";
 import { TopBar } from "@/components/top-bar";
-import { authClient, useSession } from "@/lib/auth-client";
+import {
+	clearSsoAttempt,
+	hasSsoAttempt,
+	startHabidatSso,
+	useSession,
+} from "@/lib/auth-client";
 
 export default function Home() {
 	const t = useTranslations();
@@ -19,6 +24,7 @@ export default function Home() {
 	useEffect(() => {
 		const error = new URLSearchParams(window.location.search).get("error");
 		if (error) {
+			clearSsoAttempt();
 			setSsoError(error);
 			setSsoGate("error");
 			return;
@@ -27,11 +33,19 @@ export default function Home() {
 	}, []);
 
 	useEffect(() => {
-		if (isPending || isAuthenticated || ssoGate !== "ok") return;
-		authClient.signIn.sso({
-			providerId: "habidat",
-			callbackURL: "/",
-		});
+		if (isPending) return;
+		if (isAuthenticated) {
+			clearSsoAttempt();
+			return;
+		}
+		if (ssoGate !== "ok") return;
+		if (hasSsoAttempt()) {
+			clearSsoAttempt();
+			setSsoError("session_not_established");
+			setSsoGate("error");
+			return;
+		}
+		void startHabidatSso();
 	}, [isPending, isAuthenticated, ssoGate]);
 
 	if (isPending || !isAuthenticated) {
