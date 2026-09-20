@@ -8,7 +8,8 @@
 		"signOut": "Abmelden",
 		"signInTitle": "Anmelden",
 		"signInDescription": "Melde dich an, um Ausgaben-Gruppen zu erstellen und zu verwalten",
-		"redirecting": "Weiterleitung zur Anmeldung…"
+		"redirecting": "Weiterleitung zur Anmeldung…",
+		"signInFailed": "Anmeldung fehlgeschlagen ({error}). Bitte erneut versuchen oder die Pariti-Serverlogs prüfen."
 	},
 	"app": {
 		"title": "Pariti - Teilen leicht gemacht",

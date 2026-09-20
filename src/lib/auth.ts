@@ -1,9 +1,22 @@
 import { prismaAdapter } from "@better-auth/prisma-adapter";
 import { sso } from "@better-auth/sso";
 import { betterAuth } from "better-auth";
+import { nextCookies } from "better-auth/next-js";
 import { headers } from "next/headers";
 import { db } from "./db";
 import { buildHabidatSamlConfig, HABIDAT_SSO_PROVIDER_ID } from "./saml-config";
+
+function trustedOrigins(): string[] {
+	return [
+		...new Set(
+			[
+				process.env.BETTER_AUTH_URL,
+				process.env.SAML_IDP_ISSUER,
+				process.env.SAML_IDP_ENTITY_ID,
+			].filter((origin): origin is string => Boolean(origin?.trim())),
+		),
+	];
+}
 
 export const auth = betterAuth({
 	database: prismaAdapter(db, {
@@ -11,6 +24,15 @@ export const auth = betterAuth({
 	}),
 	baseURL: process.env.BETTER_AUTH_URL,
 	secret: process.env.BETTER_AUTH_SECRET,
+	account: {
+		accountLinking: {
+			enabled: true,
+			trustedProviders: [HABIDAT_SSO_PROVIDER_ID],
+			// SSO-only app: Better Auth creates users with emailVerified=false,
+			// and 1.7 otherwise refuses to link the habidat account on return visits.
+			requireLocalEmailVerified: false,
+		},
+	},
 	user: {
 		additionalFields: {
 			samlGroups: {
@@ -63,10 +85,9 @@ export const auth = betterAuth({
 					]
 				: [],
 		}),
+		nextCookies(),
 	],
-	trustedOrigins: process.env.BETTER_AUTH_URL
-		? [process.env.BETTER_AUTH_URL]
-		: [],
+	trustedOrigins: trustedOrigins(),
 });
 
 export async function getSession() {
