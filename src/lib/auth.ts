@@ -12,6 +12,10 @@ export const auth = betterAuth({
 	}),
 	baseURL: process.env.BETTER_AUTH_URL,
 	secret: process.env.BETTER_AUTH_SECRET,
+	advanced: {
+		// Distinct from habidat-auth's __Secure-better-auth.* cookies on .habidat.org.
+		cookiePrefix: "pariti",
+	},
 	user: {
 		additionalFields: {
 			samlGroups: {
