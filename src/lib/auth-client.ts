@@ -10,23 +10,10 @@ export const authClient = createAuthClient({
 
 export const { useSession, signOut } = authClient;
 
-const SSO_ATTEMPT_KEY = "pariti.sso.attempt";
-
-export function clearSsoAttempt(): void {
-	sessionStorage.removeItem(SSO_ATTEMPT_KEY);
-}
-
-export function hasSsoAttempt(): boolean {
-	return sessionStorage.getItem(SSO_ATTEMPT_KEY) === "1";
-}
-
 export async function startHabidatSso(): Promise<void> {
-	sessionStorage.setItem(SSO_ATTEMPT_KEY, "1");
-	const path = window.location.pathname || "/";
 	await authClient.signIn.sso({
 		providerId: HABIDAT_SSO_PROVIDER_ID,
-		callbackURL: path,
-		errorCallbackURL: path,
+		callbackURL: "/",
 	});
 }
 

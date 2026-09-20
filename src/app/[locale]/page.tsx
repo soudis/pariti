@@ -7,46 +7,22 @@ import { AccessibleGroupsSection } from "@/components/accessible-groups-section"
 import { HowItWorksDialog } from "@/components/how-it-works-dialog";
 import { SignInButton } from "@/components/sign-in-button";
 import { TopBar } from "@/components/top-bar";
-import {
-	clearSsoAttempt,
-	hasSsoAttempt,
-	startHabidatSso,
-	useSession,
-} from "@/lib/auth-client";
+import { startHabidatSso, useSession } from "@/lib/auth-client";
 
 export default function Home() {
 	const t = useTranslations();
 	const { data: session, isPending } = useSession();
 	const isAuthenticated = !!session?.user;
-	const [ssoGate, setSsoGate] = useState<"pending" | "error" | "ok">("pending");
 	const [ssoError, setSsoError] = useState<string | null>(null);
 
 	useEffect(() => {
-		const error = new URLSearchParams(window.location.search).get("error");
-		if (error) {
-			clearSsoAttempt();
-			setSsoError(error);
-			setSsoGate("error");
-			return;
-		}
-		setSsoGate("ok");
+		setSsoError(new URLSearchParams(window.location.search).get("error"));
 	}, []);
 
 	useEffect(() => {
-		if (isPending) return;
-		if (isAuthenticated) {
-			clearSsoAttempt();
-			return;
-		}
-		if (ssoGate !== "ok") return;
-		if (hasSsoAttempt()) {
-			clearSsoAttempt();
-			setSsoError("session_not_established");
-			setSsoGate("error");
-			return;
-		}
+		if (isPending || isAuthenticated || ssoError) return;
 		void startHabidatSso();
-	}, [isPending, isAuthenticated, ssoGate]);
+	}, [isPending, isAuthenticated, ssoError]);
 
 	if (isPending || !isAuthenticated) {
 		return (
@@ -60,7 +36,7 @@ export default function Home() {
 						className="rounded-2xl shadow-lg bg-primary mx-auto mb-4"
 						priority
 					/>
-					{ssoGate === "error" && ssoError ? (
+					{ssoError ? (
 						<div className="space-y-4">
 							<p className="text-gray-700 dark:text-gray-200">
 								{t("auth.signInFailed", { error: ssoError })}
